@@ -31,7 +31,6 @@ func KafkaWriter(x []string, w *kafka.Writer) {
 
 
 func main() {
-
 	config := oauth1.NewConfig(os.Getenv("TWITTER_CONSUMER_API_KEY"),os.Getenv("TWITTER_CONSUMER_API_SECRET"))
     token := oauth1.NewToken(os.Getenv("TWITTER_ACCESS_TOKEN_KEY"), os.Getenv("TWITTER_ACCESS_TOKEN_SECRET"))
 	url := "https://stream.twitter.com/1.1/statuses/filter.json?track="

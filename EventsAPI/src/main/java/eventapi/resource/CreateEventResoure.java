@@ -24,13 +24,22 @@ public class CreateEventResoure {
     @Path("/create")
     @GET
     public Event createEvent(@QueryParam("name") String name) throws SQLException {
+<<<<<<< HEAD
         Event e= new Event(name,keywords);
+=======
+        //Event e= new Event(name,keywords);
+>>>>>>> 1f720ee54f9a0744281beafe7c70f3aba09a9659
         Properties props = new Properties();
         props.setProperty("user", postgres.getUsername());
         props.setProperty("password",postgres.getPassword());
         //props.setProperty("ssl","true");
+<<<<<<< HEAD
         Connection conn = DriverManager.getConnection(postgres.getUrl(), props);
         conn.createStatement();
+=======
+//        Connection conn = DriverManager.getConnection(postgres.getUrl(), props);
+//        conn.createStatement();
+>>>>>>> 1f720ee54f9a0744281beafe7c70f3aba09a9659
         return 1;
     }
     @Path("/test")
@@ -42,7 +51,11 @@ public class CreateEventResoure {
         props.setProperty("password",postgres.getPassword());
         //props.setProperty("ssl","true");
         Connection conn = DriverManager.getConnection(postgres.getUrl(), props);
+<<<<<<< HEAD
         conn.createStatement();
+=======
+        conn.createStatement("");
+>>>>>>> 1f720ee54f9a0744281beafe7c70f3aba09a9659
         return 1;
     }
 }
