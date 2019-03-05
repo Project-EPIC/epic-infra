@@ -11,6 +11,7 @@ import javax.ws.rs.core.MediaType;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.List;
 import java.util.Properties;
 
@@ -23,23 +24,20 @@ public class CreateEventResoure {
 
     @Path("/create")
     @GET
-    public Event createEvent(@QueryParam("name") String name) throws SQLException {
-<<<<<<< HEAD
+    public long createEvent(@QueryParam("name") String name, @QueryParam("keywords") List<String> keywords) throws SQLException {
         Event e= new Event(name,keywords);
-=======
-        //Event e= new Event(name,keywords);
->>>>>>> 1f720ee54f9a0744281beafe7c70f3aba09a9659
         Properties props = new Properties();
         props.setProperty("user", postgres.getUsername());
         props.setProperty("password",postgres.getPassword());
         //props.setProperty("ssl","true");
-<<<<<<< HEAD
         Connection conn = DriverManager.getConnection(postgres.getUrl(), props);
+
+        Statement stmnt = null;
+        stmnt = conn.createStatement();
+        String sql = "INSERT INTO events (name) VALUES ( '" + name + "')";
+        System.out.println(sql);
+        stmnt.executeUpdate(sql);
         conn.createStatement();
-=======
-//        Connection conn = DriverManager.getConnection(postgres.getUrl(), props);
-//        conn.createStatement();
->>>>>>> 1f720ee54f9a0744281beafe7c70f3aba09a9659
         return 1;
     }
     @Path("/test")
@@ -50,12 +48,9 @@ public class CreateEventResoure {
         props.setProperty("user", postgres.getUsername());
         props.setProperty("password",postgres.getPassword());
         //props.setProperty("ssl","true");
+
         Connection conn = DriverManager.getConnection(postgres.getUrl(), props);
-<<<<<<< HEAD
         conn.createStatement();
-=======
-        conn.createStatement("");
->>>>>>> 1f720ee54f9a0744281beafe7c70f3aba09a9659
         return 1;
     }
 }
