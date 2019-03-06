@@ -1,0 +1,25 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: tw-users-job
+spec:
+  template:
+    metadata:
+      name: tw-users-job
+    spec:
+      containers:
+      - name: kafka
+        image: solsson/kafka:0.10.0.1
+        command:
+        - ./bin/kafka-topics.sh
+        - --zookeeper
+        - zookeeper:2181
+        - --create
+        - --if-not-exists
+        - --topic
+        - tweets
+        - --partitions
+        - "3"
+        - --replication-factor
+        - "1"
+      restartPolicy: Never
