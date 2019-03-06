@@ -6,11 +6,10 @@
 
     <groupId>edu.colorado.cs.epic</groupId>
     <artifactId>tweet-store</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0</version>
     <packaging>jar</packaging>
 
     <name>tweet-store</name>
-    <!-- FIXME change it to the project's website -->
     <url>http://epic.cs.colorado.edu</url>
 
     <properties>
@@ -32,6 +31,17 @@
             <groupId>org.apache.kafka</groupId>
             <artifactId>kafka_2.12</artifactId>
             <version>2.1.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.cloud</groupId>
+            <artifactId>google-cloud-storage</artifactId>
+            <version>1.59.0</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.8.1</version>
         </dependency>
     </dependencies>
 
