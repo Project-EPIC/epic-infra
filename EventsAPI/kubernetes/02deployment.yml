@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: event-api-deployment
+  labels:
+    app: event-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: event-api
+  template:
+    metadata:
+      labels:
+        app: event-api
+    spec:
+      containers:
+      - name: event-api
+        image: projectepic/events-api:0.1
+        ports: 
+        - containerPort: 8080
