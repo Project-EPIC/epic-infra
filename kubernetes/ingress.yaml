@@ -1,0 +1,18 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: epic-infra-ingress
+  annotations:
+    kubernetes.io/ingress.global-static-ip-name: "epic-infra-ip"
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /*
+        backend:
+          serviceName: events-api
+          servicePort: 8080
+          #- path: /v2/*
+          #backend:
+          # serviceName: web2
+          #servicePort: 8080

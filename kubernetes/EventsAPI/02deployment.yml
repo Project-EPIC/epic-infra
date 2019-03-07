@@ -19,3 +19,7 @@ spec:
         image: projectepic/events-api:0.1
         ports: 
         - containerPort: 8080
+        readinessProbe:
+           httpGet:
+             path: /events/test
+             port: 8080

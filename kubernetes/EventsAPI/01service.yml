@@ -3,6 +3,7 @@ kind: Service
 metadata:
   name: events-api
 spec:
+  type: NodePort
   ports:
   - port: 8080
     name: client
