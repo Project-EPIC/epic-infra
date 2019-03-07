@@ -5,13 +5,8 @@ import eventapi.representation.Event;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.List;
 import java.util.Properties;
 
@@ -24,20 +19,30 @@ public class CreateEventResoure {
 
     @Path("/create")
     @GET
-    public long createEvent(@QueryParam("name") String name, @QueryParam("keywords") List<String> keywords) throws SQLException {
-        Event e= new Event(name,keywords);
+    public long createEvent(@QueryParam(value = "name") String name, @QueryParam(value = "description") String description, @QueryParam(value = "keywords") String keywords) throws SQLException {
         Properties props = new Properties();
         props.setProperty("user", postgres.getUsername());
         props.setProperty("password",postgres.getPassword());
-        //props.setProperty("ssl","true");
-        Connection conn = DriverManager.getConnection(postgres.getUrl(), props);
+        try {
+            Connection conn = DriverManager.getConnection(postgres.getUrl(), props);
+            Statement stmnt = conn.createStatement();
+            String sql = "INSERT INTO events (name, description ) VALUES ( '" + name + "','"+description+"')";
+            System.out.println(sql);
+            stmnt.executeUpdate(sql);
+            String SQL = "INSERT INTO keywords (event_name,keyword) VALUES (?,?)";
+            PreparedStatement statement = conn.prepareStatement(SQL);
+            for (String keyword : keywords.split(",")) {
+                statement.setString(1, name);
+                statement.setString(2, keyword);
+                System.out.println(keyword);
+                statement.addBatch();
+            }
+            statement.executeBatch();
 
-        Statement stmnt = null;
-        stmnt = conn.createStatement();
-        String sql = "INSERT INTO events (name) VALUES ( '" + name + "')";
-        System.out.println(sql);
-        stmnt.executeUpdate(sql);
-        conn.createStatement();
+        } catch (SQLException ex) {
+            System.out.println(ex.getMessage());
+            return 0;
+        }
         return 1;
     }
     @Path("/test")

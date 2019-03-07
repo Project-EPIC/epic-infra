@@ -7,32 +7,40 @@ public class Event {
     private long id;
     private String name;
     private List<String> keywords;
+    private String description;
 
     public Event() {
         // Jackson deserialization
     }
 
-    public Event(String name, List<String> keywords) {
+    public Event(String name, List<String> keywords, String description) {
         this.name = name;
         this.keywords=keywords;
+        this.description=description;
 
-        //Where do I insert in SQL
     }
-
-    @JsonProperty
-    public long getId() {
-        //return form sql
-        return id;
-    }
-
     @JsonProperty
     public String getName() {
         return name;
     }
-
-
+    @JsonProperty
+    public void setName(String name) {
+        this.name = name;
+    }
     @JsonProperty
     public List<String> getKeywords() {
         return keywords;
+    }
+    @JsonProperty
+    public void setKeywords(List<String> keywords) {
+        this.keywords = keywords;
+    }
+    @JsonProperty
+    public String getDescription() {
+        return description;
+    }
+    @JsonProperty
+    public void setDescription(String description) {
+        this.description = description;
     }
 }
