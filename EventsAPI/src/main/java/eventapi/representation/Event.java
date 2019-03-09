@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 
 public class Event {
-    private long id;
     private String name;
     private List<String> keywords;
     private String description;
