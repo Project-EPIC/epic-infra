@@ -18,13 +18,9 @@ public class EventApplication extends Application<EventConfiguration> {
     }
     @Override
     public void run(EventConfiguration configuration, Environment environment) {
-        DatabaseProperties db=new DatabaseProperties();
-        db.setUrl(configuration.getDatabaseurl());
-        db.setPassword(configuration.getPassword());
-        db.setUsername(configuration.getUsername());
+        DatabaseProperties db=new DatabaseProperties(configuration.getDatabaseurl(), configuration.getPassword(), configuration.getUsername());
         final EventResources resource = new EventResources(db);
-        HealthCheckRegistry healthCheckRegistry = new HealthCheckRegistry();
-        healthCheckRegistry.register("database", new DatabaseHealthCheck(db));
+
         environment.healthChecks().register("database", new DatabaseHealthCheck(db));
         environment.jersey().register(resource);
     }

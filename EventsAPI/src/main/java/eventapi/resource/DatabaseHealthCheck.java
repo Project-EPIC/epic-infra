@@ -19,10 +19,7 @@ public class DatabaseHealthCheck extends HealthCheck {
 
     protected Result check() throws Exception {
         try {
-            Properties props = new Properties();
-            props.setProperty("user", db.getUsername());
-            props.setProperty("password", db.getPassword());
-            Connection conn = DriverManager.getConnection(db.getUrl(), props);
+            Connection conn = db.getConnection();
             Statement stmnt = conn.createStatement();
             String sql = "SELECT * from events LIMIT 10";
             ResultSet rs = stmnt.executeQuery(sql);
