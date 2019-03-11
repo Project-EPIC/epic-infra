@@ -2,3 +2,4 @@
 EventsAPI/.idea
 EventsAPI/target
 EventsAPI/EventsAPI.iml
+EventsAPI/src/main/java/eventapi/resource/TestResourceClass.java
