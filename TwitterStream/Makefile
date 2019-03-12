@@ -2,7 +2,7 @@ all: build
 push: push
 .PHONY: push build
 
-TAG = 1.0.5
+TAG = 1.0.1
 PROJECT_NAME = twitter-stream
 
 build: main ca-certificates.crt

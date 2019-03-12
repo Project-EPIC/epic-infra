@@ -72,7 +72,6 @@ func main() {
 	var conf = oauth1.NewConfig(apiKey, apiSecret)
 	var token = oauth1.NewToken(accessToken, accessSecret)
 	var client = conf.Client(oauth1.NoContext, token)
-	client.Timeout = 10 * time.Minute
 
 	// Prepare keywords
 	var keywords = getKeywords()
