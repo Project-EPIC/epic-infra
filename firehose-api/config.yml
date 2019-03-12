@@ -1,0 +1,8 @@
+firehoseConfigMapName: ${FIREHOSE_DEPLOY_NAME:-keywordsconfig}
+firehoseConfigMapNamespace: ${FIREHOSE_DEPLOY_NAMESPACE:-default}
+
+
+logging:
+  level: INFO
+  loggers:
+    edu.colorado.cs.epic: DEBUG
