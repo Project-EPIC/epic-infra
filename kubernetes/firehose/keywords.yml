@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: keywordsconfig
+  namespace: default
+data:
+  keywords: "tornado"

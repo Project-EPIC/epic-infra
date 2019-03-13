@@ -1,0 +1,62 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: twitter-stream
+spec:
+  replicas: 1
+  strategy:
+    rollingUpdate:
+      maxSurge: 2
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: twitter-stream
+    spec:
+      terminationGracePeriodSeconds: 10
+      volumes:
+       - name: key-volume
+         configMap:
+           name: keywordsconfig
+           items:
+           - key: keywords
+             path: keywords.txt
+      containers:
+      - name: twitter-tracker
+        image: projectepic/twitter-stream:1.0.1
+        resources:
+          limits:
+           memory: 50Mi
+           cpu: "50m"
+          requests:
+           memory: 50Mi
+           cpu: "50m"
+        volumeMounts:
+           - name: key-volume
+             mountPath: /keys
+        env:
+          - name: TWITTER_ACCESS_TOKEN_KEY
+            valueFrom:
+              secretKeyRef:
+                name: twsecret
+                key: access_token
+          - name: TWITTER_ACCESS_TOKEN_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: twsecret
+                key: access_token_secret
+          - name: TWITTER_CONSUMER_API_KEY
+            valueFrom:
+              secretKeyRef:
+                name: twsecret
+                key: consumer_key
+          - name: TWITTER_CONSUMER_API_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: twsecret
+                key: consumer_secret
+          - name: KAFKA_SERVERS
+            value: kafka-0.broker.default.svc.cluster.local:9092,kafka-0.broker.default.svc.cluster.local:9092,kafka-2.broker.default.svc.cluster.local:9092
+          - name: FILE_KEYWORDS
+            value: "/keys/keywords.txt"
+
