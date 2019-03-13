@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: event-api
-        image: projectepic/events-api:0.1
+        image: projectepic/events-api:0.2
         ports: 
         - containerPort: 8080
         readinessProbe:
