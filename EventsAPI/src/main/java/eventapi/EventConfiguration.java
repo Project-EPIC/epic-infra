@@ -1,36 +1,23 @@
 package eventapi;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import eventapi.representation.DatabaseProperties;
 import io.dropwizard.Configuration;
-import org.hibernate.validator.constraints.NotEmpty;
+import io.dropwizard.db.DataSourceFactory;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 
 public class EventConfiguration extends Configuration {
-    private String databaseurl;
+    @Valid
+    @NotNull
+    private DataSourceFactory database = new DataSourceFactory();
 
-    private String username;
-
-    private String password;
-
-
-    @JsonProperty
-    public String getUsername() { return username; }
-
-    @JsonProperty
-    public void setUsername(String username) { this.username = username;  }
-
-    @JsonProperty
-    public String getPassword() { return password; }
-
-    @JsonProperty
-    public void setPassword(String password) { this.password = password; }
-
-    @JsonProperty
-    public String getDatabaseurl() {
-        return databaseurl;
+    @JsonProperty("database")
+    public void setDataSourceFactory(DataSourceFactory factory) {
+        this.database = factory;
     }
 
-    @JsonProperty
-    public void setDatabaseurl(String databaseurl) { this.databaseurl = databaseurl;  }
-
-//    public DatabaseProperties getDb() { return db; }
+    @JsonProperty("database")
+    public DataSourceFactory getDataSourceFactory() {
+        return database;
+    }
 }
