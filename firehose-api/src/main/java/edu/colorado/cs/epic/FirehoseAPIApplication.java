@@ -1,6 +1,7 @@
 package edu.colorado.cs.epic;
 
 import edu.colorado.cs.epic.health.KubernetesConnectionHealthCheck;
+import edu.colorado.cs.epic.resources.FilterResource;
 import edu.colorado.cs.epic.resources.QueryResource;
 import io.dropwizard.Application;
 import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
@@ -22,7 +23,7 @@ public class FirehoseAPIApplication extends Application<FirehoseAPIConfiguration
     }
 
     @Override
-    public void initialize(final Bootstrap< FirehoseAPIConfiguration>bootstrap) {
+    public void initialize(final Bootstrap<FirehoseAPIConfiguration> bootstrap) {
         bootstrap.setConfigurationSourceProvider(
                 new SubstitutingSourceProvider(bootstrap.getConfigurationSourceProvider(),
                         new EnvironmentVariableSubstitutor(false)
@@ -31,12 +32,13 @@ public class FirehoseAPIApplication extends Application<FirehoseAPIConfiguration
     }
 
     @Override
-    public void run(final  FirehoseAPIConfiguration configuration,
+    public void run(final FirehoseAPIConfiguration configuration,
                     final Environment environment) throws Exception {
         ApiClient client = Config.defaultClient();
 
         environment.healthChecks().register("kubernetes", new KubernetesConnectionHealthCheck(client));
         environment.jersey().register(new QueryResource(client, configuration.getFirehoseConfigMapName(), configuration.getFirehoseConfigMapNamespace()));
+        environment.jersey().register(new FilterResource(client, configuration.getKafkaServers(), configuration.getTweetStoreVersion()));
 
     }
 

@@ -11,7 +11,13 @@ public class FirehoseAPIConfiguration extends Configuration {
 
 
     @NotEmpty
+    private String kafkaServers;
+
+    @NotEmpty
     private String firehoseConfigMapNamespace;
+
+    @NotEmpty
+    private String tweetStoreVersion;
 
     @JsonProperty
     public String getFirehoseConfigMapNamespace() {
@@ -31,5 +37,25 @@ public class FirehoseAPIConfiguration extends Configuration {
     @JsonProperty
     public void setFirehoseConfigMapName(String firehoseConfigMapName) {
         this.firehoseConfigMapName = firehoseConfigMapName;
+    }
+
+    @JsonProperty
+    public String getKafkaServers() {
+        return kafkaServers;
+    }
+
+    @JsonProperty
+    public void setKafkaServers(String kafkaServers) {
+        this.kafkaServers = kafkaServers;
+    }
+
+    @JsonProperty
+    public String getTweetStoreVersion() {
+        return tweetStoreVersion;
+    }
+
+    @JsonProperty
+    public void setTweetStoreVersion(String tweetStoreVersion) {
+        this.tweetStoreVersion = tweetStoreVersion;
     }
 }
