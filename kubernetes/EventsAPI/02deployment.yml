@@ -17,6 +17,17 @@ spec:
       containers:
       - name: event-api
         image: projectepic/events-api:0.2
+        env:
+          - name: DB_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: credentials
+                key: username
+          - name: DB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: credentials
+                key: password
         ports: 
         - containerPort: 8080
         readinessProbe:
