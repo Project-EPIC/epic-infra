@@ -39,7 +39,7 @@ public class App {
 
     // Static configuration
     private static final int pollDurationMs = 100;
-    private static final String pattern = "yyyy/MM/dd/hh/";
+    private static final String pattern = "yyyy/MM/dd/HH/";
 
     public static void main(String[] args) {
 
