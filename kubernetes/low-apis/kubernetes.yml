@@ -1,23 +1,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: firehose-api-deployment
+  name: kubernetes-api
   labels:
-    app: firehose-api
+    app: kubernetes-api
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: firehose-api
+      app: kubernetes-api
   template:
     metadata:
       labels:
-        app: firehose-api
+        app: kubernetes-api
     spec:
       terminationGracePeriodSeconds: 10
       containers:
-      - name: firehose-api
-        image: projectepic/firehose-api:1.0.5
+      - name: kubernetes-api
+        image: projectepic/kubernetes-api:1.0.7
         resources:
           limits:
            memory: 900Mi
@@ -29,18 +29,19 @@ spec:
           - containerPort: 8080
           - containerPort: 8081
         livenessProbe:
-          periodSeconds: 60
+          periodSeconds: 20
           httpGet:
             path: /healthcheck
             port: 8081
-          initialDelaySeconds: 20
+          initialDelaySeconds: 40
+          timeoutSeconds: 5
         readinessProbe:
-          periodSeconds: 60
+          periodSeconds: 20
           httpGet:
             path: /healthcheck
             port: 8081
           initialDelaySeconds: 10
-          timeoutSeconds: 1
+          timeoutSeconds: 5
         env:
           - name: FIREHOSE_CONFIG_NAME
             value: keywordsconfig
@@ -53,11 +54,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: firehose-api
+  name: kubernetes-api
 spec:
   ports:
   - port: 8080
     name: client
   selector:
-    app: firehose-api
+    app: kubernetes-api
 

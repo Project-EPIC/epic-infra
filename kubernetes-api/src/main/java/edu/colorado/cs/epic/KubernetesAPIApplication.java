@@ -11,10 +11,10 @@ import io.dropwizard.setup.Environment;
 import io.kubernetes.client.ApiClient;
 import io.kubernetes.client.util.Config;
 
-public class FirehoseAPIApplication extends Application<FirehoseAPIConfiguration> {
+public class KubernetesAPIApplication extends Application<KubernetesAPIConfiguration> {
 
     public static void main(final String[] args) throws Exception {
-        new FirehoseAPIApplication().run(args);
+        new KubernetesAPIApplication().run(args);
     }
 
     @Override
@@ -23,7 +23,7 @@ public class FirehoseAPIApplication extends Application<FirehoseAPIConfiguration
     }
 
     @Override
-    public void initialize(final Bootstrap<FirehoseAPIConfiguration> bootstrap) {
+    public void initialize(final Bootstrap<KubernetesAPIConfiguration> bootstrap) {
         bootstrap.setConfigurationSourceProvider(
                 new SubstitutingSourceProvider(bootstrap.getConfigurationSourceProvider(),
                         new EnvironmentVariableSubstitutor(false)
@@ -32,13 +32,13 @@ public class FirehoseAPIApplication extends Application<FirehoseAPIConfiguration
     }
 
     @Override
-    public void run(final FirehoseAPIConfiguration configuration,
+    public void run(final KubernetesAPIConfiguration configuration,
                     final Environment environment) throws Exception {
         ApiClient client = Config.defaultClient();
 
         environment.healthChecks().register("kubernetes", new KubernetesConnectionHealthCheck(client));
-        environment.jersey().register(new QueryResource(client, configuration.getFirehoseConfigMapName(), configuration.getFirehoseConfigMapNamespace()));
-        environment.jersey().register(new FilterResource(client, configuration.getKafkaServers(), configuration.getTweetStoreVersion()));
+        environment.jersey().register(new QueryResource(client, configuration.getFirehoseConfigMapName(), configuration.getNamespace()));
+        environment.jersey().register(new FilterResource(client, configuration.getKafkaServers(), configuration.getTweetStoreVersion(), configuration.getNamespace()));
 
     }
 

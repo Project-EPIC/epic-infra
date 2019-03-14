@@ -1,15 +1,10 @@
 package edu.colorado.cs.epic.resources;
 
-import edu.colorado.cs.epic.FirehoseAPIConfiguration;
 import edu.colorado.cs.epic.api.Filter;
-import edu.colorado.cs.epic.api.Keywords;
 import io.kubernetes.client.ApiClient;
 import io.kubernetes.client.ApiException;
 import io.kubernetes.client.Configuration;
 import io.kubernetes.client.apis.AppsV1Api;
-import io.kubernetes.client.apis.CoreV1Api;
-import io.kubernetes.client.apis.ExtensionsV1beta1Api;
-import io.kubernetes.client.custom.Quantity;
 import io.kubernetes.client.models.*;
 
 import javax.validation.Valid;
@@ -20,7 +15,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -35,12 +29,14 @@ public class FilterResource {
     private final Logger logger;
     private final ApiClient client;
     private final String kafkaServers;
+    private final String namespace;
     private final String tweetStoreVersion;
 
-    public FilterResource(ApiClient client, String kafkaServers, String tweetStoreVersion) {
+    public FilterResource(ApiClient client, String kafkaServers, String tweetStoreVersion, String namespace) {
         this.client = client;
         this.kafkaServers = kafkaServers;
         this.tweetStoreVersion = tweetStoreVersion;
+        this.namespace = namespace;
         this.logger = Logger.getLogger(QueryResource.class.getName());
     }
 
@@ -51,7 +47,7 @@ public class FilterResource {
         AppsV1Api api = new AppsV1Api();
         V1DeploymentList deploys = new V1DeploymentList();
         try {
-            deploys = api.listNamespacedDeployment("default", false, null, null, null, "app=tweet-filter", null, null, null, false);
+            deploys = api.listNamespacedDeployment(namespace, false, null, null, null, "app=tweet-filter", null, null, null, false);
         } catch (ApiException e) {
             e.printStackTrace();
             throw new WebApplicationException(Response.Status.SERVICE_UNAVAILABLE);
@@ -78,7 +74,7 @@ public class FilterResource {
         AppsV1Api api = new AppsV1Api();
         V1Deployment deploy = null;
         try {
-            deploy = api.readNamespacedDeployment(Filter.toDeploymentName(eventName),"default", null, false, false);
+            deploy = api.readNamespacedDeployment(Filter.toDeploymentName(eventName),namespace, null, false, false);
         } catch (ApiException e) {
             e.printStackTrace();
             throw new WebApplicationException(Response.Status.NOT_FOUND);
@@ -101,7 +97,7 @@ public class FilterResource {
         AppsV1Api api = new AppsV1Api();
         try {
 
-            api.deleteNamespacedDeployment(Filter.toDeploymentName(eventName), "default", new V1DeleteOptions(),null,null,null,null,null);
+            api.deleteNamespacedDeployment(Filter.toDeploymentName(eventName), namespace, new V1DeleteOptions(),null,null,null,null,null);
             return Response.noContent().build();
         } catch (ApiException e) {
             e.printStackTrace();
@@ -119,13 +115,13 @@ public class FilterResource {
         Configuration.setDefaultApiClient(client);
         AppsV1Api api = new AppsV1Api();
         try {
-            api.createNamespacedDeployment("default", deploy, false, null, null);
+            api.createNamespacedDeployment(namespace, deploy, false, null, null);
             return Response.created(filter.getUrl()).entity(filter).build();
         } catch (ApiException e) {
             logger.info("Already existing deployment");
         }
         try {
-            api.replaceNamespacedDeployment(filter.deployName(), "default", deploy, null, null);
+            api.replaceNamespacedDeployment(filter.deployName(), namespace, deploy, null, null);
             return Response.created(filter.getUrl()).entity(filter).build();
         } catch (ApiException e) {
             logger.info("Already existing deployment");

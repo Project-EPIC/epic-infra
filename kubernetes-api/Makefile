@@ -1,7 +1,7 @@
 all: jar
 
-TAG_CLIENT = 1.0.5
-PROJECT_NAME = firehose-api
+TAG_CLIENT = 1.0.7
+PROJECT_NAME = kubernetes-api
 
 
 run: jar

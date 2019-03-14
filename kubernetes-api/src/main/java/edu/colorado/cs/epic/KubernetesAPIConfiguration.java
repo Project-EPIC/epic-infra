@@ -4,7 +4,7 @@ import io.dropwizard.Configuration;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.hibernate.validator.constraints.*;
 
-public class FirehoseAPIConfiguration extends Configuration {
+public class KubernetesAPIConfiguration extends Configuration {
 
     @NotEmpty
     private String firehoseConfigMapName;
@@ -14,19 +14,19 @@ public class FirehoseAPIConfiguration extends Configuration {
     private String kafkaServers;
 
     @NotEmpty
-    private String firehoseConfigMapNamespace;
+    private String namespace;
 
     @NotEmpty
     private String tweetStoreVersion;
 
     @JsonProperty
-    public String getFirehoseConfigMapNamespace() {
-        return firehoseConfigMapNamespace;
+    public String getNamespace() {
+        return namespace;
     }
 
     @JsonProperty
-    public void setFirehoseConfigMapNamespace(String firehoseConfigMapNamespace) {
-        this.firehoseConfigMapNamespace = firehoseConfigMapNamespace;
+    public void setNamespace(String namespace) {
+        this.namespace = namespace;
     }
 
     @JsonProperty
