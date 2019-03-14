@@ -3,3 +3,5 @@
 target/
 *.jar
 *.iml
+dependency-reduced-pom.xml
+

@@ -2,6 +2,7 @@ package edu.colorado.cs.epic;
 
 import com.google.cloud.storage.*;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -38,7 +39,7 @@ public class App {
 
     // Static configuration
     private static final int pollDurationMs = 100;
-    private static final String pattern = "yyyy/MM/dd/hh/mm/";
+    private static final String pattern = "yyyy/MM/dd/hh/";
 
     public static void main(String[] args) {
 
@@ -47,6 +48,7 @@ public class App {
         props.put("bootstrap.servers", kafkaServers);
         props.put("group.id", eventName);
         props.put("enable.auto.commit", "false");
+        props.put("max.block.ms", "5000");
         props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
         props.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
 
@@ -57,6 +59,7 @@ public class App {
         // Subscribe to topic
         consumer.subscribe(Arrays.asList(kafkaTopic));
         log.info(String.format("Subscribing to topic: %s", kafkaTopic));
+        log.info(String.format("Group id: %s", eventName));
 
         // Create buffer and folder variables
         List<ConsumerRecord<String, String>> buffer = new ArrayList<>();
