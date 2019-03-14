@@ -56,7 +56,8 @@ spec:
                 name: twsecret
                 key: consumer_secret
           - name: KAFKA_SERVERS
-            value: kafka-0.broker.default.svc.cluster.local:9092,kafka-0.broker.default.svc.cluster.local:9092,kafka-2.broker.default.svc.cluster.local:9092
+            value: kafka-0.broker.default:9092,kafka-1.broker.default:9092
+            
           - name: FILE_KEYWORDS
             value: "/keys/keywords.txt"
 
