@@ -1,6 +1,8 @@
 package eventapi.representation;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.sql.Time;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,6 +11,8 @@ public class Event {
     private List<String> keywords=new ArrayList<String>();
     private String description;
     private  String normalizedName;
+    private String status;
+    private Timestamp created_at;
     public Event() {
         // Jackson deserialization
     }
@@ -17,7 +21,8 @@ public class Event {
         this.name = name;
         this.keywords=keywords;
         this.description=description;
-
+        this.status="ACTIVE";
+        this.created_at=new Timestamp(System.currentTimeMillis());
     }
 
     public String getNormalizedName() {
@@ -55,4 +60,14 @@ public class Event {
     public void setDescription(String description) {
         this.description = description;
     }
+    @JsonProperty
+    public String getStatus() { return status; }
+    @JsonProperty
+    public void setStatus(String status) { this.status = status; }
+    @JsonProperty
+    public void setCreated_at(String time) { this.created_at=Timestamp.valueOf(time);}
+    @JsonProperty
+    public void setCreated_at() { this.created_at = new Timestamp(System.currentTimeMillis()); }
+    @JsonProperty
+    public String getCreated_at() {return this.created_at.toString(); }
 }
