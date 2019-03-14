@@ -2,6 +2,7 @@ package edu.colorado.cs.epic.health;
 
 import com.codahale.metrics.health.HealthCheck;
 import io.kubernetes.client.ApiClient;
+import io.kubernetes.client.ApiException;
 import io.kubernetes.client.Configuration;
 import io.kubernetes.client.apis.CoreV1Api;
 import io.kubernetes.client.models.V1PodList;
@@ -22,11 +23,18 @@ public class KubernetesConnectionHealthCheck extends HealthCheck {
     }
 
     @Override
-    protected Result check() throws Exception {
+    protected Result check() {
         Configuration.setDefaultApiClient(client);
         CoreV1Api api = new CoreV1Api();
 
-        V1PodList pods = api.listPodForAllNamespaces(null, null, null, null, null, null, null, null, null);
+        V1PodList pods = null;
+        try {
+            pods = api.listPodForAllNamespaces(null, null, null, null, null, null, null, null, null);
+        } catch (ApiException e) {
+            e.printStackTrace();
+            logger.warning("Kubernetes cluster connection is failing");
+            return Result.unhealthy("Kubernetes cluster connection is failing");
+        }
 
         if (pods.getItems().isEmpty()) {
             logger.warning("Not connected to Kubernetes!");

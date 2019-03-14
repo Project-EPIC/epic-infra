@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: firehose-api-deployment
+  labels:
+    app: firehose-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: firehose-api
+  template:
+    metadata:
+      labels:
+        app: firehose-api
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: firehose-api
+        image: projectepic/firehose-api:1.0.5
+        resources:
+          limits:
+           memory: 900Mi
+           cpu: "80m"
+          requests:
+           memory: 900Mi
+           cpu: "80m"
+        ports:
+          - containerPort: 8080
+          - containerPort: 8081
+        livenessProbe:
+          periodSeconds: 60
+          httpGet:
+            path: /healthcheck
+            port: 8081
+          initialDelaySeconds: 20
+        readinessProbe:
+          periodSeconds: 60
+          httpGet:
+            path: /healthcheck
+            port: 8081
+          initialDelaySeconds: 10
+          timeoutSeconds: 1
+        env:
+          - name: FIREHOSE_CONFIG_NAME
+            value: keywordsconfig
+          - name: KAFKA_SERVERS
+            value: kafka-0.broker.default:9092,kafka-1.broker.default:9092
+          - name: TWEET_STORE_VERSION
+            value: "latest"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: firehose-api
+spec:
+  ports:
+  - port: 8080
+    name: client
+  selector:
+    app: firehose-api
+

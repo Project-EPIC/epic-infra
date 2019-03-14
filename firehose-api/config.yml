@@ -1,8 +1,4 @@
-firehoseConfigMapName: ${FIREHOSE_DEPLOY_NAME:-keywordsconfig}
-firehoseConfigMapNamespace: ${FIREHOSE_DEPLOY_NAMESPACE:-default}
-
-
-logging:
-  level: INFO
-  loggers:
-    edu.colorado.cs.epic: DEBUG
+firehoseConfigMapName: ${FIREHOSE_CONFIG_NAME:-keywordsconfig}
+firehoseConfigMapNamespace: ${FIREHOSE_CONFIG_NAMESPACE:-default}
+kafkaServers: ${KAFKA_SERVERS:-"kafka-0.broker.default:9092,kafka-1.broker.default:9092"}
+tweetStoreVersion: ${TWEET_STORE_VERSION:-"latest"}
