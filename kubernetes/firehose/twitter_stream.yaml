@@ -61,3 +61,15 @@ spec:
           - name: FILE_KEYWORDS
             value: "/keys/keywords.txt"
 
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: events-api
+spec:
+  type: NodePort
+  ports:
+  - port: 8080
+    name: client
+  selector:
+    app: event-api
