@@ -21,12 +21,12 @@ public class Event {
     @NotEmpty
     private String status = "ACTIVE";
 
-    @NotNull
-    private Timestamp createdAt = new Timestamp(System.currentTimeMillis());
+    private Timestamp createdAt;
 
 
     public Event() {
         // Jackson deserialization
+
     }
 
     public Event(String name, List<String> keywords, String description) {
@@ -103,10 +103,12 @@ public class Event {
         return this.createdAt.toString();
     }
 
+    @JsonProperty
     public Timestamp getCreatedAt() {
         return createdAt;
     }
 
+    @JsonProperty
     public void setCreatedAt(Timestamp createdAt) {
         this.createdAt = createdAt;
     }
