@@ -1,3 +1,5 @@
+kubernetesFiltersApiUrl: ${K8S_FILTER_API_URL:-"http://kubernetes-api.default:8080/filters/"}
+
 
 database:
   # the name of your JDBC driver

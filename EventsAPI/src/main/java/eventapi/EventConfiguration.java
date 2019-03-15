@@ -11,6 +11,8 @@ public class EventConfiguration extends Configuration {
     @NotNull
     private DataSourceFactory database = new DataSourceFactory();
 
+    private String kubernetesFiltersApiUrl;
+
     @JsonProperty("database")
     public void setDataSourceFactory(DataSourceFactory factory) {
         this.database = factory;
@@ -19,5 +21,15 @@ public class EventConfiguration extends Configuration {
     @JsonProperty("database")
     public DataSourceFactory getDataSourceFactory() {
         return database;
+    }
+
+    @JsonProperty
+    public String getKubernetesFiltersApiUrl() {
+        return kubernetesFiltersApiUrl;
+    }
+
+    @JsonProperty
+    public void setKubernetesFiltersApiUrl(String kubernetesFiltersApiUrl) {
+        this.kubernetesFiltersApiUrl = kubernetesFiltersApiUrl;
     }
 }

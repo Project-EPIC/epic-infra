@@ -1,6 +1,7 @@
 package eventapi;
 
 import eventapi.resource.EventResource;
+import eventapi.resource.RootResource;
 import io.dropwizard.Application;
 import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
 import io.dropwizard.configuration.SubstitutingSourceProvider;
@@ -33,7 +34,8 @@ public class EventApplication extends Application<EventConfiguration> {
         final JdbiFactory factory = new JdbiFactory();
         final Jdbi jdbi = factory.build(environment, configuration.getDataSourceFactory(), "postgresql");
 
-        environment.jersey().register(new EventResource(jdbi));
+        environment.jersey().register(new EventResource(jdbi, configuration.getKubernetesFiltersApiUrl()));
+        environment.jersey().register(new RootResource());
 
     }
 }
