@@ -1,4 +1,6 @@
 kubernetesFiltersApiUrl: ${K8S_FILTER_API_URL:-"http://kubernetes-api.default:8080/filters/"}
+kubernetesQueryApiUrl: ${K8S_Query_API_URL:-"http://kubernetes-api.default:8080/query/"}
+
 
 server:
   applicationConnectors:
