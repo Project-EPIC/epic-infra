@@ -2,12 +2,6 @@ kubernetesFiltersApiUrl: ${K8S_FILTER_API_URL:-"http://kubernetes-api.default:80
 kubernetesQueryApiUrl: ${K8S_Query_API_URL:-"http://kubernetes-api.default:8080/query/"}
 
 
-server:
-  applicationConnectors:
-    - type: http
-      port: 8080
-      idleTimeout: 120 seconds
-
 database:
   # the name of your JDBC driver
   driverClass: org.postgresql.Driver

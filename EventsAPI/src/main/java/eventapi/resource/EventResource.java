@@ -94,7 +94,7 @@ public class EventResource {
         //curl -d '{"name":"name 2","description":"d2","keywords":["k1","k2"]}' 'http://localhost:8080/events' -H "Content-Type: application/json"
 
         return postgres.withHandle(handle -> new ArrayList<>(handle.createQuery(
-                "SELECT e.name e_name, e.normalized_name e_norm_name, e.description e_desc, e.status e_status, e.created_at e_created, k.keyword k_key " +
+                "SELECT e.name e_name, e.normalized_name e_normalized_name, e.description e_description, e.status e_status, e.created_at e_created_at, k.keyword k_key " +
                         "FROM events e INNER JOIN keywords k ON k.event_name = e.normalized_name " +
                         "ORDER BY e.normalized_name")
                 .registerRowMapper(BeanMapper.factory(Event.class, "e"))
@@ -102,7 +102,7 @@ public class EventResource {
                 .reduceRows(new LinkedHashMap<String, Event>(),
                         (map, rowView) -> {
                             Event event = map.computeIfAbsent(
-                                    rowView.getColumn("e_norm_name", String.class),
+                                    rowView.getColumn("e_normalized_name", String.class),
                                     id -> rowView.getRow(Event.class)
                             );
                             event.appendKeywords(rowView.getColumn("k_key", String.class));
