@@ -21,7 +21,7 @@ spec:
             secretName: keyfile
       containers:
       - name: events-api
-        image: projectepic/eventsapi:1.0.5
+        image: projectepic/events-api:0.4
         imagePullPolicy: Always
         resources:
           limits:
@@ -51,6 +51,12 @@ spec:
           initialDelaySeconds: 40
           timeoutSeconds: 5
         env:
+        - name: FIREHOSE_CONFIG_NAME
+          value: keywordsconfig
+        - name: KAFKA_SERVERS
+          value: kafka-0.broker.default:9092,kafka-1.broker.default:9092
+        - name: TWEET_STORE_VERSION
+          value: "latest"
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /private/keyfile.json
         - name: K8S_FILTER_API_URL

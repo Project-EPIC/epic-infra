@@ -1,9 +1,7 @@
 package eventapi.resource;
 
 import eventapi.api.Event;
-import net.dongliu.requests.Parameter;
-import net.dongliu.requests.RawResponse;
-import net.dongliu.requests.Requests;
+import eventapi.api.Filter;
 import org.jdbi.v3.core.Jdbi;
 import org.jdbi.v3.core.mapper.reflect.BeanMapper;
 import org.jdbi.v3.core.statement.PreparedBatch;
@@ -18,7 +16,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.logging.Logger;
@@ -27,19 +24,25 @@ import java.util.logging.Logger;
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class EventResource {
-    private final String kubernetesFilterApiUrl;
     private final Logger logger;
     private Jdbi postgres;
+    private QueryResource queryResource;
+    private FilterResource filterResource;
 
-    public EventResource(Jdbi postgres, String kubernetesFilterApiUrl) {
+    public EventResource(Jdbi postgres, QueryResource queryResource, FilterResource filterResource) {
         this.postgres = postgres;
-        this.kubernetesFilterApiUrl = kubernetesFilterApiUrl;
+        this.queryResource=queryResource;
+        this.filterResource=filterResource;
         this.logger = Logger.getLogger(EventResource.class.getName());
     }
 
     @POST
     public Response createEvent(@NotNull @Valid Event event, @Context UriInfo uriInfo) {
         // Check if there's any event with the name
+        event.setCreatedAt(new Timestamp(System.currentTimeMillis()));
+        event.setStatus("ACTIVE");
+
+        //Check if event is there
         try {
             Integer count = postgres.withHandle(handle -> handle.createQuery("SELECT count(*) FROM events WHERE normalized_name=:normalizedName")
                     .bind("normalizedName", event.getNormalizedName())
@@ -57,36 +60,52 @@ public class EventResource {
             throw new WebApplicationException(Response.Status.SERVICE_UNAVAILABLE);
         }
 
-        if(updateLowLevelAPI(event,event.getStatus())){
-            try {
-                // Update DB with event and keywords
-                postgres.withHandle(handle -> {
-                    handle.createUpdate("INSERT INTO events (name, description, normalized_name, status, created_at) VALUES (:name,:description,:normalizedName,:status,:createdAt)")
-                            .bindBean(event)
-                            .execute();
-                    PreparedBatch batch = handle.prepareBatch("INSERT INTO keywords (event_name, keyword) VALUES (:name, :keyword)");
-                    for (String keyword : event.getKeywords()) {
-                        batch.bind("keyword", keyword)
-                                .bind("name", event.getNormalizedName())
-                                .add();
-                    }
-                    return batch.execute();
-                });
-                return Response.created(uriInfo.getRequestUriBuilder().path(event.getNormalizedName()).build()).entity(event).build();
-            } catch (UnableToExecuteStatementException e) {
-                // If DB fails, delete from API and throw that we are unavailable
-                logger.warning("Something went terribly wrong. Rolling back!");
-                e.printStackTrace();
-                RawResponse delResp  = Requests.delete(kubernetesFilterApiUrl + event.getNormalizedName()).send();
-                if (delResp.statusCode() != Response.Status.NO_CONTENT.getStatusCode()) {
-                    logger.warning(String.format("Kubernetes API returned code when deleting: %d", delResp.statusCode()));
+        // Update DB with event and keywords
+
+        try {
+            postgres.withHandle(handle -> {
+                handle.createUpdate("INSERT INTO events (name, description, normalized_name, status, created_at) VALUES (:name,:description,:normalizedName,:status,:createdAt)")
+                        .bindBean(event)
+                        .execute();
+                PreparedBatch batch = handle.prepareBatch("INSERT INTO keywords (event_name, keyword) VALUES (:name, :keyword)");
+                for (String keyword : event.getKeywords()) {
+                    batch.bind("keyword", keyword)
+                            .bind("name", event.getNormalizedName())
+                            .add();
                 }
-                throw new WebApplicationException(Response.Status.SERVICE_UNAVAILABLE);
-            }
-        }else{
+                return batch.execute();
+            });
+
+        } catch (UnableToExecuteStatementException e) {
+            // If DB fails, throw that we are unavailable
+            logger.warning("Something went terribly wrong in the database.");
+            e.printStackTrace();
             throw new WebApplicationException(Response.Status.SERVICE_UNAVAILABLE);
         }
+        //Update the API
+        if(updateLowLevelAPI(event,event.getStatus())){
+            return Response.created(uriInfo.getRequestUriBuilder().path(event.getNormalizedName()).build()).entity(event).build();
+        }else{
+            //If update fails roll back the DB
+            logger.warning("Something went terribly wrong in the kubernetes api. Rolling back the databse");
+            try {
+                postgres.useHandle(handle -> {
+                    handle.createUpdate("DELETE FROM keywords WHERE event_name=:normalized_name")
+                            .bind("normalized_name",event.getNormalizedName())
+                            .execute();
+                    handle.createUpdate("DELETE FROM events WHERE normalized_name=:normalized_name")
+                            .bind("normalized_name", event.getNormalizedName())
+                            .execute();
 
+                });
+                throw new WebApplicationException(Response.Status.SERVICE_UNAVAILABLE);
+            } catch (UnableToExecuteStatementException e) {
+                // If DB fails, We have serious issues
+                logger.warning("Something went terribly wrong in the database while rolling back updae. Database not in consistent position");
+                e.printStackTrace();
+                throw new WebApplicationException(Response.Status.SERVICE_UNAVAILABLE);
+            }
+        }
     }
 
     @GET
@@ -141,22 +160,36 @@ public class EventResource {
         // Check if there's any event with the name
         Event event=getEvent(normalized_name);
 
-        if(updateLowLevelAPI(event,status)){
+            //Update the event
+        try {
+            postgres.withHandle(handle -> {
+                handle.createUpdate("UPDATE events set status=:staus where normalized_name=:normalizedName")
+                        .bind("normalizedName", normalized_name)
+                        .bind("staus", status)
+                        .execute();
+                return 1;
+            });
+        }catch (UnableToExecuteStatementException ex){
+            throw  new WebApplicationException(Response.Status.SERVICE_UNAVAILABLE);
+        }
+        if(updateLowLevelAPI(event,status)) {
+            return Response.accepted().entity(getEvent(normalized_name)).build();
+        }else{
             //Update the event
             try {
                 postgres.withHandle(handle -> {
-                    handle.createUpdate("UPDATE events set status=:staus where normalized_name:normalizedName")
+                    handle.createUpdate("UPDATE events set status=:staus where normalized_name=:normalizedName")
                             .bind("normalizedName", normalized_name)
-                            .bind("staus", status)
+                            .bind("staus", event.getStatus())
                             .execute();
                     return 1;
                 });
             }catch (UnableToExecuteStatementException ex){
-                throw  new WebApplicationException(Response.Status.BAD_REQUEST);
+                logger.warning("Database update failed after the kubernetes api failed");
+                throw  new WebApplicationException(Response.Status.SERVICE_UNAVAILABLE);
             }
-
+            throw  new WebApplicationException(Response.Status.SERVICE_UNAVAILABLE);
         }
-        return Response.ok().entity(getEvent(normalized_name)).build();
     }
 
 
@@ -174,44 +207,23 @@ public class EventResource {
     }
 
     private boolean resetQueryAPI() {
-        RawResponse response = Requests.post(kubernetesFilterApiUrl).jsonBody(getAllKeywords()).send();
-        if (response.statusCode() != Response.Status.CREATED.getStatusCode()) {
-            logger.warning(String.format("Kubernetes API returned code: %d", response.statusCode()));
-            logger.warning("Body returned: "+ response.readToText());
-            return false;
-        }
-        return true;
+        return queryResource.update(getAllActiveKeywords());
     }
 
     private boolean resetFilterAPI(Event event, String target_status) {
 
         if (target_status.equals("NOT_ACTIVE")) {
-            RawResponse response = Requests.delete(kubernetesFilterApiUrl + event.getNormalizedName()).send();
-            if (response.statusCode() != Response.Status.NO_CONTENT.getStatusCode()) {
-                logger.warning(String.format("Kubernetes API returned code: %d", response.statusCode()));
-                logger.warning("Body returned: " + response.readToText());
-                return false;
-            }
+            return filterResource.deleteOne(event.getNormalizedName());
         } else {
-            HashMap<String, Object> filterBody = new HashMap<>();
-            filterBody.put("event_name", event.getNormalizedName());
-            filterBody.put("keywords", event.getKeywords());
-            RawResponse response = Requests.post(kubernetesFilterApiUrl)
-                    .jsonBody(filterBody)
-                    .send();
-            if (response.statusCode() != Response.Status.CREATED.getStatusCode()) {
-                logger.warning(String.format("Kubernetes API returned code: %d", response.statusCode()));
-                logger.warning("Body returned: " + response.readToText());
-                return false;
-            }
+            Filter f=new Filter(event.getKeywords(), event.getNormalizedName());
+            return filterResource.create(f);
         }
-        return true;
     }
 
 
-    private List<String> getAllKeywords(){
+    private List<String> getAllActiveKeywords(){
         return postgres.withHandle(handle -> {
-            return handle.createQuery("SELECT distinct keyword from keywords")
+            return handle.createQuery("select DISTINCT keyword from keywords,events where event_name=name and status='ACTIVE'")
                     .mapTo(String.class)
                     .list();
         });
