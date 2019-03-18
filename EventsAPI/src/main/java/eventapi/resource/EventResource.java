@@ -61,7 +61,6 @@ public class EventResource {
         }
 
         // Update DB with event and keywords
-
         try {
             postgres.withHandle(handle -> {
                 handle.createUpdate("INSERT INTO events (name, description, normalized_name, status, created_at) VALUES (:name,:description,:normalizedName,:status,:createdAt)")
@@ -82,10 +81,13 @@ public class EventResource {
             e.printStackTrace();
             throw new WebApplicationException(Response.Status.SERVICE_UNAVAILABLE);
         }
+
         //Update the API
+        // Todo: Change this to exeception!
         if(updateLowLevelAPI(event,event.getStatus())){
             return Response.created(uriInfo.getRequestUriBuilder().path(event.getNormalizedName()).build()).entity(event).build();
         }else{
+            // Todo: Change this to just mark event status as failed.
             //If update fails roll back the DB
             logger.warning("Something went terribly wrong in the kubernetes api. Rolling back the databse");
             try {
@@ -158,9 +160,10 @@ public class EventResource {
     @Path("/{id}/{status}")
     public Response setStatus(@PathParam("id") String normalized_name, @PathParam("status") String status, @Context UriInfo uriInfo)  {
         // Check if there's any event with the name
+        // Todo: Check status is allowed (change it to be enumeration maybe?)
         Event event=getEvent(normalized_name);
 
-            //Update the event
+        //Update the event
         try {
             postgres.withHandle(handle -> {
                 handle.createUpdate("UPDATE events set status=:staus where normalized_name=:normalizedName")
