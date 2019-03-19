@@ -1,0 +1,5 @@
+# Don't track content of these folders
+dependency-reduced-pom.xml
+simple-project.iml
+spark-warehouse	
+.idea
