@@ -131,7 +131,7 @@
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <manifestEntries>
-                                        <Main-Class>eventapi.EventApplication</Main-Class>
+                                        <Main-Class>edu.colorado.cs.epic.eventsapi.EventApplication</Main-Class>
                                         <Build-Number>1</Build-Number>
                                     </manifestEntries>
                                 </transformer>

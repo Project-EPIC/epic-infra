@@ -1,4 +1,4 @@
-package eventapi.resource;
+package edu.colorado.cs.epic.eventsapi.resource;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;

@@ -1,6 +1,6 @@
 all: jar
 
-TAG_CLIENT = 1.0.5
+TAG_CLIENT = 1.0.6
 PROJECT_NAME = eventsapi
 
 
@@ -23,6 +23,6 @@ clean:
 
 jar: target/$(PROJECT_NAME).jar
 
-target/$(PROJECT_NAME).jar: src/main/java/eventapi/*.java src/main/java/eventapi/*/*.java
+target/$(PROJECT_NAME).jar: src/main/java/edu/colorado/cs/epic/eventsapi src/main/java/edu/colorado/cs/epic/eventsapi
 	mvn package
 	mv target/$(PROJECT_NAME)-*.jar target/$(PROJECT_NAME).jar

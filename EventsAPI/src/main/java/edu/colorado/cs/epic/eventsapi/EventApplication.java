@@ -1,7 +1,11 @@
-package eventapi;
+package edu.colorado.cs.epic.eventsapi;
 
-import eventapi.health.KubernetesConnectionHealthCheck;
-import eventapi.resource.*;
+import edu.colorado.cs.epic.eventsapi.core.DatabaseController;
+import edu.colorado.cs.epic.eventsapi.core.KubernetesController;
+import edu.colorado.cs.epic.eventsapi.health.KubernetesConnectionHealthCheck;
+import edu.colorado.cs.epic.eventsapi.resource.EventResource;
+import edu.colorado.cs.epic.eventsapi.resource.RootResource;
+import edu.colorado.cs.epic.eventsapi.tasks.SyncEventsTask;
 import io.dropwizard.Application;
 import io.dropwizard.configuration.*;
 import io.dropwizard.jdbi3.JdbiFactory;
@@ -36,15 +40,17 @@ public class EventApplication extends Application<EventConfiguration> {
 
     @Override
     public void run(EventConfiguration configuration, Environment environment) throws IOException {
+        ApiClient client = Config.defaultClient();
         final JdbiFactory factory = new JdbiFactory();
         final Jdbi jdbi = factory.build(environment, configuration.getDataSourceFactory(), "postgresql");
-        ApiClient client = Config.defaultClient();
-        final QueryResource queryResource = new QueryResource(client, configuration.getFirehoseConfigMapName(), configuration.getNamespace());
-        final FilterResource filterResource = new FilterResource(client, configuration.getKafkaServers(), configuration.getTweetStoreVersion(), configuration.getNamespace());
+        final DatabaseController dbController = new DatabaseController(jdbi);
+        final KubernetesController k8sController = new KubernetesController(client, configuration.getKafkaServers(), configuration.getTweetStoreVersion(), configuration.getNamespace(), configuration.getFirehoseConfigMapName());
+
 
         final FilterRegistration.Dynamic cors =
                 environment.servlets().addFilter("CORS", CrossOriginFilter.class);
         cors.addMappingForUrlPatterns(EnumSet.allOf(DispatcherType.class), true, "/*");
+
 
         // Configure CORS parameters
         cors.setInitParameter("allowedOrigins", "*");
@@ -53,8 +59,12 @@ public class EventApplication extends Application<EventConfiguration> {
 
 
         environment.healthChecks().register("kubernetes", new KubernetesConnectionHealthCheck(client));
-        environment.jersey().register(new EventResource(jdbi, queryResource,filterResource));
+
+        SyncEventsTask task = new SyncEventsTask(k8sController, dbController);
+        environment.admin().addTask(task);
+        environment.jersey().register(new EventResource(dbController, task));
         environment.jersey().register(new RootResource());
+
 
     }
 }
