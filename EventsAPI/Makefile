@@ -23,6 +23,6 @@ clean:
 
 jar: target/$(PROJECT_NAME).jar
 
-target/$(PROJECT_NAME).jar: src/main/java/edu/colorado/cs/epic/eventsapi src/main/java/edu/colorado/cs/epic/eventsapi
+target/$(PROJECT_NAME).jar: src/main/java/edu/colorado/cs/epic/eventsapi/* src/main/java/edu/colorado/cs/epic/eventsapi/*/*
 	mvn package
 	mv target/$(PROJECT_NAME)-*.jar target/$(PROJECT_NAME).jar
