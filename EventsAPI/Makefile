@@ -19,6 +19,7 @@ push: build
 clean:
 	docker rmi projectepic/$(PROJECT_NAME):$(TAG) || :
 	docker rmi projectepic/$(PROJECT_NAME) || :
+	mvn clean
 	rm -rf target/
 
 jar: target/$(PROJECT_NAME).jar
