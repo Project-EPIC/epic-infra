@@ -27,7 +27,6 @@ public class Event {
     @NotEmpty
     private String description;
     private String normalizedName = null;
-    @NotEmpty
     private Status status;
 
     private Timestamp createdAt;
@@ -148,7 +147,7 @@ public class Event {
 
     public static String normalizeName(String name) {
         return name.replaceAll("\\s+", "-")
-                .replaceAll("[^-a-zA-Z0-9]", "");
+                .replaceAll("[^-a-zA-Z0-9]", "").toLowerCase();
     }
 
     public String deployName() {

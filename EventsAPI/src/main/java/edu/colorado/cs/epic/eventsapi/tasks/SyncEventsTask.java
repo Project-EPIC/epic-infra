@@ -79,7 +79,7 @@ public class SyncEventsTask extends Task {
         try {
             k8scontroller.setActiveStreamKeywords(dbcontroller.getActiveKeywords());
         } catch (ApiException e) {
-            String out = String.format("Failed to update keywords");
+            String out = "Failed to update keywords";
             logger.error(out, e);
             if (printWriter != null) {
                 printWriter.println(out);

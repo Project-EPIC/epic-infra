@@ -92,7 +92,7 @@ public class EventResource {
             logger.error("Failed at sync with Kubernetes", e);
             throw new WebApplicationException(Response.Status.SERVICE_UNAVAILABLE);
         }
-
+        event = controller.getEvent(normalized_name);
         return Response.accepted(uriInfo.getRequestUriBuilder().path(event.getNormalizedName()).build()).entity(event).build();
     }
 
