@@ -37,10 +37,7 @@ public class FirebaseAuthenticator implements Authenticator<String, User> {
             }
             User authenticatedUser = new User(firebaseUser);
             return Optional.of(authenticatedUser);
-        } catch (FirebaseAuthException e) {
-            e.printStackTrace();
-            return Optional.empty();
-        } catch (IllegalArgumentException e) {
+        } catch (FirebaseAuthException | IllegalArgumentException e) {
             return Optional.empty();
         }
     }

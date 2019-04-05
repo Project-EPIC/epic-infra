@@ -9,6 +9,7 @@ import edu.colorado.cs.epic.auth.api.User;
 import edu.colorado.cs.epic.auth.auth.FirebaseAuthenticator;
 import edu.colorado.cs.epic.auth.auth.FirebaseAuthorizator;
 import edu.colorado.cs.epic.auth.health.FirebaseAccessHealthCheck;
+import edu.colorado.cs.epic.auth.resources.RootResource;
 import edu.colorado.cs.epic.auth.resources.UsersResource;
 import io.dropwizard.Application;
 import io.dropwizard.auth.AuthDynamicFeature;
@@ -63,6 +64,7 @@ public class AuthAPIApplication extends Application<AuthAPIConfiguration> {
             environment.jersey().register(new AuthValueFactoryProvider.Binder<>(User.class));
         }
         environment.jersey().register(new UsersResource());
+        environment.jersey().register(new RootResource());
 
         environment.healthChecks().register("firebase",new FirebaseAccessHealthCheck());
 

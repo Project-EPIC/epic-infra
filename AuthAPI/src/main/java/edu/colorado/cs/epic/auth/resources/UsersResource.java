@@ -1,5 +1,6 @@
 package edu.colorado.cs.epic.auth.resources;
 
+import com.google.common.collect.Streams;
 import com.google.firebase.auth.ExportedUserRecord;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
@@ -17,6 +18,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 
 @Path("/users/")
@@ -33,22 +35,18 @@ public class UsersResource {
     }
 
 
-
-
     @GET
     @PermitAll
     public List<User> getUsers() {
         try {
             ListUsersPage page = FirebaseAuth.getInstance().listUsers(null);
-            List<User> users = new ArrayList<>();
-            for (ExportedUserRecord user : page.iterateAll()) {
-                users.add(new User(user));
-            }
-            return users;
+            return Streams.stream(page.iterateAll())
+                    .map(User::new)
+                    .collect(Collectors.toList());
         } catch (FirebaseAuthException e) {
             logger.error("Firebase failed", e);
             throw new WebApplicationException(Response.Status.SERVICE_UNAVAILABLE);
-            
+
         }
 
     }
@@ -69,6 +67,4 @@ public class UsersResource {
     }
 
 
-
-   
 }
