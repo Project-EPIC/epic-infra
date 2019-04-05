@@ -13,6 +13,7 @@ public class User implements Principal {
     private String uid;
     private String email;
     private Boolean admin;
+    private Boolean disabled;
     private URI photoURL;
 
 
@@ -28,6 +29,7 @@ public class User implements Principal {
         this.admin = (Boolean) firebaseUser.getCustomClaims().getOrDefault("admin", false);
         this.photoURL = URI.create(firebaseUser.getPhotoUrl());
         this.uid = firebaseUser.getUid();
+        this.disabled =  firebaseUser.isDisabled();
     }
 
 
@@ -36,6 +38,7 @@ public class User implements Principal {
         this.admin = (Boolean) firebaseUser.getCustomClaims().getOrDefault("admin", false);
         this.photoURL = URI.create(firebaseUser.getPhotoUrl());
         this.uid = firebaseUser.getUid();
+        this.disabled = firebaseUser.isDisabled();
     }
 
     public User() {
@@ -85,5 +88,15 @@ public class User implements Principal {
     @Override
     public String getName() {
         return uid;
+    }
+
+    @JsonProperty
+    public Boolean getDisabled() {
+        return disabled;
+    }
+
+    @JsonProperty
+    public void setDisabled(Boolean disabled) {
+        this.disabled = disabled;
     }
 }
