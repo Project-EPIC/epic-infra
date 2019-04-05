@@ -1,4 +1,4 @@
-package eventapi.health;
+package edu.colorado.cs.epic.eventsapi.health;
 
 import com.codahale.metrics.health.HealthCheck;
 import io.kubernetes.client.ApiClient;

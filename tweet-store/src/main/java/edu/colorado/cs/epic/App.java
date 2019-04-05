@@ -28,7 +28,7 @@ public class App {
     private static Logger log = Logger.getLogger(App.class.getName());
 
     // Get configuration from environment
-    private static final int minBatchSize = Integer.decode(System.getenv().getOrDefault("BATCH_SIZE", "100"));
+    private static final int minBatchSize = Integer.decode(System.getenv().getOrDefault("BATCH_SIZE", "1000"));
     private static final String kafkaTopic = System.getenv().getOrDefault("KAFKA_TOPIC", "tweets");
     private static final String kafkaServers = System.getenv().getOrDefault("KAFKA_SERVER", "127.0.0.1:9092");
     private static final String eventName = System.getenv().getOrDefault("EVENT_NAME", "test");
@@ -91,46 +91,50 @@ public class App {
                     if (record.value().toLowerCase().contains(keyword.toLowerCase())) {
                         buffer.add(record);
                         log.info("Tweet buffered...");
+
+                        // Check if we need to save tweets (if batchsize has been reached or if we need to dump it because we are changing folder
+                        checkFileCreation(consumer, buffer, folder);
                         break;
                     }
                 }
             }
 
-            // Check if we need to save tweets (if batchsize has been reached or if we need to dump it because we are changing folder
-            String currentFolder = new SimpleDateFormat(pattern).format(new Date());
-            if (buffer.size() >= minBatchSize || !folder.equals(currentFolder) && !buffer.isEmpty()) {
+            // Keep folder structure updated with current time
+            folder = new SimpleDateFormat(pattern).format(new Date());
+        }
+    }
 
-                // Calculate filename
-                String filename = String.format("%s/%s%s-%s.json.gz", eventName, folder, "tweet", RandomStringUtils.randomAlphabetic(5));
-                log.info(String.format("Saving %d tweets in %s", buffer.size(), filename));
+    private static void checkFileCreation(KafkaConsumer<String, String> consumer, List<ConsumerRecord<String, String>> buffer, String folder) {
+        String currentFolder = new SimpleDateFormat(pattern).format(new Date());
+        if (buffer.size() >= minBatchSize || !folder.equals(currentFolder) && !buffer.isEmpty()) {
 
-                // Get Google Storage instance
-                Storage storage = StorageOptions.getDefaultInstance().getService();
-                BlobId blobId = BlobId.of(bucketName, filename);
-                BlobInfo blobInfo = BlobInfo.newBuilder(blobId).setContentType("application/json").build();
+            // Calculate filename
+            String filename = String.format("%s/%stweet-%d-%d.json.gz", eventName, folder, (new Date()).getTime(),buffer.size());
+            log.info(String.format("Saving %d tweets in %s", buffer.size(), filename));
 
-                // Convert buffer to new-line delimited json
-                String tweets = buffer.stream().map(ConsumerRecord::value).reduce((r1, r2) -> r1 + "\n" + r2).get();
+            // Get Google Storage instance
+            Storage storage = StorageOptions.getDefaultInstance().getService();
+            BlobId blobId = BlobId.of(bucketName, filename);
+            BlobInfo blobInfo = BlobInfo.newBuilder(blobId).setContentType("application/json").build();
 
-                // GZip tweets
-                ByteArrayOutputStream obj = new ByteArrayOutputStream();
-                try {
-                    GZIPOutputStream gzip = new GZIPOutputStream(obj);
-                    gzip.write(tweets.getBytes(UTF_8));
-                    gzip.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    System.exit(1);
-                }
+            // Convert buffer to new-line delimited json
+            String tweets = buffer.stream().map(ConsumerRecord::value).reduce((r1, r2) -> r1 + "\n" + r2).get();
 
-                // Store tweets, commit to consumer and clear buffer
-                storage.create(blobInfo, obj.toByteArray());
-                consumer.commitSync();
-                buffer.clear();
+            // GZip tweets
+            ByteArrayOutputStream obj = new ByteArrayOutputStream();
+            try {
+                GZIPOutputStream gzip = new GZIPOutputStream(obj);
+                gzip.write(tweets.getBytes(UTF_8));
+                gzip.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+                System.exit(1);
             }
 
-            // Keep folder structure updated with current time
-            folder = currentFolder;
+            // Store tweets, commit to consumer and clear buffer
+            storage.create(blobInfo, obj.toByteArray());
+            consumer.commitSync();
+            buffer.clear();
         }
     }
 }

@@ -1,11 +1,11 @@
 all: jar
 
-TAG_CLIENT = 1.0.7
-PROJECT_NAME = tweet-store
+TAG_CLIENT = 1.0.0
+PROJECT_NAME = authapi
 
 
 run: jar
-	java -jar target/tweet-store.jar
+	java -jar target/$(PROJECT_NAME).jar server config.yml
 
 
 build: jar
@@ -19,12 +19,11 @@ push: build
 clean:
 	docker rmi projectepic/$(PROJECT_NAME):$(TAG) || :
 	docker rmi projectepic/$(PROJECT_NAME) || :
+	mvn clean
 	rm -rf target/
 
-jar: target/tweet-store.jar
+jar: target/$(PROJECT_NAME).jar
 
-target/tweet-store.jar: src/main/java/edu/colorado/cs/epic/App.java
+target/$(PROJECT_NAME).jar: src/main/java/edu/colorado/cs/epic/auth/* src/main/java/edu/colorado/cs/epic/auth/*/*
 	mvn package
-	rm target/tweet-store-*-javadoc.jar
-	rm target/tweet-store-*-sources.jar
-	mv target/tweet-store-*.jar target/tweet-store.jar
+	mv target/$(PROJECT_NAME)-*.jar target/$(PROJECT_NAME).jar

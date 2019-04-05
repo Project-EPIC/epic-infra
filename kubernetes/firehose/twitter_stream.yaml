@@ -23,7 +23,7 @@ spec:
              path: keywords.txt
       containers:
       - name: twitter-tracker
-        image: projectepic/twitter-stream:1.0.1
+        image: projectepic/twitter-stream:1.0.3
         resources:
           limits:
            memory: 50Mi
@@ -61,15 +61,3 @@ spec:
           - name: FILE_KEYWORDS
             value: "/keys/keywords.txt"
 
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: events-api
-spec:
-  type: NodePort
-  ports:
-  - port: 8080
-    name: client
-  selector:
-    app: event-api

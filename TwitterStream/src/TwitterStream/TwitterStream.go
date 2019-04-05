@@ -75,6 +75,11 @@ func main() {
 
 	// Prepare keywords
 	var keywords = getKeywords()
+	for keywords == "" {
+		log.Printf("No keywords detected. Sleeping 1 minute and trying to pull new keywords.")
+		time.Sleep(1 * time.Minute)
+		keywords = getKeywords()
+	}
 	var v = url.Values{}
 	v.Set("track", keywords)
 	log.Printf("Tracking keywords: %s", keywords)
@@ -132,6 +137,13 @@ func main() {
 		if i%10 == 0 {
 			var newKeywords = getKeywords()
 			i = 1
+
+			for newKeywords == "" {
+				log.Printf("No keywords detected. Sleeping 1 minute and trying to pull new keywords.")
+				time.Sleep(1 * time.Minute)
+				newKeywords = getKeywords()
+			}
+
 			if keywords == newKeywords {
 				continue
 			}
