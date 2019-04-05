@@ -38,7 +38,6 @@ public class UsersResource {
     @GET
     @PermitAll
     public List<User> getUsers() {
-
         try {
             ListUsersPage page = FirebaseAuth.getInstance().listUsers(null);
             List<User> users = new ArrayList<>();
