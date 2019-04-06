@@ -15,6 +15,8 @@ public class EventConfiguration extends Configuration {
     @NotEmpty
     private String firehoseConfigMapName;
 
+    private Boolean production;
+
 
     @NotEmpty
     private String kafkaServers;
@@ -74,4 +76,13 @@ public class EventConfiguration extends Configuration {
         return database;
     }
 
+    @JsonProperty
+    public Boolean getProduction() {
+        return production;
+    }
+
+    @JsonProperty
+    public void setProduction(Boolean production) {
+        this.production = production;
+    }
 }
