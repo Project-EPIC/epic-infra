@@ -1,10 +1,7 @@
 package edu.colorado.cs.epic.auth.resources;
 
 import com.google.common.collect.Streams;
-import com.google.firebase.auth.ExportedUserRecord;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseAuthException;
-import com.google.firebase.auth.ListUsersPage;
+import com.google.firebase.auth.*;
 import edu.colorado.cs.epic.auth.api.User;
 import org.apache.log4j.Logger;
 
@@ -36,7 +33,7 @@ public class UsersResource {
 
 
     @GET
-    @PermitAll
+    @RolesAllowed("ADMIN")
     public List<User> getUsers() {
         try {
             ListUsersPage page = FirebaseAuth.getInstance().listUsers(null);
@@ -60,6 +57,41 @@ public class UsersResource {
         try {
             FirebaseAuth.getInstance().setCustomUserClaims(uid, claims);
             return Response.ok(new User(FirebaseAuth.getInstance().getUser(uid))).build();
+        } catch (FirebaseAuthException e) {
+            e.printStackTrace();
+            throw new WebApplicationException(Response.Status.SERVICE_UNAVAILABLE);
+        }
+    }
+
+    @PUT
+    @Path("/{uid}/enable")
+    @RolesAllowed("ADMIN")
+    public Response enableUser(@PathParam("uid") String uid) {
+
+        try {
+            UserRecord.UpdateRequest request = new UserRecord.UpdateRequest(uid)
+                    .setDisabled(false);
+            UserRecord userRecord = FirebaseAuth.getInstance().updateUser(request);
+
+            return Response.ok(new User(userRecord)).build();
+
+        } catch (FirebaseAuthException e) {
+            e.printStackTrace();
+            throw new WebApplicationException(Response.Status.SERVICE_UNAVAILABLE);
+        }
+    }
+
+    @PUT
+    @Path("/{uid}/disable")
+    @RolesAllowed("ADMIN")
+    public Response disableUser(@PathParam("uid") String uid) {
+
+        try {
+            UserRecord.UpdateRequest request = new UserRecord.UpdateRequest(uid)
+                    .setDisabled(true);
+            UserRecord userRecord = FirebaseAuth.getInstance().updateUser(request);
+            return Response.ok(new User(userRecord)).build();
+
         } catch (FirebaseAuthException e) {
             e.printStackTrace();
             throw new WebApplicationException(Response.Status.SERVICE_UNAVAILABLE);

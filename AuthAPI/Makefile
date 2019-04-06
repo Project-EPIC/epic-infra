@@ -1,6 +1,6 @@
 all: jar
 
-TAG_CLIENT = 1.0.4
+TAG_CLIENT = 1.0.7
 PROJECT_NAME = authapi
 
 
