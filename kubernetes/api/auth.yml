@@ -1,27 +1,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: events-api
+  name: auth-api
   labels:
-    app: events-api
+    app: auth-api
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: events-api
+      app: auth-api
   template:
     metadata:
       labels:
-        app: events-api
+        app: auth-api
     spec:
       terminationGracePeriodSeconds: 10
-      volumes:
-        - name: keyfiles
-          secret:
-            secretName: keyfile
       containers:
       - name: events-api
-        image: projectepic/eventsapi:1.0.12
+        image: projectepic/authapi:1.0.7
         imagePullPolicy: Always
         resources:
           limits:
@@ -33,9 +29,6 @@ spec:
         ports:
           - containerPort: 8080
           - containerPort: 8081
-        volumeMounts:
-        - mountPath: /private
-          name: keyfiles
         livenessProbe:
           periodSeconds: 60
           httpGet:
@@ -50,35 +43,25 @@ spec:
             port: 8081
           initialDelaySeconds: 40
           timeoutSeconds: 5
+        volumeMounts:
+        - mountPath: /private
+          name: keyfiles
         env:
-        - name: FIREHOSE_CONFIG_NAME
-          value: keywordsconfig
-        - name: KAFKA_SERVERS
-          value: kafka-0.broker.default:9092,kafka-1.broker.default:9092
-        - name: TWEET_STORE_VERSION
-          value: "latest"
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: /private/keyfile.json
-        
-        - name: DB_USERNAME
-          valueFrom:
-            secretKeyRef:
-              name: credentials
-              key: username
-        - name: DB_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: credentials
-              key: password
+          - name: GOOGLE_APPLICATION_CREDENTIALS
+            value: /private/keyfile.json
+      volumes:
+      - name: keyfiles
+        secret:
+          secretName: keyfile
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: events-api
+  name: auth-api
 spec:
   type: NodePort
   ports:
   - port: 8080
     name: client
   selector:
-    app: events-api
+    app: auth-api

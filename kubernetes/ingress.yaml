@@ -4,14 +4,19 @@ metadata:
   name: epic-infra-ingress
   annotations:
     kubernetes.io/ingress.global-static-ip-name: "epic-infra-ip"
+    ingress.kubernetes.io/enable-cors: "true"
 spec:
   rules:
   - http:
       paths:
-      - path: /*
+      - path: /events/*
         backend:
           serviceName: events-api
           servicePort: 8080
+      - path: /users/*
+        backend:
+           serviceName: auth-api
+           servicePort: 8080
           #- path: /v2/*
           #backend:
           # serviceName: web2

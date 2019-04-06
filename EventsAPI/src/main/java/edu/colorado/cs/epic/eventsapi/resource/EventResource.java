@@ -5,6 +5,7 @@ import edu.colorado.cs.epic.eventsapi.core.DatabaseController;
 import edu.colorado.cs.epic.eventsapi.tasks.SyncEventsTask;
 
 
+import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
@@ -21,6 +22,7 @@ import org.apache.log4j.Logger;
 @Path("/events/")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
+@RolesAllowed("ADMIN")
 public class EventResource {
     private final Logger logger;
     private DatabaseController controller;

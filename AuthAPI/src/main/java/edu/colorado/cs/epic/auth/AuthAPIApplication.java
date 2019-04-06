@@ -9,6 +9,7 @@ import edu.colorado.cs.epic.auth.api.User;
 import edu.colorado.cs.epic.auth.auth.FirebaseAuthenticator;
 import edu.colorado.cs.epic.auth.auth.FirebaseAuthorizator;
 import edu.colorado.cs.epic.auth.health.FirebaseAccessHealthCheck;
+import edu.colorado.cs.epic.auth.resources.RootResource;
 import edu.colorado.cs.epic.auth.resources.UsersResource;
 import io.dropwizard.Application;
 import io.dropwizard.auth.AuthDynamicFeature;
@@ -18,9 +19,13 @@ import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
 import io.dropwizard.configuration.SubstitutingSourceProvider;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+import org.eclipse.jetty.servlets.CrossOriginFilter;
 import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
 
+import javax.servlet.DispatcherType;
+import javax.servlet.FilterRegistration;
 import java.io.IOException;
+import java.util.EnumSet;
 
 public class AuthAPIApplication extends Application<AuthAPIConfiguration> {
 
@@ -50,6 +55,8 @@ public class AuthAPIApplication extends Application<AuthAPIConfiguration> {
                 .build();
         FirebaseApp.initializeApp(options);
 
+
+
         if (configuration.getProduction()) {
             environment.jersey().register(new AuthDynamicFeature(
                     new OAuthCredentialAuthFilter.Builder<User>()
@@ -62,7 +69,20 @@ public class AuthAPIApplication extends Application<AuthAPIConfiguration> {
             //If you want to use @Auth to inject a custom Principal type into your resource
             environment.jersey().register(new AuthValueFactoryProvider.Binder<>(User.class));
         }
+
+        final FilterRegistration.Dynamic cors =
+                environment.servlets().addFilter("CORS", CrossOriginFilter.class);
+        cors.addMappingForUrlPatterns(EnumSet.allOf(DispatcherType.class), true, "/*");
+
+
+        // Configure CORS parameters
+        cors.setInitParameter("allowedOrigins", "*");
+        cors.setInitParameter("allowedHeaders", "X-Requested-With,Authorization,Content-Type,Accept,Origin");
+        cors.setInitParameter("allowedMethods", "OPTIONS,GET,PUT,POST,DELETE,HEAD");
+
+
         environment.jersey().register(new UsersResource());
+        environment.jersey().register(new RootResource());
 
         environment.healthChecks().register("firebase",new FirebaseAccessHealthCheck());
 

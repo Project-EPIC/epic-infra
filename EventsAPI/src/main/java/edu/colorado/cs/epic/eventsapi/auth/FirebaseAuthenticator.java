@@ -1,11 +1,10 @@
-package edu.colorado.cs.epic.auth.auth;
+package edu.colorado.cs.epic.eventsapi.auth;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
 import com.google.firebase.auth.UserRecord;
-import edu.colorado.cs.epic.auth.api.User;
-import edu.colorado.cs.epic.auth.health.FirebaseAccessHealthCheck;
+import edu.colorado.cs.epic.eventsapi.api.User;
 import io.dropwizard.auth.AuthenticationException;
 import io.dropwizard.auth.Authenticator;
 
@@ -13,7 +12,7 @@ import java.util.Optional;
 import java.util.logging.Logger;
 
 /**
- * Created by admin on 4/4/19.
+ * Created by admin on 5/4/19.
  */
 public class FirebaseAuthenticator implements Authenticator<String, User> {
 
@@ -21,7 +20,7 @@ public class FirebaseAuthenticator implements Authenticator<String, User> {
     private final Logger logger;
 
     public FirebaseAuthenticator() {
-        this.logger = Logger.getLogger(FirebaseAccessHealthCheck.class.getName());
+        this.logger = Logger.getLogger(FirebaseAuthenticator.class.getName());
     }
 
     @Override
