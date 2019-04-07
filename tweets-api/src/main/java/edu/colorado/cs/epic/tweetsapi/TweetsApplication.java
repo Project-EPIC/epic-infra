@@ -1,6 +1,7 @@
 package edu.colorado.cs.epic.tweetsapi;
 
 import edu.colorado.cs.epic.tweetsapi.resource.RootResource;
+import edu.colorado.cs.epic.tweetsapi.resource.TweetResource;
 import io.dropwizard.Application;
 import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
 import io.dropwizard.configuration.SubstitutingSourceProvider;
@@ -46,6 +47,7 @@ public class TweetsApplication extends Application<TweetsConfiguration> {
 //        environment.healthChecks().register("kubernetes", new KubernetesConnectionHealthCheck(client));
 
         environment.jersey().register(new RootResource());
+        environment.jersey().register(new TweetResource());
 
 
     }

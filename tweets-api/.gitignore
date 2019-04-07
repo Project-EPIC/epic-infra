@@ -1,3 +1,4 @@
-pom.xml
+target/
+*.xml
 tweets-api.iml
 .idea/
