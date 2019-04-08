@@ -1,4 +1,5 @@
 target/
+*.log
 *.xml
 tweets-api.iml
 .idea/

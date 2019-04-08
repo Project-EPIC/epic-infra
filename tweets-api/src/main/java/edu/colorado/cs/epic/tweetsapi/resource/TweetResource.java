@@ -5,6 +5,7 @@ import com.google.cloud.storage.*;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import edu.colorado.cs.epic.tweetsapi.api.EventIndex;
 import io.dropwizard.jersey.params.IntParam;
 
 import java.util.*;
@@ -30,18 +31,29 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 @Consumes(MediaType.APPLICATION_JSON)
 public class TweetResource {
     private final Logger logger;
-    private final LoadingCache<String, Page<Blob>> filesCache;
+    private final LoadingCache<String, List<EventIndex>> filesCache;
 
     public TweetResource() {
         this.logger=Logger.getLogger(TweetResource.class.getName());
 
         filesCache = CacheBuilder.newBuilder()
                 .expireAfterWrite(60, TimeUnit.SECONDS)
-                .build(new CacheLoader<String, Page<Blob>>() {
+                .build(new CacheLoader<String, List<EventIndex>>() {
                     @Override
-                    public Page<Blob> load(String key) {
+                    public List<EventIndex> load(String key) {
                         Storage storage = StorageOptions.getDefaultInstance().getService();
-                        return storage.list("epic-collect", Storage.BlobListOption.prefix(key));
+                        Page<Blob> blobs=storage.list("epic-collect", Storage.BlobListOption.prefix(key));
+                        List<EventIndex> index= new ArrayList<>();
+                        int current=0;
+                        for (Blob blob : blobs.iterateAll()) {
+                            if(blob.getName().contains(".json.gz")){
+                                String[] nameSpilt= blob.getName().split(".json.gz");
+                                String[] fileDetails= nameSpilt[0].split("-");
+                                index.add(new EventIndex(blob,current));
+                                current=current+Integer.parseInt(fileDetails[fileDetails.length-1]);
+                            }
+                        }
+                        return index;
                     }
                 });
     }
@@ -84,24 +96,22 @@ public class TweetResource {
 
     @GET
     @Path("/{event_name}/{page_number}/{page_size}")
-    public Response getTweets(@PathParam("event_name") String event_name, @PathParam("page_number") IntParam page_number, @PathParam("page_size") IntParam page_size) throws ExecutionException, InterruptedException {
+    public Response getTweets(@PathParam("event_name") String event_name, @PathParam("page_number") IntParam page_number, @PathParam("page_size") IntParam page_size) throws ExecutionException, InterruptedException, IOException {
         int searchIndex=(page_number.get()-1)*page_size.get();
-        ArrayList<Integer> index = new ArrayList<>();
-        Page<Blob> blobs=filesCache.get(event_name);
-        int current=0;
-        for (Blob blob : blobs.iterateAll()) {
-            if(blob.getName().contains(".json.gz")){
-                String[] name= blob.getName().split(".json.gz");
-                String[] file= name[0].split("-");
-                if(current<=searchIndex && current+Integer.parseInt(file[file.length-1])>searchIndex){
-                    System.out.println(blob.getName()+"   "+file[file.length-1]);
+        List<EventIndex> indexList=filesCache.get(event_name);
+        for(int i=0;i<indexList.size()-1;i++){
+            if(searchIndex<indexList.get(i+1).getIndex() && searchIndex>=indexList.get(i).getIndex()){
+                if(!(searchIndex+page_size.get()>indexList.get(i+1).getIndex())){
+                    List<String> data=indexList.get(i).getData(searchIndex,searchIndex+page_size.get());
+                    for(String s:data){
+                        System.out.println(s);
+                    }
                     break;
+                }else{
+                    //TODO
                 }
-                current=current+Integer.parseInt(file[file.length-1]);
-
             }
         }
-
         return Response.ok().build();
     }
 }
