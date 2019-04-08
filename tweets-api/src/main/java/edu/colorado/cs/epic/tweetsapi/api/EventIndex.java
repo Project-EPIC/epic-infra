@@ -1,11 +1,11 @@
 package edu.colorado.cs.epic.tweetsapi.api;
 
 import com.google.cloud.storage.Blob;
-import org.eclipse.jetty.http.GZIPContentDecoder;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 import java.io.*;
-import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -14,10 +14,13 @@ import java.util.zip.GZIPInputStream;
 public class EventIndex {
     Blob file;
     int index;
-
+    int size;
     public EventIndex(Blob file, int index){
         this.file=file;
         this.index=index;
+        String[] nameSpilt= file.getName().split(".json.gz");
+        String[] fileDetails= nameSpilt[0].split("-");
+        this.size= Integer.parseInt(fileDetails[fileDetails.length-1]);
     }
 
     public Blob getFile() {
@@ -36,18 +39,30 @@ public class EventIndex {
         this.index = index;
     }
 
-    public List<String> getData(int startIndex, int endIndex) throws IOException {
+    public int getSize() {
+        return size;
+    }
 
-        byte[] b=new byte[Math.toIntExact(file.getSize())];
+    public void setSize(int size) {
+        this.size = size;
+    }
+
+    public List<JSONObject> getData(int startIndex, int endIndex) throws IOException, ParseException {
+
         ByteArrayInputStream bais = new ByteArrayInputStream(file.getContent());
         GZIPInputStream gzis = new GZIPInputStream(bais);
         InputStreamReader reader = new InputStreamReader(gzis);
         BufferedReader in = new BufferedReader(reader);
         String readed;
-        List<String> tweetList=new ArrayList<>();
+        List<JSONObject> tweetList=new ArrayList<>();
+        JSONParser parser=new JSONParser();
         while ((readed = in.readLine()) != null) {
-            tweetList.add(readed);
+            tweetList.add((JSONObject) parser.parse(readed));
         }
+        if(startIndex<index)
+            startIndex=index;
+        if(endIndex>=index+size)
+            endIndex=index+size-1;
         return tweetList.subList(startIndex-index,endIndex-index);
     }
 }

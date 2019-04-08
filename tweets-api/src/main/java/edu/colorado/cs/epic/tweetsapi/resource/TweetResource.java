@@ -5,20 +5,19 @@ import com.google.cloud.storage.*;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+
 import edu.colorado.cs.epic.tweetsapi.api.EventIndex;
 import io.dropwizard.jersey.params.IntParam;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.ParseException;
 
 import java.util.*;
 
-
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
@@ -37,7 +36,7 @@ public class TweetResource {
         this.logger=Logger.getLogger(TweetResource.class.getName());
 
         filesCache = CacheBuilder.newBuilder()
-                .expireAfterWrite(60, TimeUnit.SECONDS)
+                .expireAfterWrite(10, TimeUnit.MINUTES)
                 .build(new CacheLoader<String, List<EventIndex>>() {
                     @Override
                     public List<EventIndex> load(String key) {
@@ -47,10 +46,9 @@ public class TweetResource {
                         int current=0;
                         for (Blob blob : blobs.iterateAll()) {
                             if(blob.getName().contains(".json.gz")){
-                                String[] nameSpilt= blob.getName().split(".json.gz");
-                                String[] fileDetails= nameSpilt[0].split("-");
-                                index.add(new EventIndex(blob,current));
-                                current=current+Integer.parseInt(fileDetails[fileDetails.length-1]);
+                                EventIndex e=new EventIndex(blob,current);
+                                index.add(e);
+                                current=current+e.getSize();
                             }
                         }
                         return index;
@@ -96,22 +94,37 @@ public class TweetResource {
 
     @GET
     @Path("/{event_name}/{page_number}/{page_size}")
-    public Response getTweets(@PathParam("event_name") String event_name, @PathParam("page_number") IntParam page_number, @PathParam("page_size") IntParam page_size) throws ExecutionException, InterruptedException, IOException {
+    public List<JSONObject> getTweets(@PathParam("event_name") String event_name, @PathParam("page_number") IntParam page_number, @PathParam("page_size") IntParam page_size) throws ExecutionException, InterruptedException, IOException, ParseException {
         int searchIndex=(page_number.get()-1)*page_size.get();
         List<EventIndex> indexList=filesCache.get(event_name);
-        for(int i=0;i<indexList.size()-1;i++){
-            if(searchIndex<indexList.get(i+1).getIndex() && searchIndex>=indexList.get(i).getIndex()){
-                if(!(searchIndex+page_size.get()>indexList.get(i+1).getIndex())){
-                    List<String> data=indexList.get(i).getData(searchIndex,searchIndex+page_size.get());
-                    for(String s:data){
-                        System.out.println(s);
-                    }
-                    break;
-                }else{
-                    //TODO
-                }
-            }
+        int fileIndex=floorSearch(indexList,0,indexList.size()-1,searchIndex);
+        List<JSONObject>data;
+        if(!(searchIndex+page_size.get()>indexList.get(fileIndex+1).getIndex())){
+            data=indexList.get(fileIndex).getData(searchIndex,searchIndex+page_size.get());
+        }else{
+            data=indexList.get(fileIndex).getData(searchIndex,searchIndex+page_size.get());
+            data.addAll(indexList.get(fileIndex+1).getData(searchIndex,searchIndex+page_size.get()));
         }
-        return Response.ok().build();
+        return data;
+    }
+
+    private int floorSearch(List<EventIndex> arr, int low, int high, int index)
+    {
+        if (low > high)
+            return -1;
+        if (index >= arr.get(high).getIndex())
+            return high;
+        int mid = (low+high)/2;
+
+        if (arr.get(mid).getIndex() == index)
+            return mid;
+
+        if (mid > 0 && arr.get(mid-1).getIndex() <= index && index < arr.get(mid).getIndex())
+            return mid-1;
+
+        if (index < arr.get(mid).getIndex())
+            return floorSearch(arr, low, mid - 1, index);
+        else
+            return floorSearch(arr, mid + 1, high, index);
     }
 }
