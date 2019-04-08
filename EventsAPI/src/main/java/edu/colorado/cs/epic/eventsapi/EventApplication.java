@@ -8,6 +8,7 @@ import edu.colorado.cs.epic.eventsapi.auth.FirebaseAuthenticator;
 import edu.colorado.cs.epic.eventsapi.auth.FirebaseAuthorizator;
 import edu.colorado.cs.epic.eventsapi.core.DatabaseController;
 import edu.colorado.cs.epic.eventsapi.core.KubernetesController;
+import edu.colorado.cs.epic.eventsapi.health.FirebaseAccessHealthCheck;
 import edu.colorado.cs.epic.eventsapi.health.KubernetesConnectionHealthCheck;
 import edu.colorado.cs.epic.eventsapi.resource.EventResource;
 import edu.colorado.cs.epic.eventsapi.resource.RootResource;
@@ -88,6 +89,7 @@ public class EventApplication extends Application<EventConfiguration> {
 
 
         environment.healthChecks().register("kubernetes", new KubernetesConnectionHealthCheck(client));
+        environment.healthChecks().register("firebase", new FirebaseAccessHealthCheck());
 
         SyncEventsTask task = new SyncEventsTask(k8sController, dbController);
         environment.admin().addTask(task);
