@@ -1,5 +1,6 @@
 package edu.colorado.cs.epic.eventsapi;
 
+
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
@@ -7,6 +8,7 @@ import edu.colorado.cs.epic.eventsapi.api.User;
 import edu.colorado.cs.epic.eventsapi.auth.FirebaseAuthenticator;
 import edu.colorado.cs.epic.eventsapi.auth.FirebaseAuthorizator;
 import edu.colorado.cs.epic.eventsapi.core.DatabaseController;
+import edu.colorado.cs.epic.eventsapi.core.DataprocController;
 import edu.colorado.cs.epic.eventsapi.core.KubernetesController;
 import edu.colorado.cs.epic.eventsapi.health.FirebaseAccessHealthCheck;
 import edu.colorado.cs.epic.eventsapi.health.KubernetesConnectionHealthCheck;
@@ -51,8 +53,9 @@ public class EventApplication extends Application<EventConfiguration> {
 
     @Override
     public void run(EventConfiguration configuration, Environment environment) throws IOException {
+        GoogleCredentials credentials = GoogleCredentials.getApplicationDefault();
         FirebaseOptions options = new FirebaseOptions.Builder()
-                .setCredentials(GoogleCredentials.getApplicationDefault())
+                .setCredentials(credentials)
                 .build();
         FirebaseApp.initializeApp(options);
 
@@ -60,8 +63,11 @@ public class EventApplication extends Application<EventConfiguration> {
         final JdbiFactory factory = new JdbiFactory();
         final Jdbi jdbi = factory.build(environment, configuration.getDataSourceFactory(), "postgresql");
         final DatabaseController dbController = new DatabaseController(jdbi);
+
         final KubernetesController k8sController = new KubernetesController(client, configuration.getKafkaServers(), configuration.getTweetStoreVersion(), configuration.getNamespace(), configuration.getFirehoseConfigMapName());
 
+
+        final DataprocController dataprocController = new DataprocController(configuration.getGcloudProjectID(), "global", configuration.getTemplateNameDataproc());
 
         if (configuration.getProduction()) {
             environment.jersey().register(new AuthDynamicFeature(
@@ -91,7 +97,7 @@ public class EventApplication extends Application<EventConfiguration> {
         environment.healthChecks().register("kubernetes", new KubernetesConnectionHealthCheck(client));
         environment.healthChecks().register("firebase", new FirebaseAccessHealthCheck());
 
-        SyncEventsTask task = new SyncEventsTask(k8sController, dbController);
+        SyncEventsTask task = new SyncEventsTask(k8sController, dbController, dataprocController);
         environment.admin().addTask(task);
         environment.jersey().register(new EventResource(dbController, task));
         environment.jersey().register(new RootResource());

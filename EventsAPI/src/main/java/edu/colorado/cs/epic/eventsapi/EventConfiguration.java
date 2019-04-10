@@ -27,6 +27,12 @@ public class EventConfiguration extends Configuration {
     @NotEmpty
     private String tweetStoreVersion;
 
+    @NotEmpty
+    private String gcloudProjectID;
+
+    @NotEmpty
+    private  String templateNameDataproc;
+
     @JsonProperty
     public String getNamespace() {
         return namespace;
@@ -84,5 +90,25 @@ public class EventConfiguration extends Configuration {
     @JsonProperty
     public void setProduction(Boolean production) {
         this.production = production;
+    }
+
+    @JsonProperty
+    public String getGcloudProjectID() {
+        return gcloudProjectID;
+    }
+
+    @JsonProperty
+    public void setGcloudProjectID(String gcloudProjectID) {
+        this.gcloudProjectID = gcloudProjectID;
+    }
+
+    @JsonProperty
+    public String getTemplateNameDataproc() {
+        return templateNameDataproc;
+    }
+
+    @JsonProperty
+    public void setTemplateNameDataproc(String templateNameDataproc) {
+        this.templateNameDataproc = templateNameDataproc;
     }
 }

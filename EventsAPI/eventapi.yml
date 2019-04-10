@@ -3,6 +3,8 @@ namespace: ${NAMESPACE:-default}
 kafkaServers: ${KAFKA_SERVERS:-"kafka-0.broker.default:9092,kafka-1.broker.default:9092"}
 tweetStoreVersion: ${TWEET_STORE_VERSION:-"latest"}
 production: ${PRODUCTION:-true}
+gcloudProjectID: ${GCLOUD_PROJECT_ID:-"crypto-eon-164220"}
+templateNameDataproc: ${TEMPLATE_NAME_DATAPROC:-"epic-spark"}
 
 database:
   # the name of your JDBC driver

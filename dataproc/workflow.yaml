@@ -1,0 +1,25 @@
+jobs:
+- sparkJob:
+    args:
+    - gs://epic-historic-tweets/2017 Hurricane Harvey/*
+    - gs://epic-analysis-results/2017 Hurricane Harvey/mentions
+    mainJarFileUri: gs://epic-spark-jars/simple-project-1.0.jar
+  stepId: mentions
+parameters:
+- name: INPUT_JSON
+  fields:
+  - jobs['mentions'].sparkJob.args[0]
+- name: OUTPUT_FOLDER
+  fields:
+  - jobs['mentions'].sparkJob.args[1]
+placement:
+  managedCluster:
+    clusterName: epic-spark
+    config:
+      gceClusterConfig:
+        zoneUri: us-central1-c
+      masterConfig:
+        machineTypeUri: n1-standard-4
+      workerConfig:
+        machineTypeUri: n1-standard-4
+        numInstances: 2
