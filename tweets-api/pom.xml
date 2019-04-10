@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.epiccollect</groupId>
-    <artifactId>tweets-api</artifactId>
+    <artifactId>tweetsapi</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <properties>
@@ -17,11 +17,6 @@
         <version>${dropwizard.version}</version>
     </dependency>
     <dependency>
-        <groupId>net.dongliu</groupId>
-        <artifactId>requests</artifactId>
-        <version>5.0.7</version>
-    </dependency>
-    <dependency>
         <groupId>com.google.cloud</groupId>
         <artifactId>google-cloud-bigquery</artifactId>
         <version>1.64.0</version>
@@ -31,7 +26,6 @@
         <artifactId>google-cloud-storage</artifactId>
         <version>1.66.0</version>
     </dependency>
-    <!-- https://mvnrepository.com/artifact/com.googlecode.json-simple/json-simple -->
     <dependency>
         <groupId>com.googlecode.json-simple</groupId>
         <artifactId>json-simple</artifactId>
