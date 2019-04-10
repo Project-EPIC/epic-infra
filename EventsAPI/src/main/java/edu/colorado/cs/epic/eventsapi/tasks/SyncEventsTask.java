@@ -3,6 +3,7 @@ package edu.colorado.cs.epic.eventsapi.tasks;
 import com.google.common.collect.ImmutableMultimap;
 import edu.colorado.cs.epic.eventsapi.api.Event;
 import edu.colorado.cs.epic.eventsapi.core.DatabaseController;
+import edu.colorado.cs.epic.eventsapi.core.DataprocController;
 import edu.colorado.cs.epic.eventsapi.core.KubernetesController;
 import io.dropwizard.servlets.tasks.Task;
 import io.kubernetes.client.ApiException;
@@ -19,13 +20,15 @@ import java.util.Set;
 public class SyncEventsTask extends Task {
 
     private final Logger logger;
+    private final DataprocController dataprocController;
     private KubernetesController k8scontroller;
     private DatabaseController dbcontroller;
 
-    public SyncEventsTask(KubernetesController k8scontroller, DatabaseController dbcontroller) {
+    public SyncEventsTask(KubernetesController k8scontroller, DatabaseController dbcontroller, DataprocController dataprocController) {
         super("sync");
         this.k8scontroller = k8scontroller;
         this.dbcontroller = dbcontroller;
+        this.dataprocController = dataprocController;
         this.logger = Logger.getLogger(SyncEventsTask.class.getName());
     }
 
@@ -46,6 +49,7 @@ public class SyncEventsTask extends Task {
                 if (printWriter != null) {
                     printWriter.println(out);
                 }
+                dataprocController.startCollectTemplate(event.getNormalizedName());
             }  catch (ApiException e) {
                 dbcontroller.setStatus(event.getNormalizedName(), Event.Status.FAILED);
                 String out = String.format("Failed to stop filter for %s", event.getNormalizedName());
@@ -56,6 +60,7 @@ public class SyncEventsTask extends Task {
                 throw e;
             }
         }
+
         for (Event event : toBeStarted) {
             try {
                 k8scontroller.startEvent(event);
@@ -74,7 +79,6 @@ public class SyncEventsTask extends Task {
                 throw e;
             }
         }
-
 
         try {
             k8scontroller.setActiveStreamKeywords(dbcontroller.getActiveKeywords());
