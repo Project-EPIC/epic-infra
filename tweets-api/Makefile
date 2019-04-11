@@ -1,11 +1,12 @@
 all: jar
 
-TAG_CLIENT = 1.0.0
+TAG_CLIENT = 1.0.3
 PROJECT_NAME = tweetsapi
 
 
 run: jar
-	java -jar target/$(PROJECT_NAME).jar server config.yml
+#	java -jar target/$(PROJECT_NAME).jar server config.yml
+	java -jar target/$(PROJECT_NAME).jar server
 
 
 build: jar

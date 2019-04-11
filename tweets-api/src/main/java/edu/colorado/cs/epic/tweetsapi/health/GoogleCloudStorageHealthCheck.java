@@ -1,6 +1,7 @@
 package edu.colorado.cs.epic.tweetsapi.health;
 
 import com.codahale.metrics.health.HealthCheck;
+import com.google.cloud.storage.Bucket;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 
@@ -13,9 +14,9 @@ public class GoogleCloudStorageHealthCheck extends HealthCheck {
 
 
     private final Logger logger;
-    private final Storage storage;
+    private final Bucket storage;
 
-    public GoogleCloudStorageHealthCheck(Storage storage) {
+    public GoogleCloudStorageHealthCheck(Bucket storage) {
         this.storage = storage;
         this.logger = Logger.getLogger(GoogleCloudStorageHealthCheck.class.getName());
 
@@ -24,7 +25,7 @@ public class GoogleCloudStorageHealthCheck extends HealthCheck {
     @Override
     protected HealthCheck.Result check() {
         try {
-            storage.list("epic-collect", Storage.BlobListOption.pageSize(1)).getValues();
+            storage.list(Storage.BlobListOption.pageSize(1)).getValues();
             return HealthCheck.Result.healthy();
         } catch (Exception e) {
             return HealthCheck.Result.unhealthy(e);

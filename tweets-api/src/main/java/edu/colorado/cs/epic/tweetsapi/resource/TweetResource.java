@@ -6,54 +6,51 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 
-import com.google.common.collect.Streams;
 import edu.colorado.cs.epic.tweetsapi.api.EventIndex;
 import io.dropwizard.jersey.params.IntParam;
+import org.apache.log4j.Logger;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 
 import java.util.*;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
+
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
-import java.util.stream.StreamSupport;
-import java.util.zip.GZIPOutputStream;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 @Path("/tweets/")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class TweetResource {
     private final Logger logger;
-    private final Storage storage;
+    private final Bucket storage;
     private final LoadingCache<String, List<EventIndex>> filesCache;
 
-    public TweetResource(Storage storage) {
+    public TweetResource(Bucket storage) {
         this.logger = Logger.getLogger(TweetResource.class.getName());
         this.storage = storage;
         filesCache = CacheBuilder.newBuilder()
-                .expireAfterAccess(10, TimeUnit.MINUTES)
+                .expireAfterWrite(10, TimeUnit.MINUTES)
                 .build(new CacheLoader<String, List<EventIndex>>() {
                     @Override
                     public List<EventIndex> load(String key) {
-                        Page<Blob> blobs = storage.list("epic-collect", Storage.BlobListOption.prefix(key));
+                        Page<Blob> blobs = storage.list(Storage.BlobListOption.prefix(key + "/"), Storage.BlobListOption.fields(Storage.BlobField.NAME));
 
                         List<EventIndex> index = new ArrayList<>();
                         int current = 0;
                         for (Blob blob : blobs.iterateAll()) {
                             if (blob.getName().contains(".json.gz")) {
-                                EventIndex e = new EventIndex(blob, current);
+                                String nameSpilt = blob.getName().replace(".json.gz", "");
+                                String[] fileDetails = nameSpilt.split("-");
+                                int size = Integer.parseInt(fileDetails[fileDetails.length - 1]);
+                                EventIndex e = new EventIndex(blob, current, size);
                                 index.add(e);
-                                current += e.getSize();
+                                current += size;
                             }
                         }
                         return index;
@@ -62,24 +59,61 @@ public class TweetResource {
     }
 
     @GET
-    @Path("/{event_name}/")
-    public List<JSONObject> getTweets(@PathParam("event_name") String event_name, @QueryParam("page") @DefaultValue("1") IntParam page, @QueryParam("size") @DefaultValue("100") IntParam size) throws ExecutionException, InterruptedException, IOException, ParseException {
+    @Path("/{eventName}/")
+    public String getTweets(@PathParam("eventName") String eventName, @QueryParam("page") @DefaultValue("1") IntParam page, @QueryParam("count") @DefaultValue("100") IntParam pageCount) {
         int pageNumber = page.get();
-        int pageSize = size.get();
+        int pageSize = pageCount.get();
 
         int startIndex = (pageNumber - 1) * pageSize;
         int endIndex = startIndex + pageSize;
-        List<EventIndex> indexList = filesCache.get(event_name);
+        List<EventIndex> indexList = null;
+        try {
+            indexList = filesCache.get(eventName);
+        } catch (ExecutionException e) {
+            logger.error("Issue accessing Google Cloud", e);
+            throw new WebApplicationException(Response.Status.SERVICE_UNAVAILABLE);
+        }
+
+        // Check if we have tweets on event
+        if (indexList.size() == 0) {
+            throw new WebApplicationException(Response.Status.NOT_FOUND);
+        }
+
+        // Check if page has any information
+        EventIndex lastEvent = indexList.get(indexList.size() - 1);
+        int totalCount = lastEvent.getIndex() + lastEvent.getSize();
+        if (totalCount < startIndex) {
+            throw new WebApplicationException(Response.Status.BAD_REQUEST);
+        }
 
         int fileIndex = floorSearch(indexList, 0, indexList.size() - 1, startIndex);
-        List<JSONObject> data;
-        if (!(startIndex + pageSize > indexList.get(fileIndex + 1).getIndex())) {
-            data = indexList.get(fileIndex).getData(startIndex, endIndex);
-        } else {
-            data = indexList.get(fileIndex).getData(startIndex, endIndex);
-            data.addAll(indexList.get(fileIndex + 1).getData(startIndex, endIndex));
+        StringBuilder tweets = new StringBuilder();
+        tweets.append("{\"tweets\":[");
+        try {
+            if (!(startIndex + pageSize > indexList.get(fileIndex + 1).getIndex())) {
+                tweets.append(indexList.get(fileIndex).getData(startIndex, endIndex));
+            } else {
+                tweets.append(indexList.get(fileIndex).getData(startIndex, endIndex));
+                tweets.append(",");
+                tweets.append(indexList.get(fileIndex + 1).getData(startIndex, endIndex));
+            }
+        } catch (ParseException | IOException e) {
+            logger.error("Issue parsing JSON", e);
+            throw new WebApplicationException(Response.Status.SERVICE_UNAVAILABLE);
         }
-        return data;
+        tweets.append("],");
+
+        JSONObject metaObject = new JSONObject();
+        metaObject.put("page_count", pageSize);
+        metaObject.put("total_count", totalCount);
+        metaObject.put("page", pageNumber);
+        metaObject.put("event_name", eventName);
+
+        tweets.append("\"meta\":");
+        tweets.append(metaObject.toJSONString());
+        tweets.append("}");
+
+        return tweets.toString();
     }
 
     private int floorSearch(List<EventIndex> arr, int low, int high, int index) {

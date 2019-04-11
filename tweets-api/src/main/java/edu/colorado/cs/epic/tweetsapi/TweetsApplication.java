@@ -1,5 +1,6 @@
 package edu.colorado.cs.epic.tweetsapi;
 
+import com.google.cloud.storage.Bucket;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 import edu.colorado.cs.epic.tweetsapi.health.GoogleCloudStorageHealthCheck;
@@ -47,11 +48,11 @@ public class TweetsApplication extends Application<TweetsConfiguration> {
         cors.setInitParameter("allowedMethods", "OPTIONS,GET,HEAD");
 
         Storage storage = StorageOptions.getDefaultInstance().getService();
-
-        environment.healthChecks().register("gcloudstorage", new GoogleCloudStorageHealthCheck(storage));
+        Bucket bucket = storage.get("epic-collect");
+        environment.healthChecks().register("gcloudstorage", new GoogleCloudStorageHealthCheck(bucket));
 
         environment.jersey().register(new RootResource());
-        environment.jersey().register(new TweetResource(storage));
+        environment.jersey().register(new TweetResource(bucket));
 
 
     }
