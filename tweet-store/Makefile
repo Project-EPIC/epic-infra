@@ -1,6 +1,6 @@
 all: jar
 
-TAG_CLIENT = 1.0.8
+TAG_CLIENT = 1.0.9
 PROJECT_NAME = tweet-store
 
 
@@ -19,7 +19,7 @@ push: build
 clean:
 	docker rmi projectepic/$(PROJECT_NAME):$(TAG) || :
 	docker rmi projectepic/$(PROJECT_NAME) || :
-	rm -rf target/
+	mvn clean
 
 jar: target/tweet-store.jar
 

@@ -93,20 +93,18 @@ public class App {
                         log.info("Tweet buffered...");
 
                         // Check if we need to save tweets (if batchsize has been reached or if we need to dump it because we are changing folder
-                        checkFileCreation(consumer, buffer, folder);
+                        folder = checkFileCreation(consumer, buffer, folder);
                         break;
                     }
                 }
             }
-
-            // Keep folder structure updated with current time
-            folder = new SimpleDateFormat(pattern).format(new Date());
+            folder = checkFileCreation(consumer, buffer, folder);
         }
     }
 
-    private static void checkFileCreation(KafkaConsumer<String, String> consumer, List<ConsumerRecord<String, String>> buffer, String folder) {
+    private static String checkFileCreation(KafkaConsumer<String, String> consumer, List<ConsumerRecord<String, String>> buffer, String folder) {
         String currentFolder = new SimpleDateFormat(pattern).format(new Date());
-        if (buffer.size() >= minBatchSize || !folder.equals(currentFolder) && !buffer.isEmpty()) {
+        if (buffer.size() >= minBatchSize || !folder.equals(currentFolder)) {
 
             // Calculate filename
             String filename = String.format("%s/%stweet-%d-%d.json.gz", eventName, folder, (new Date()).getTime(),buffer.size());
@@ -136,5 +134,6 @@ public class App {
             consumer.commitSync();
             buffer.clear();
         }
+        return currentFolder;
     }
 }
