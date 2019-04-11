@@ -113,7 +113,7 @@ public class DatabaseController {
 
     public List<String> getActiveKeywords() {
 
-        return postgres.withHandle(handle -> handle.createQuery("select DISTINCT keyword from keywords,events where event_name=name and status=:activeStatus")
+        return postgres.withHandle(handle -> handle.createQuery("select DISTINCT keyword from keywords,events where event_name=normalized_name and status=:activeStatus")
                 .bind("activeStatus", Event.Status.ACTIVE.toString())
                 .mapTo(String.class)
                 .list());

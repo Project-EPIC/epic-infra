@@ -12,6 +12,7 @@ import com.google.auth.oauth2.GoogleCredentials;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.concurrent.*;
@@ -37,6 +38,11 @@ public class DataprocController {
         String dateName = new SimpleDateFormat("yyyy-MM-dd-HH").format(curentDate);
         String dateFolder = new SimpleDateFormat("yyyy/MM/dd/HH").format(curentDate);
         GoogleCredential credentials = GoogleCredential.getApplicationDefault();
+        if (credentials.createScopedRequired()) {
+            credentials = credentials.createScoped(
+                            Collections.singletonList("https://www.googleapis.com/auth/cloud-platform")
+            );
+        }
 
 
         Dataproc dataproc = new Dataproc.Builder(new NetHttpTransport(), JacksonFactory.getDefaultInstance(), credentials)
