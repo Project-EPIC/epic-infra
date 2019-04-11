@@ -15,6 +15,8 @@ import org.json.simple.parser.ParseException;
 import java.util.*;
 
 
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -29,27 +31,26 @@ import java.util.concurrent.TimeUnit;
 public class TweetResource {
     private final Logger logger;
     private final Bucket storage;
-    private final LoadingCache<String, List<EventIndex>> filesCache;
+    private final LoadingCache<String, EventIndex> filesCache;
 
     public TweetResource(Bucket storage) {
         this.logger = Logger.getLogger(TweetResource.class.getName());
         this.storage = storage;
         filesCache = CacheBuilder.newBuilder()
                 .expireAfterWrite(10, TimeUnit.MINUTES)
-                .build(new CacheLoader<String, List<EventIndex>>() {
+                .build(new CacheLoader<String, EventIndex>() {
                     @Override
-                    public List<EventIndex> load(String key) {
+                    public EventIndex load(String key) {
                         Page<Blob> blobs = storage.list(Storage.BlobListOption.prefix(key + "/"), Storage.BlobListOption.fields(Storage.BlobField.NAME));
 
-                        List<EventIndex> index = new ArrayList<>();
+                        EventIndex index = new EventIndex(new Date());
                         int current = 0;
                         for (Blob blob : blobs.iterateAll()) {
                             if (blob.getName().contains(".json.gz")) {
                                 String nameSpilt = blob.getName().replace(".json.gz", "");
                                 String[] fileDetails = nameSpilt.split("-");
                                 int size = Integer.parseInt(fileDetails[fileDetails.length - 1]);
-                                EventIndex e = new EventIndex(blob, current, size);
-                                index.add(e);
+                                index.addItem(new EventIndex.Item(blob, current, size));
                                 current += size;
                             }
                         }
@@ -60,15 +61,20 @@ public class TweetResource {
 
     @GET
     @Path("/{eventName}/")
-    public String getTweets(@PathParam("eventName") String eventName, @QueryParam("page") @DefaultValue("1") IntParam page, @QueryParam("count") @DefaultValue("100") IntParam pageCount) {
+    public String getTweets(@PathParam("eventName") String eventName,
+                            @QueryParam("page") @DefaultValue("1") @Min(1) IntParam page,
+                            @QueryParam("count") @DefaultValue("100") @Min(1) @Max(1000) IntParam pageCount) {
         int pageNumber = page.get();
         int pageSize = pageCount.get();
 
         int startIndex = (pageNumber - 1) * pageSize;
         int endIndex = startIndex + pageSize;
-        List<EventIndex> indexList = null;
+        List<EventIndex.Item> indexList;
+        Date updateTime;
         try {
-            indexList = filesCache.get(eventName);
+            EventIndex index = filesCache.get(eventName);
+            indexList = index.getIndex();
+            updateTime = index.getUpdateTime();
         } catch (ExecutionException e) {
             logger.error("Issue accessing Google Cloud", e);
             throw new WebApplicationException(Response.Status.SERVICE_UNAVAILABLE);
@@ -80,7 +86,7 @@ public class TweetResource {
         }
 
         // Check if page has any information
-        EventIndex lastEvent = indexList.get(indexList.size() - 1);
+        EventIndex.Item lastEvent = indexList.get(indexList.size() - 1);
         int totalCount = lastEvent.getIndex() + lastEvent.getSize();
         if (totalCount < startIndex) {
             throw new WebApplicationException(Response.Status.BAD_REQUEST);
@@ -89,8 +95,13 @@ public class TweetResource {
         int fileIndex = floorSearch(indexList, 0, indexList.size() - 1, startIndex);
         StringBuilder tweets = new StringBuilder();
         tweets.append("{\"tweets\":[");
+        int numTweets = pageSize;
         try {
-            if (!(startIndex + pageSize > indexList.get(fileIndex + 1).getIndex())) {
+            if (fileIndex == (indexList.size()-1)) {
+                EventIndex.Item item = indexList.get(fileIndex);
+                tweets.append(item.getData(startIndex, endIndex));
+                numTweets = Math.min((item.getIndex() + item.getSize()) - startIndex, pageSize);
+            } else if (!(startIndex + pageSize > indexList.get(fileIndex + 1).getIndex())) {
                 tweets.append(indexList.get(fileIndex).getData(startIndex, endIndex));
             } else {
                 tweets.append(indexList.get(fileIndex).getData(startIndex, endIndex));
@@ -104,10 +115,13 @@ public class TweetResource {
         tweets.append("],");
 
         JSONObject metaObject = new JSONObject();
-        metaObject.put("page_count", pageSize);
+        metaObject.put("count", pageSize);
         metaObject.put("total_count", totalCount);
+        metaObject.put("num_pages", (int) Math.ceil((double) totalCount /pageSize));
         metaObject.put("page", pageNumber);
         metaObject.put("event_name", eventName);
+        metaObject.put("tweet_count", numTweets);
+        metaObject.put("refreshed_time", updateTime.toString());
 
         tweets.append("\"meta\":");
         tweets.append(metaObject.toJSONString());
@@ -116,7 +130,7 @@ public class TweetResource {
         return tweets.toString();
     }
 
-    private int floorSearch(List<EventIndex> arr, int low, int high, int index) {
+    private int floorSearch(List<EventIndex.Item> arr, int low, int high, int index) {
         if (low > high)
             return -1;
         if (index >= arr.get(high).getIndex())
