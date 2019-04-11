@@ -9,6 +9,10 @@ spec:
   rules:
   - http:
       paths:
+      - path: /tweets/*
+        backend:
+          serviceName: tweets-api
+          servicePort: 8080
       - path: /events/*
         backend:
           serviceName: events-api
@@ -17,7 +21,3 @@ spec:
         backend:
            serviceName: auth-api
            servicePort: 8080
-          #- path: /v2/*
-          #backend:
-          # serviceName: web2
-          #servicePort: 8080
