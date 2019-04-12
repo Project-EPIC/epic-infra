@@ -41,14 +41,9 @@
             <artifactId>dropwizard-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.google.firebase</groupId>
-            <artifactId>firebase-admin</artifactId>
-            <version>6.8.0</version>
-        </dependency>
-        <dependency>
-            <groupId>io.dropwizard</groupId>
-            <artifactId>dropwizard-auth</artifactId>
-            <version>${dropwizard.version}</version>
+            <groupId>edu.colorado.cs.epic</groupId>
+            <artifactId>authlib</artifactId>
+            <version>1.0.0</version>
         </dependency>
     </dependencies>
 

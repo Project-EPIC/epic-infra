@@ -2,16 +2,13 @@ package edu.colorado.cs.epic.auth.resources;
 
 import com.google.common.collect.Streams;
 import com.google.firebase.auth.*;
-import edu.colorado.cs.epic.auth.api.User;
+import edu.colorado.cs.epic.api.FirebaseUser;
 import org.apache.log4j.Logger;
 
-import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.net.URI;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,11 +31,11 @@ public class UsersResource {
 
     @GET
     @RolesAllowed("ADMIN")
-    public List<User> getUsers() {
+    public List<FirebaseUser> getUsers() {
         try {
             ListUsersPage page = FirebaseAuth.getInstance().listUsers(null);
             return Streams.stream(page.iterateAll())
-                    .map(User::new)
+                    .map(FirebaseUser::new)
                     .collect(Collectors.toList());
         } catch (FirebaseAuthException e) {
             logger.error("Firebase failed", e);
@@ -56,7 +53,7 @@ public class UsersResource {
         claims.put("admin", true);
         try {
             FirebaseAuth.getInstance().setCustomUserClaims(uid, claims);
-            return Response.ok(new User(FirebaseAuth.getInstance().getUser(uid))).build();
+            return Response.ok(new FirebaseUser(FirebaseAuth.getInstance().getUser(uid))).build();
         } catch (FirebaseAuthException e) {
             e.printStackTrace();
             throw new WebApplicationException(Response.Status.SERVICE_UNAVAILABLE);
@@ -73,7 +70,7 @@ public class UsersResource {
                     .setDisabled(false);
             UserRecord userRecord = FirebaseAuth.getInstance().updateUser(request);
 
-            return Response.ok(new User(userRecord)).build();
+            return Response.ok(new FirebaseUser(userRecord)).build();
 
         } catch (FirebaseAuthException e) {
             e.printStackTrace();
@@ -90,7 +87,7 @@ public class UsersResource {
             UserRecord.UpdateRequest request = new UserRecord.UpdateRequest(uid)
                     .setDisabled(true);
             UserRecord userRecord = FirebaseAuth.getInstance().updateUser(request);
-            return Response.ok(new User(userRecord)).build();
+            return Response.ok(new FirebaseUser(userRecord)).build();
 
         } catch (FirebaseAuthException e) {
             e.printStackTrace();
