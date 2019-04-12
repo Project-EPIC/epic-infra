@@ -66,18 +66,15 @@ public class EventIndex {
             int start = Math.max(startIndex - index, 0);
             int end = Math.min(endIndex - index, size);
 
-            String readed;
             StringBuilder data = new StringBuilder();
-            while ((readed = in.readLine()) != null) {
-                int lineNumber = in.getLineNumber() - 1;
-                if (lineNumber >= start && lineNumber < end) {
-                    data.append(readed);
-                    if (lineNumber != (end - 1))
-                        data.append(",");
-                } else if (lineNumber >= end) {
-                    break;
-                }
+            in.lines().skip(start).limit(end-start).forEach(tweet -> {
+                data.append(tweet);
+                data.append(",");
+            });
 
+            // Remove last comma
+            if (data.length() > 0) {
+                data.setLength(data.length() - 1);
             }
 
             return data.toString();
