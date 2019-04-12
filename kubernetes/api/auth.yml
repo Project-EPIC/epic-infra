@@ -17,7 +17,7 @@ spec:
       terminationGracePeriodSeconds: 10
       containers:
       - name: events-api
-        image: projectepic/authapi:1.0.7
+        image: projectepic/authapi:1.0.8
         imagePullPolicy: Always
         resources:
           limits:
