@@ -1,4 +1,4 @@
-package edu.colorad.cs.epic.api;
+package edu.colorado.cs.epic.api;
 
 
 import com.fasterxml.jackson.annotation.JsonProperty;

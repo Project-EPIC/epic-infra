@@ -1,4 +1,4 @@
-package edu.colorad.cs.epic;
+package edu.colorado.cs.epic;
 
 import static org.junit.Assert.assertTrue;
 

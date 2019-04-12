@@ -1,10 +1,10 @@
-package edu.colorad.cs.epic.auth;
+package edu.colorado.cs.epic.auth;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
 import com.google.firebase.auth.UserRecord;
-import edu.colorad.cs.epic.api.FirebaseUser;
+import edu.colorado.cs.epic.api.FirebaseUser;
 import io.dropwizard.auth.AuthenticationException;
 import io.dropwizard.auth.Authenticator;
 

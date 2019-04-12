@@ -1,8 +1,9 @@
-package edu.colorad.cs.epic;
+package edu.colorado.cs.epic;
 
-import edu.colorad.cs.epic.api.FirebaseUser;
-import edu.colorad.cs.epic.auth.FirebaseAuthenticator;
-import edu.colorad.cs.epic.auth.FirebaseAuthorizator;
+import edu.colorado.cs.epic.api.FirebaseUser;
+import edu.colorado.cs.epic.auth.FirebaseAuthenticator;
+import edu.colorado.cs.epic.auth.FirebaseAuthorizator;
+import edu.colorado.cs.epic.health.FirebaseAccessHealthCheck;
 import io.dropwizard.auth.AuthDynamicFeature;
 import io.dropwizard.auth.AuthValueFactoryProvider;
 import io.dropwizard.auth.oauth.OAuthCredentialAuthFilter;
@@ -25,6 +26,7 @@ public class AddAuthToEnv {
         environment.jersey().register(RolesAllowedDynamicFeature.class);
         //If you want to use @Auth to inject a custom Principal type into your resource
         environment.jersey().register(new AuthValueFactoryProvider.Binder<>(FirebaseUser.class));
+        environment.healthChecks().register("firebase", new FirebaseAccessHealthCheck());
 
     }
 }

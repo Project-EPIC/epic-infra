@@ -1,4 +1,4 @@
-package edu.colorad.cs.epic.health;
+package edu.colorado.cs.epic.health;
 
 import com.codahale.metrics.health.HealthCheck;
 import com.google.firebase.auth.FirebaseAuth;

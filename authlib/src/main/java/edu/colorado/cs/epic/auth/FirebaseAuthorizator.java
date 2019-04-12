@@ -1,10 +1,10 @@
-package edu.colorad.cs.epic.auth;
+package edu.colorado.cs.epic.auth;
 
 /**
  * Created by admin on 5/4/19.
  */
 
-import edu.colorad.cs.epic.api.FirebaseUser;
+import edu.colorado.cs.epic.api.FirebaseUser;
 import io.dropwizard.auth.Authorizer;
 
 import java.util.Objects;
