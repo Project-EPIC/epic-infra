@@ -36,6 +36,20 @@ if (configuration.getProduction()) {
 }
 
 ```
+### Authentificating a request from a client
+
+Include an Authorization header to the request with the following format: `Bearer ACCESS_TOKEN`. Where `ACCESS_TOKEN` is the jwt obtained when logged in on Firebase.
+
+
+### CORS specification
+
+Make sure the Authorization header is allowed in your CORS configuration.
+
+```java
+cors.setInitParameter("allowedOrigins", "*");
+cors.setInitParameter("allowedHeaders", "X-Requested-With,Authorization,Content-Type,Accept,Origin");
+cors.setInitParameter("allowedMethods", "OPTIONS,GET,PUT,POST,DELETE,HEAD");
+```
 
 ### Protect resources
 
