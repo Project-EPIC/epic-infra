@@ -1,10 +1,5 @@
 package edu.colorado.cs.epic.auth;
 
-import com.google.auth.oauth2.GoogleCredentials;
-import com.google.firebase.FirebaseApp;
-import com.google.firebase.FirebaseOptions;
-import com.google.firebase.auth.FirebaseAuthException;
-
 import edu.colorado.cs.epic.AddAuthToEnv;
 import edu.colorado.cs.epic.auth.resources.RootResource;
 import edu.colorado.cs.epic.auth.resources.UsersResource;
@@ -42,12 +37,7 @@ public class AuthAPIApplication extends Application<AuthAPIConfiguration> {
 
     @Override
     public void run(final AuthAPIConfiguration configuration,
-                    final Environment environment) throws IOException, FirebaseAuthException {
-        FirebaseOptions options = new FirebaseOptions.Builder()
-                .setCredentials(GoogleCredentials.getApplicationDefault())
-                .build();
-        FirebaseApp.initializeApp(options);
-
+                    final Environment environment) throws IOException {
 
 
         if (configuration.getProduction()) {
