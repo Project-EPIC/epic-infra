@@ -1,9 +1,7 @@
 package edu.colorado.cs.epic.eventsapi;
 
 
-import com.google.auth.oauth2.GoogleCredentials;
-import com.google.firebase.FirebaseApp;
-import com.google.firebase.FirebaseOptions;
+
 import edu.colorado.cs.epic.AddAuthToEnv;
 
 import edu.colorado.cs.epic.eventsapi.core.DatabaseController;
@@ -14,16 +12,13 @@ import edu.colorado.cs.epic.eventsapi.resource.EventResource;
 import edu.colorado.cs.epic.eventsapi.resource.RootResource;
 import edu.colorado.cs.epic.eventsapi.tasks.SyncEventsTask;
 import io.dropwizard.Application;
-import io.dropwizard.auth.AuthDynamicFeature;
-import io.dropwizard.auth.AuthValueFactoryProvider;
-import io.dropwizard.auth.oauth.OAuthCredentialAuthFilter;
+
 import io.dropwizard.configuration.*;
 import io.dropwizard.jdbi3.JdbiFactory;
 import io.dropwizard.setup.*;
 import io.kubernetes.client.ApiClient;
 import io.kubernetes.client.util.Config;
 import org.eclipse.jetty.servlets.CrossOriginFilter;
-import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
 import org.jdbi.v3.core.Jdbi;
 
 import javax.servlet.*;
@@ -51,12 +46,6 @@ public class EventApplication extends Application<EventConfiguration> {
 
     @Override
     public void run(EventConfiguration configuration, Environment environment) throws IOException {
-        GoogleCredentials credentials = GoogleCredentials.getApplicationDefault();
-        FirebaseOptions options = new FirebaseOptions.Builder()
-                .setCredentials(credentials)
-                .build();
-        FirebaseApp.initializeApp(options);
-
         ApiClient client = Config.defaultClient();
         final JdbiFactory factory = new JdbiFactory();
         final Jdbi jdbi = factory.build(environment, configuration.getDataSourceFactory(), "postgresql");
