@@ -12,6 +12,8 @@ public class FirebaseUser implements Principal {
     private String uid;
     private Boolean admin;
     private Boolean disabled;
+    private String email;
+    private URI photoURL;
 
 
     public FirebaseUser(String email, Boolean admin, URI photoURL, String uid) {
@@ -22,16 +24,18 @@ public class FirebaseUser implements Principal {
     }
 
     public FirebaseUser(ExportedUserRecord firebaseUser) {
-
+        this.email = firebaseUser.getEmail();
         this.admin = (Boolean) firebaseUser.getCustomClaims().getOrDefault("admin", false);
-
+        this.photoURL = URI.create(firebaseUser.getPhotoUrl());
         this.uid = firebaseUser.getUid();
         this.disabled = firebaseUser.isDisabled();
     }
 
 
     public FirebaseUser(UserRecord firebaseUser) {
+        this.email = firebaseUser.getEmail();
         this.admin = (Boolean) firebaseUser.getCustomClaims().getOrDefault("admin", false);
+        this.photoURL = URI.create(firebaseUser.getPhotoUrl());
         this.uid = firebaseUser.getUid();
         this.disabled = firebaseUser.isDisabled();
     }
@@ -50,6 +54,27 @@ public class FirebaseUser implements Principal {
         this.admin = admin;
     }
 
+    @JsonProperty
+    public String getEmail() {
+        return email;
+    }
+
+    @JsonProperty
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    @JsonProperty
+    public URI getPhotoURL() {
+        return photoURL;
+    }
+
+    @JsonProperty
+    public void setPhotoURL(URI photoURL) {
+        this.photoURL = photoURL;
+    }
+
+    @JsonProperty
     public String getUid() {
         return uid;
     }
