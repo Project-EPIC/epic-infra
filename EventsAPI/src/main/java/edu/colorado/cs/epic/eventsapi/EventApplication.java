@@ -4,13 +4,11 @@ package edu.colorado.cs.epic.eventsapi;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
-import edu.colorado.cs.epic.eventsapi.api.User;
-import edu.colorado.cs.epic.eventsapi.auth.FirebaseAuthenticator;
-import edu.colorado.cs.epic.eventsapi.auth.FirebaseAuthorizator;
+import edu.colorado.cs.epic.AddAuthToEnv;
+
 import edu.colorado.cs.epic.eventsapi.core.DatabaseController;
 import edu.colorado.cs.epic.eventsapi.core.DataprocController;
 import edu.colorado.cs.epic.eventsapi.core.KubernetesController;
-import edu.colorado.cs.epic.eventsapi.health.FirebaseAccessHealthCheck;
 import edu.colorado.cs.epic.eventsapi.health.KubernetesConnectionHealthCheck;
 import edu.colorado.cs.epic.eventsapi.resource.EventResource;
 import edu.colorado.cs.epic.eventsapi.resource.RootResource;
@@ -70,16 +68,7 @@ public class EventApplication extends Application<EventConfiguration> {
         final DataprocController dataprocController = new DataprocController(configuration.getGcloudProjectID(), "global", configuration.getTemplateNameDataproc());
 
         if (configuration.getProduction()) {
-            environment.jersey().register(new AuthDynamicFeature(
-                    new OAuthCredentialAuthFilter.Builder<User>()
-                            .setAuthenticator(new FirebaseAuthenticator())
-                            .setAuthorizer(new FirebaseAuthorizator())
-                            .setPrefix("Bearer")
-                            .buildAuthFilter()));
-
-            environment.jersey().register(RolesAllowedDynamicFeature.class);
-            //If you want to use @Auth to inject a custom Principal type into your resource
-            environment.jersey().register(new AuthValueFactoryProvider.Binder<>(User.class));
+            AddAuthToEnv.register(environment);
         }
 
 
@@ -95,7 +84,6 @@ public class EventApplication extends Application<EventConfiguration> {
 
 
         environment.healthChecks().register("kubernetes", new KubernetesConnectionHealthCheck(client));
-        environment.healthChecks().register("firebase", new FirebaseAccessHealthCheck());
 
         SyncEventsTask task = new SyncEventsTask(k8sController, dbController, dataprocController);
         environment.admin().addTask(task);

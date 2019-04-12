@@ -4,9 +4,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.epiccollet</groupId>
+    <groupId>edu.colorado.cs.epic.eventsapi</groupId>
     <artifactId>eventsapi</artifactId>
-    <version>0.1</version>
+    <version>1.0.0</version>
     <properties>
         <dropwizard.version>1.3.9</dropwizard.version>
     </properties>
@@ -15,6 +15,11 @@
             <groupId>io.dropwizard</groupId>
             <artifactId>dropwizard-core</artifactId>
             <version>${dropwizard.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>edu.colorado.cs.epic</groupId>
+            <artifactId>authlib</artifactId>
+            <version>1.0.0</version>
         </dependency>
         <dependency>
             <groupId>com.google.cloud.sql</groupId>
@@ -47,16 +52,6 @@
             <artifactId>client-java</artifactId>
             <version>4.0.0</version>
             <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.dropwizard</groupId>
-            <artifactId>dropwizard-auth</artifactId>
-            <version>${dropwizard.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.google.firebase</groupId>
-            <artifactId>firebase-admin</artifactId>
-            <version>6.8.0</version>
         </dependency>
     </dependencies>
     <build>
