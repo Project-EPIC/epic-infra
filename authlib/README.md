@@ -14,7 +14,7 @@ Requirements: `mvn`
 
 ```xml
         <dependency>
-            <groupId>edu.colorad.cs.epic</groupId>
+            <groupId>edu.colorado.cs.epic</groupId>
             <artifactId>authlib</artifactId>
             <version>1.0.0</version>
         </dependency>
