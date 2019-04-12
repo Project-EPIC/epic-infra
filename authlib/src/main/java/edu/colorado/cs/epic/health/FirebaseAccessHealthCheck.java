@@ -1,9 +1,13 @@
 package edu.colorado.cs.epic.health;
 
 import com.codahale.metrics.health.HealthCheck;
+import com.google.auth.oauth2.GoogleCredentials;
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.FirebaseOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 
+import java.io.IOException;
 import java.util.logging.Logger;
 
 /**
