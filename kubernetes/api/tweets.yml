@@ -21,7 +21,7 @@ spec:
             secretName: keyfile
       containers:
       - name: tweets-api
-        image: projectepic/tweetsapi:1.0.9
+        image: projectepic/tweetsapi:1.0.10
         imagePullPolicy: Always
         resources:
           limits:
