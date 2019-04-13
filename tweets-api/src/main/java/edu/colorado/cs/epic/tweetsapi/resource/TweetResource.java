@@ -1,7 +1,9 @@
 package edu.colorado.cs.epic.tweetsapi.resource;
 
 import com.google.api.gax.paging.Page;
-import com.google.cloud.storage.*;
+import com.google.cloud.storage.Blob;
+import com.google.cloud.storage.Bucket;
+import com.google.cloud.storage.Storage;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -12,6 +14,7 @@ import org.apache.log4j.Logger;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 
@@ -23,19 +26,19 @@ import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 
 @Path("/tweets/")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class TweetResource {
+
     private final Logger logger;
-    private final Bucket storage;
     private final LoadingCache<String, EventIndex> filesCache;
 
     public TweetResource(Bucket storage) {
         this.logger = Logger.getLogger(TweetResource.class.getName());
-        this.storage = storage;
         filesCache = CacheBuilder.newBuilder()
                 .expireAfterWrite(10, TimeUnit.MINUTES)
                 .build(new CacheLoader<String, EventIndex>() {
@@ -97,7 +100,7 @@ public class TweetResource {
         tweets.append("{\"tweets\":[");
         int numTweets = pageSize;
         try {
-            if (fileIndex == (indexList.size()-1)) {
+            if (fileIndex == (indexList.size() - 1)) {
                 EventIndex.Item item = indexList.get(fileIndex);
                 tweets.append(item.getData(startIndex, endIndex));
                 numTweets = Math.min((item.getIndex() + item.getSize()) - startIndex, pageSize);
@@ -117,7 +120,7 @@ public class TweetResource {
         JSONObject metaObject = new JSONObject();
         metaObject.put("count", pageSize);
         metaObject.put("total_count", totalCount);
-        metaObject.put("num_pages", (int) Math.ceil((double) totalCount /pageSize));
+        metaObject.put("num_pages", (int) Math.ceil((double) totalCount / pageSize));
         metaObject.put("page", pageNumber);
         metaObject.put("event_name", eventName);
         metaObject.put("tweet_count", numTweets);
@@ -128,6 +131,61 @@ public class TweetResource {
         tweets.append("}");
 
         return tweets.toString();
+    }
+
+    public enum AggregationBucket {
+        hour,
+        day,
+        month
+    }
+
+    @GET
+    @Path("{eventName}/counts")
+    public JSONObject eventCount(@PathParam("eventName") String eventName, @DefaultValue("hour") @QueryParam("bucket") AggregationBucket bucket) {
+
+        EventIndex index;
+        try {
+            index = filesCache.get(eventName);
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+            throw new WebApplicationException(Response.Status.SERVICE_UNAVAILABLE);
+        }
+
+        SimpleDateFormat parser = new SimpleDateFormat("EEE MMM dd HH:00:00 z yyyy");
+        switch (bucket) {
+            case day:
+                parser = new SimpleDateFormat("EEE MMM dd z yyyy");
+                break;
+            case month:
+                parser = new SimpleDateFormat("MMM z yyyy");
+                break;
+            default:
+                break;
+        }
+
+
+        SimpleDateFormat finalParser = parser;
+        LinkedHashMap<String, Integer> counts = index.getIndex().stream()
+                .collect(Collectors.groupingBy(
+                        // Get string to group by
+                        item -> finalParser.format(item.getDate()),
+                        // Creator for returning class
+                        LinkedHashMap::new,
+                        // How to sum for each item
+                        Collectors.summingInt(EventIndex.Item::getSize)
+                ));
+
+        JSONObject meta = new JSONObject();
+        meta.put("event_name", eventName);
+        meta.put("bucket", bucket);
+        meta.put("refreshed_time", index.getUpdateTime().toString());
+
+        JSONObject result = new JSONObject();
+        result.put("tweets", counts);
+        result.put("meta", meta);
+
+        return result;
+
     }
 
     private int floorSearch(List<EventIndex.Item> arr, int low, int high, int index) {

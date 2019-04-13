@@ -3,7 +3,9 @@ package edu.colorado.cs.epic.tweetsapi.api;
 import com.google.cloud.storage.Blob;
 import org.json.simple.parser.ParseException;
 
+import javax.ws.rs.WebApplicationException;
 import java.io.*;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -54,6 +56,10 @@ public class EventIndex {
 
         public int getSize() {
             return size;
+        }
+
+        public Date getDate() {
+            return new Date(Long.valueOf(file.getName().split("tweet")[1].split("-")[1]));
         }
 
         public String getData(int startIndex, int endIndex) throws IOException, ParseException {
