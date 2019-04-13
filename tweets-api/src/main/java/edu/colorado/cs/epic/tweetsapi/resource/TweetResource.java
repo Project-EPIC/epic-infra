@@ -151,6 +151,12 @@ public class TweetResource {
             throw new WebApplicationException(Response.Status.SERVICE_UNAVAILABLE);
         }
 
+
+        // Check if we have tweets on event
+        if (index.getIndex().size() == 0) {
+            throw new WebApplicationException(Response.Status.NOT_FOUND);
+        }
+
         SimpleDateFormat parser = new SimpleDateFormat("EEE MMM dd HH:00:00 z yyyy");
         switch (bucket) {
             case day:
