@@ -1,4 +1,4 @@
-/* MentionsSpark.java */
+package edu.colorado.cs.epic;/* edu.colorado.cs.epic.MentionsSpark.java */
 import org.apache.spark.sql.SaveMode;
 import org.apache.spark.sql.SparkSession;
 import org.apache.spark.sql.Dataset;
@@ -14,7 +14,7 @@ public class MentionsSpark {
     // Local log file
     //String logFile = "/Users/isma/Downloads/spark-2.4.0-bin-hadoop2.7/README.md";
     // Create Spark session
-    SparkSession spark = SparkSession.builder().appName("MentionsSpark").getOrCreate();
+    SparkSession spark = SparkSession.builder().appName("edu.colorado.cs.epic.MentionsSpark").getOrCreate();
     //Dataset<String> logData = spark.read().textFile(logFile).cache();
 
     // A JSON dataset is pointed to by path
@@ -28,7 +28,7 @@ public class MentionsSpark {
 
     // SQL statements can be run by using the sql methods provided by spark
     // Query all the user mentions, retweet count and favourite count from the users mentioned from the JSON files
-    Dataset<Row> namesDF = spark.sql("SELECT entities.user_mentions, retweet_count, favorite_count FROM timeline");
+    Dataset<Row> namesDF = spark.sql("SELECT entities.user_mentions, retweet_count, favorite_count FROM timeline WHERE retweeted_status IS NULL");
 
     // Explode the set of mentioned users inside "user_mentions" and create a temporal view with the retweets, likes and this
     namesDF.select(namesDF.col("retweet_count"), namesDF.col("favorite_count"), explode(namesDF.col("user_mentions"))).createOrReplaceTempView("expTimeline");

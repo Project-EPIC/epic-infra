@@ -3,7 +3,7 @@ jobs:
     args:
     - gs://epic-historic-tweets/2017 Hurricane Harvey/*
     - gs://epic-analysis-results/2017 Hurricane Harvey/mentions
-    mainJarFileUri: gs://epic-spark-jars/simple-project-1.0.jar
+    mainJarFileUri: gs://epic-spark-jars/MentionsSpark-1.0.jar
   stepId: mentions
 parameters:
 - name: INPUT_JSON

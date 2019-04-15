@@ -1,5 +1,5 @@
 <project>
-  <groupId>edu.berkeley</groupId>
+  <groupId>edu.colorado.cs.epic</groupId>
   <artifactId>MentionsSpark</artifactId>
   <modelVersion>4.0.0</modelVersion>
   <name>MentionsSpark</name>
@@ -101,7 +101,7 @@
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <manifestEntries>
-                                        <Main-Class>MentionsSpark</Main-Class>
+                                        <Main-Class>edu.colorado.cs.epic.MentionsSpark</Main-Class>
                                         <Build-Number>1</Build-Number>
                                     </manifestEntries>
                                 </transformer>
