@@ -1,6 +1,6 @@
 all: jar
 
-TAG_CLIENT = 1.0.10
+TAG_CLIENT = 1.0.11
 PROJECT_NAME = tweetsapi
 
 

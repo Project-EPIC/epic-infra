@@ -3,3 +3,5 @@ dependency-reduced-pom.xml
 simple-project.iml
 spark-warehouse	
 .idea
+*.iml
+target/

@@ -50,6 +50,11 @@ public class EventIndex {
 
         }
 
+        public Item setIndex(int index) {
+            this.index = index;
+            return this;
+        }
+
         public int getIndex() {
             return index;
         }
