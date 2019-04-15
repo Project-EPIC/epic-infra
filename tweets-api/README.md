@@ -34,6 +34,8 @@ List tweets for `event_name` event.
 **GET parameters**
 - `count`: Number of tweets per page. Defaults to 100. Maximum 1000.
 - `page`: Page number (gets specified page according to count). Defaults to 1
+- `since`: Start date for tweets to be returned. Optional.
+- `until`: End date for tweets to be returned. Optional.
 
 
 **Response (GET `/tweets/winter/`)**

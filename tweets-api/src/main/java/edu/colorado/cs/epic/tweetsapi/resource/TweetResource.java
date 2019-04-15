@@ -9,8 +9,10 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 
 import edu.colorado.cs.epic.tweetsapi.api.EventIndex;
+import io.dropwizard.jersey.params.DateTimeParam;
 import io.dropwizard.jersey.params.IntParam;
 import org.apache.log4j.Logger;
+import org.joda.time.DateTime;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 
@@ -66,7 +68,8 @@ public class TweetResource {
     @Path("/{eventName}/")
     public String getTweets(@PathParam("eventName") String eventName,
                             @QueryParam("page") @DefaultValue("1") @Min(1) IntParam page,
-                            @QueryParam("count") @DefaultValue("100") @Min(1) @Max(1000) IntParam pageCount) {
+                            @QueryParam("count") @DefaultValue("100") @Min(1) @Max(1000) IntParam pageCount,
+                            @QueryParam("since") DateTimeParam sinceParam, @QueryParam("until") DateTimeParam untilParam) {
         int pageNumber = page.get();
         int pageSize = pageCount.get();
 
@@ -82,6 +85,9 @@ public class TweetResource {
             logger.error("Issue accessing Google Cloud", e);
             throw new WebApplicationException(Response.Status.SERVICE_UNAVAILABLE);
         }
+
+
+        indexList = filterByDate(indexList, sinceParam, untilParam);
 
         // Check if we have tweets on event
         if (indexList.size() == 0) {
@@ -192,6 +198,35 @@ public class TweetResource {
 
         return result;
 
+    }
+
+    private List<EventIndex.Item> filterByDate(List<EventIndex.Item> index, DateTimeParam sinceParam, DateTimeParam untilParam) {
+        if (sinceParam == null && untilParam == null) {
+            return index;
+        }
+        DateTime since = sinceParam == null ? null : sinceParam.get();
+        DateTime until = untilParam == null ? null : untilParam.get();
+        List<EventIndex.Item> filteredIndex = index.stream()
+                .filter((item -> {
+                    if (since != null && until != null)
+                        return until.isAfter(item.getDate().getTime()) && since.isBefore(item.getDate().getTime());
+                    else if (since != null)
+                        return since.isBefore(item.getDate().getTime());
+                    else
+                        return until.isAfter(item.getDate().getTime());
+                }))
+                .collect(Collectors.toList());
+
+        // If empty return empty
+        if (filteredIndex.isEmpty()) {
+            return filteredIndex;
+        }
+
+        // Update index for all items
+        int initialIndex = filteredIndex.get(0).getIndex();
+        return filteredIndex.stream()
+                .map((item -> item.setIndex(item.getIndex() - initialIndex)))
+                .collect(Collectors.toList());
     }
 
     private int floorSearch(List<EventIndex.Item> arr, int low, int high, int index) {
