@@ -1,9 +1,14 @@
 package edu.colorado.cs.epic.eventsapi.resource;
 
+import com.google.cloud.bigquery.*;
+import com.google.cloud.storage.Blob;
+import com.google.cloud.storage.BlobId;
+import com.google.cloud.storage.BlobInfo;
+import com.google.cloud.storage.Storage;
+import com.google.cloud.storage.StorageOptions;
 import edu.colorado.cs.epic.eventsapi.api.Event;
 import edu.colorado.cs.epic.eventsapi.core.DatabaseController;
 import edu.colorado.cs.epic.eventsapi.tasks.SyncEventsTask;
-
 
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
@@ -18,6 +23,8 @@ import java.sql.*;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+
+import static com.google.api.client.util.Charsets.UTF_8;
 
 @Path("/events/")
 @Produces(MediaType.APPLICATION_JSON)
@@ -37,6 +44,7 @@ public class EventResource {
 
     @POST
     public Response createEvent(@NotNull @Valid Event event, @Context UriInfo uriInfo) {
+
         event.setCreatedAt(new Timestamp(System.currentTimeMillis()));
         event.setStatus(Event.Status.ACTIVE);
 
@@ -45,7 +53,21 @@ public class EventResource {
             throw new WebApplicationException(Response.Status.CONFLICT);
         }
 
+
         controller.insertEvent(event);
+
+        Storage storage = StorageOptions.getDefaultInstance().getService();
+        BlobId blobId = BlobId.of("bucket", event.getNormalizedName()+"/_EMPTY");
+        BlobInfo blobInfo = BlobInfo.newBuilder(blobId).setContentType("text/plain").build();
+        Blob blob = storage.create(blobInfo, "".getBytes(UTF_8));
+
+        BigQuery bigquery = BigQueryOptions.getDefaultInstance().getService();
+
+        TableId t= TableId.of("tweets", event.getNormalizedName());
+        ExternalTableDefinition x = ExternalTableDefinition.newBuilder("gs://epic-collect/"+event.getNormalizedName()+"/*", null, FormatOptions.json()).setMaxBadRecords(Integer.MAX_VALUE).setIgnoreUnknownValues(true ).setCompression("GZIP").setAutodetect(true).build();
+        TableInfo k= TableInfo.newBuilder(t, x).build();
+        bigquery.create(k, BigQuery.TableOption.fields(BigQuery.TableField.EXTERNAL_DATA_CONFIGURATION));
+
 
         try {
             syncTask.execute(null, null);
