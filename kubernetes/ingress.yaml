@@ -4,6 +4,7 @@ metadata:
   name: epic-infra-ingress
   annotations:
     kubernetes.io/ingress.global-static-ip-name: "epic-infra-ip"
+    networking.gke.io/managed-certificates: epic-cert
     ingress.kubernetes.io/enable-cors: "true"
 spec:
   rules:
