@@ -87,7 +87,7 @@ public class MentionsResource {
 
         // Error case: if page/size of the page requested is out of bounds
         if((lines.length - (pageNumber * pageSize)) < 0 ){
-            throw new WebApplicationException(Response.Status.NOT_FOUND);
+            throw new WebApplicationException(Response.Status.BAD_REQUEST);
         }
 
         // Create the String that we will return
