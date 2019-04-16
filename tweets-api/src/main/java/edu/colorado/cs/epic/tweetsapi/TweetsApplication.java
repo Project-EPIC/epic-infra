@@ -4,15 +4,19 @@ import com.google.cloud.storage.Bucket;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 import edu.colorado.cs.epic.AddAuthToEnv;
+import edu.colorado.cs.epic.tweetsapi.core.DatabaseController;
 import edu.colorado.cs.epic.tweetsapi.health.GoogleCloudStorageHealthCheck;
+import edu.colorado.cs.epic.tweetsapi.resource.AnnotationResource;
 import edu.colorado.cs.epic.tweetsapi.resource.RootResource;
 import edu.colorado.cs.epic.tweetsapi.resource.TweetResource;
 import io.dropwizard.Application;
 import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
 import io.dropwizard.configuration.SubstitutingSourceProvider;
+import io.dropwizard.jdbi3.JdbiFactory;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import org.eclipse.jetty.servlets.CrossOriginFilter;
+import org.jdbi.v3.core.Jdbi;
 
 import javax.servlet.DispatcherType;
 import javax.servlet.FilterRegistration;
@@ -41,6 +45,10 @@ public class TweetsApplication extends Application<TweetsConfiguration> {
     @Override
     public void run(TweetsConfiguration configuration, Environment environment) throws IOException {
 
+        final JdbiFactory factory = new JdbiFactory();
+        final Jdbi jdbi = factory.build(environment, configuration.getDataSourceFactory(), "postgresql");
+        final DatabaseController dbController = new DatabaseController(jdbi);
+
         final FilterRegistration.Dynamic cors =
                 environment.servlets().addFilter("CORS", CrossOriginFilter.class);
         cors.addMappingForUrlPatterns(EnumSet.allOf(DispatcherType.class), true, "/*");
@@ -60,7 +68,7 @@ public class TweetsApplication extends Application<TweetsConfiguration> {
 
         environment.jersey().register(new RootResource());
         environment.jersey().register(new TweetResource(bucket));
-
+        environment.jersey().register(new AnnotationResource(dbController));
 
     }
 }
