@@ -1,4 +1,4 @@
-package edu.colorado.cs.epic.mentionsAPI.health;
+package edu.colorado.cs.epic.mentionsapi.health;
 
 import com.codahale.metrics.health.HealthCheck;
 import com.google.cloud.storage.Bucket;

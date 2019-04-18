@@ -1,4 +1,4 @@
-package edu.colorado.cs.epic.mentionsAPI;
+package edu.colorado.cs.epic.mentionsapi;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.dropwizard.Configuration;

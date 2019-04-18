@@ -1,11 +1,11 @@
-package edu.colorado.cs.epic.mentionsAPI;
+package edu.colorado.cs.epic.mentionsapi;
 
 import com.google.cloud.storage.Bucket;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
-import edu.colorado.cs.epic.mentionsAPI.health.GoogleCloudStorageHealthCheck;
-import edu.colorado.cs.epic.mentionsAPI.resources.MentionsResource;
-import edu.colorado.cs.epic.mentionsAPI.resources.RootResource;
+import edu.colorado.cs.epic.mentionsapi.health.GoogleCloudStorageHealthCheck;
+import edu.colorado.cs.epic.mentionsapi.resources.MentionsResource;
+import edu.colorado.cs.epic.mentionsapi.resources.RootResource;
 
 import io.dropwizard.Application;
 import io.dropwizard.configuration.EnvironmentVariableSubstitutor;

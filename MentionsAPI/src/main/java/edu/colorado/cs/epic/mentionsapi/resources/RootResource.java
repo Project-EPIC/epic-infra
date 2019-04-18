@@ -1,4 +1,4 @@
-package edu.colorado.cs.epic.mentionsAPI.resources;
+package edu.colorado.cs.epic.mentionsapi.resources;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
