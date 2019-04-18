@@ -53,6 +53,16 @@ spec:
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /private/keyfile.json
+        - name: DB_USERNAME
+          valueFrom:
+             secretKeyRef:
+               name: credentials
+               key: username
+        - name: DB_PASSWORD
+          valueFrom:
+             secretKeyRef:
+               name: credentials
+               key: password
 ---
 apiVersion: v1
 kind: Service

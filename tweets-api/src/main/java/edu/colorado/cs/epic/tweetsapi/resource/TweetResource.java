@@ -222,7 +222,7 @@ public class TweetResource {
             return filteredIndex;
         }
 
-        // Update index for all items
+        // Update index
         int initialIndex = filteredIndex.get(0).getIndex();
         return filteredIndex.stream()
                 .map((item -> item.setIndex(item.getIndex() - initialIndex)))
