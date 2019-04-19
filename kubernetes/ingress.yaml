@@ -14,6 +14,10 @@ spec:
         backend:
           serviceName: tweets-api
           servicePort: 8080
+      - path: /mentions/*
+        backend:
+          serviceName: mentions-api
+          servicePort: 8080
       - path: /events/*
         backend:
           serviceName: events-api
