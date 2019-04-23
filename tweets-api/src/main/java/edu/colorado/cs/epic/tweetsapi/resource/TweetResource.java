@@ -20,6 +20,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 
+import javax.annotation.security.RolesAllowed;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.ws.rs.*;
@@ -29,12 +30,12 @@ import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 
 @Path("/tweets/")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
+@RolesAllowed("ADMIN")
 public class TweetResource {
 
     private final Logger logger;
