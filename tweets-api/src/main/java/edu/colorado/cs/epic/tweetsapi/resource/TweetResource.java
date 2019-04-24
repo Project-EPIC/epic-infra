@@ -235,6 +235,7 @@ public class TweetResource {
         // Update index
         int initialIndex = filteredIndex.get(0).getIndex();
         return filteredIndex.stream()
+                .map(EventIndex.Item::new)
                 .map((item -> item.setIndex(item.getIndex() - initialIndex)))
                 .collect(Collectors.toList());
     }
