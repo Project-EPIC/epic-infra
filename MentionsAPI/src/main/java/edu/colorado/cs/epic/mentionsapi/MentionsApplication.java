@@ -3,6 +3,7 @@ package edu.colorado.cs.epic.mentionsapi;
 import com.google.cloud.storage.Bucket;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
+import edu.colorado.cs.epic.AddAuthToEnv;
 import edu.colorado.cs.epic.mentionsapi.health.GoogleCloudStorageHealthCheck;
 import edu.colorado.cs.epic.mentionsapi.resources.MentionsResource;
 import edu.colorado.cs.epic.mentionsapi.resources.RootResource;
@@ -45,6 +46,10 @@ public class MentionsApplication extends Application<MentionsConfiguration> {
         final FilterRegistration.Dynamic cors =
                 environment.servlets().addFilter("CORS", CrossOriginFilter.class);
         cors.addMappingForUrlPatterns(EnumSet.allOf(DispatcherType.class), true, "/*");
+
+        if (configuration.getProduction()) {
+            AddAuthToEnv.register(environment);
+        }
 
         // Configure CORS parameters
         cors.setInitParameter("allowedOrigins", "*");

@@ -21,7 +21,7 @@ spec:
              secretName: keyfile
       containers:
       - name: mentions-api
-        image: projectepic/mentionsapi:1.0.1
+        image: projectepic/mentionsapi:1.0.2
         imagePullPolicy: Always
         volumeMounts:
          - mountPath: /private
