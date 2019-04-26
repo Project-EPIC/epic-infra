@@ -8,7 +8,7 @@ import io.kubernetes.client.models.V1DeploymentBuilder;
 import io.kubernetes.client.models.V1EnvVar;
 import org.hibernate.validator.constraints.NotEmpty;
 
-import javax.validation.constraints.NotNull;
+import java.net.URI;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,6 +30,8 @@ public class Event {
     private Status status;
 
     private Timestamp createdAt;
+
+    private URI bigQueryTableURL;
 
     public static String toDeploymentName(String name) {
         return name + "-tweet-filter";
@@ -63,6 +65,18 @@ public class Event {
         this.normalizedName = normalizeName(name);
         this.status = Status.ACTIVE;
         this.createdAt = new Timestamp(System.currentTimeMillis());
+    }
+
+    @JsonProperty
+    public URI getBigQueryTableURL() {
+        if (bigQueryTableURL ==null)
+            bigQueryTableURL = URI.create(String.format("https://console.cloud.google.com/bigquery?project=crypto-eon-164220&p=crypto-eon-164220&d=tweets&t=%s&page=table",this.normalizedName));
+        return bigQueryTableURL;
+    }
+
+    @JsonProperty
+    public void setBigQueryTableURL(URI bigQueryTableURL) {
+        this.bigQueryTableURL = bigQueryTableURL;
     }
 
     @JsonProperty
