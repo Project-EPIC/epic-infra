@@ -17,6 +17,8 @@ public class TweetAnnotation {
     @NotEmpty
     private String eventName;
 
+    private String authUser;
+
     public TweetAnnotation(List<String> tags, String tweet, String tweetId, String eventName) {
         this.tags = tags;
         this.tweet = tweet;
@@ -60,5 +62,13 @@ public class TweetAnnotation {
 
     @JsonProperty
     public void setEventName(String eventName) { this.eventName = eventName; }
+
+    @JsonProperty
+    public String getAuthUser() { return authUser; }
+
+    @JsonProperty
+    public void setAuthUser(String authUser) { this.authUser = authUser; }
+
+    public void appendTags(String tag) { this.tags.add(tag); }
 }
 
