@@ -3,6 +3,7 @@ package edu.colorado.cs.epic.mentionsapi.resources;
 import com.google.api.gax.paging.Page;
 import com.google.cloud.storage.*;
 
+import javax.annotation.security.RolesAllowed;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.ws.rs.*;
@@ -17,9 +18,11 @@ import org.json.simple.JSONObject;
 import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
 import java.io.LineNumberReader;
+import java.util.NoSuchElementException;
 
 
 @Path("/mentions/")
+@RolesAllowed("ADMIN")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class MentionsResource {
@@ -47,17 +50,20 @@ public class MentionsResource {
 
         int startIndex = (pageNumber - 1) * pageSize;
 
+        // Blob path including the event name
         Page<Blob> blobs = bucket.list(Storage.BlobListOption.prefix(String.format("spark/mentions/%s/", eventName)), Storage.BlobListOption.fields(Storage.BlobField.NAME));
 
-        // Blob path including the event name
-
-
-
         // Iterate through all the blobs inside "epic-analysis-results/spark"
-        Blob lastBlob = Iterables.getLast(blobs.iterateAll());
-        if (lastBlob == null){
+        Blob lastBlob;
+        try {
+            lastBlob = Iterables.getLast(blobs.iterateAll());
+            if (lastBlob == null){
+                throw new WebApplicationException(Response.Status.NOT_FOUND);
+            }
+        } catch (NoSuchElementException e) {
             throw new WebApplicationException(Response.Status.NOT_FOUND);
         }
+
 
         // Store the content of the JSON file
         ByteArrayInputStream bais = new ByteArrayInputStream(lastBlob.getContent());

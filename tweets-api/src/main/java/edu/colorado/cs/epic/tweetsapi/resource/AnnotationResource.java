@@ -5,6 +5,7 @@ import edu.colorado.cs.epic.tweetsapi.core.DatabaseController;
 import io.dropwizard.jersey.params.DateTimeParam;
 import org.apache.log4j.Logger;
 
+import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -13,6 +14,7 @@ import java.util.List;
 @Path("/annotation/")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
+@RolesAllowed("ADMIN")
 public class AnnotationResource {
     private final Logger logger;
     private DatabaseController annotationsdb;

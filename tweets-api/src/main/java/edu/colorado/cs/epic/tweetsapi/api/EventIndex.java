@@ -50,6 +50,12 @@ public class EventIndex {
 
         }
 
+        public Item(Item item) {
+            this.file = item.file;
+            this.index = item.index;
+            this.size = item.size;
+        }
+
         public Item setIndex(int index) {
             this.index = index;
             return this;

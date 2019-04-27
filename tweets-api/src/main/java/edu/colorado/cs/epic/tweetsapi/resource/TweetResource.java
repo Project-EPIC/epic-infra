@@ -20,6 +20,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 
+import javax.annotation.security.RolesAllowed;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.ws.rs.*;
@@ -34,6 +35,7 @@ import java.util.stream.Collectors;
 @Path("/tweets/")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
+@RolesAllowed("ADMIN")
 public class TweetResource {
 
     private final Logger logger;
@@ -163,13 +165,13 @@ public class TweetResource {
             throw new WebApplicationException(Response.Status.NOT_FOUND);
         }
 
-        SimpleDateFormat parser = new SimpleDateFormat("EEE MMM dd HH:00:00 z yyyy");
+        SimpleDateFormat parser = new SimpleDateFormat("yyyy-MM-dd'T'HH:00:00Z");
         switch (bucket) {
             case day:
-                parser = new SimpleDateFormat("EEE MMM dd z yyyy");
+                parser = new SimpleDateFormat("yyyy-MM-dd'T'00:00:00Z");
                 break;
             case month:
-                parser = new SimpleDateFormat("MMM z yyyy");
+                parser = new SimpleDateFormat("yyyy-MM-01'T'00:00:00Z");
                 break;
             default:
                 break;
@@ -177,7 +179,7 @@ public class TweetResource {
 
 
         SimpleDateFormat finalParser = parser;
-        LinkedHashMap<String, Integer> counts = index.getIndex().stream()
+        Map<String, Integer> counts = index.getIndex().stream()
                 .collect(Collectors.groupingBy(
                         // Get string to group by
                         item -> finalParser.format(item.getDate()),
@@ -186,6 +188,14 @@ public class TweetResource {
                         // How to sum for each item
                         Collectors.summingInt(EventIndex.Item::getSize)
                 ));
+        List<JSONObject> countObjects = new ArrayList<>();
+        for (Map.Entry<String, Integer> item : counts.entrySet()) {
+            JSONObject object = new JSONObject();
+            object.put("time", item.getKey());
+            object.put("count", item.getValue());
+            countObjects.add(object);
+        }
+
 
         JSONObject meta = new JSONObject();
         meta.put("event_name", eventName);
@@ -193,7 +203,7 @@ public class TweetResource {
         meta.put("refreshed_time", index.getUpdateTime().toString());
 
         JSONObject result = new JSONObject();
-        result.put("tweets", counts);
+        result.put("tweets", countObjects);
         result.put("meta", meta);
 
         return result;
@@ -225,6 +235,7 @@ public class TweetResource {
         // Update index
         int initialIndex = filteredIndex.get(0).getIndex();
         return filteredIndex.stream()
+                .map(EventIndex.Item::new)
                 .map((item -> item.setIndex(item.getIndex() - initialIndex)))
                 .collect(Collectors.toList());
     }
