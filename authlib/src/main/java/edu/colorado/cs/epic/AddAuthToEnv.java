@@ -21,23 +21,29 @@ import java.io.IOException;
 public class AddAuthToEnv {
 
     public static void register(Environment environment) throws IOException {
-        GoogleCredentials credentials = GoogleCredentials.getApplicationDefault();
-        FirebaseOptions options = new FirebaseOptions.Builder()
-                .setCredentials(credentials)
-                .build();
+        register(environment,true);
+    }
 
-        FirebaseApp.initializeApp(options);
-        environment.jersey().register(new AuthDynamicFeature(
-                new OAuthCredentialAuthFilter.Builder<FirebaseUser>()
-                        .setAuthenticator(new FirebaseAuthenticator())
-                        .setAuthorizer(new FirebaseAuthorizator())
-                        .setPrefix("Bearer")
-                        .buildAuthFilter()));
+    public static void register(Environment environment, Boolean protect) throws IOException {
+        if (protect) {
+            GoogleCredentials credentials = GoogleCredentials.getApplicationDefault();
+            FirebaseOptions options = new FirebaseOptions.Builder()
+                    .setCredentials(credentials)
+                    .build();
 
-        environment.jersey().register(RolesAllowedDynamicFeature.class);
+            FirebaseApp.initializeApp(options);
+            environment.jersey().register(new AuthDynamicFeature(
+                    new OAuthCredentialAuthFilter.Builder<FirebaseUser>()
+                            .setAuthenticator(new FirebaseAuthenticator())
+                            .setAuthorizer(new FirebaseAuthorizator())
+                            .setPrefix("Bearer")
+                            .buildAuthFilter()));
+            environment.healthChecks().register("firebase", new FirebaseAccessHealthCheck());
+            environment.jersey().register(RolesAllowedDynamicFeature.class);
+        }
+
         //If you want to use @Auth to inject a custom Principal type into your resource
         environment.jersey().register(new AuthValueFactoryProvider.Binder<>(FirebaseUser.class));
-        environment.healthChecks().register("firebase", new FirebaseAccessHealthCheck());
 
     }
 }

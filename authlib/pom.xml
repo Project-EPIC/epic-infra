@@ -6,7 +6,7 @@
 
     <groupId>edu.colorado.cs.epic</groupId>
     <artifactId>authlib</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
 
     <name>Project's EPIC Auth Library</name>
     <description>Authentification library for all services in Project EPIC infrastructure. Uses Dropwizard and Firebase.</description>
