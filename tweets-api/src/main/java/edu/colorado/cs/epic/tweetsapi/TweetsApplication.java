@@ -53,9 +53,9 @@ public class TweetsApplication extends Application<TweetsConfiguration> {
                 environment.servlets().addFilter("CORS", CrossOriginFilter.class);
         cors.addMappingForUrlPatterns(EnumSet.allOf(DispatcherType.class), true, "/*");
 
-        if (configuration.getProduction()) {
-            AddAuthToEnv.register(environment);
-        }
+
+        AddAuthToEnv.register(environment, configuration.getProduction());
+
 
         // Configure CORS parameters
         cors.setInitParameter("allowedOrigins", "*");
