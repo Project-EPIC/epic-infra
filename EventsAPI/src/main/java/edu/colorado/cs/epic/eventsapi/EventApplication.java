@@ -4,6 +4,7 @@ package edu.colorado.cs.epic.eventsapi;
 
 import edu.colorado.cs.epic.AddAuthToEnv;
 
+import edu.colorado.cs.epic.eventsapi.core.BigQueryController;
 import edu.colorado.cs.epic.eventsapi.core.DatabaseController;
 import edu.colorado.cs.epic.eventsapi.core.DataprocController;
 import edu.colorado.cs.epic.eventsapi.core.KubernetesController;
@@ -50,6 +51,7 @@ public class EventApplication extends Application<EventConfiguration> {
         final JdbiFactory factory = new JdbiFactory();
         final Jdbi jdbi = factory.build(environment, configuration.getDataSourceFactory(), "postgresql");
         final DatabaseController dbController = new DatabaseController(jdbi);
+        final BigQueryController bqController = new BigQueryController(configuration.getCollectBucketName());
 
         final KubernetesController k8sController = new KubernetesController(client, configuration.getKafkaServers(), configuration.getTweetStoreVersion(), configuration.getNamespace(), configuration.getFirehoseConfigMapName());
 
@@ -74,7 +76,7 @@ public class EventApplication extends Application<EventConfiguration> {
 
         SyncEventsTask task = new SyncEventsTask(k8sController, dbController, dataprocController);
         environment.admin().addTask(task);
-        environment.jersey().register(new EventResource(dbController, task));
+        environment.jersey().register(new EventResource(dbController, bqController, task));
         environment.jersey().register(new RootResource());
 
 

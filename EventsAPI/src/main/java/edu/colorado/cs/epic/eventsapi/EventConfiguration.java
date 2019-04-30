@@ -15,6 +15,9 @@ public class EventConfiguration extends Configuration {
     @NotEmpty
     private String firehoseConfigMapName;
 
+    @NotEmpty
+    private String collectBucketName;
+
     private Boolean production;
 
 
@@ -110,5 +113,15 @@ public class EventConfiguration extends Configuration {
     @JsonProperty
     public void setTemplateNameDataproc(String templateNameDataproc) {
         this.templateNameDataproc = templateNameDataproc;
+    }
+
+    @JsonProperty
+    public String getCollectBucketName() {
+        return collectBucketName;
+    }
+
+    @JsonProperty
+    public void setCollectBucketName(String collectBucketName) {
+        this.collectBucketName = collectBucketName;
     }
 }

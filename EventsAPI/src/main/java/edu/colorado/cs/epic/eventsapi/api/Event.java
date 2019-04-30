@@ -41,6 +41,10 @@ public class Event {
         return name + "-tweet-filter";
     }
 
+    public static String toBigqueryTableName(String name) {
+        return name.replace("-", "_");
+    }
+
 
     public Event() {
         // Jackson deserialization
@@ -78,10 +82,11 @@ public class Event {
     public void setAuthor(String author) {
         this.author = author;
     }
+
     @JsonProperty
     public URI getBigQueryTableURL() {
-        if (bigQueryTableURL ==null)
-            bigQueryTableURL = URI.create(String.format("https://console.cloud.google.com/bigquery?project=crypto-eon-164220&p=crypto-eon-164220&d=tweets&t=%s&page=table",this.normalizedName));
+        if (bigQueryTableURL == null)
+            bigQueryTableURL = URI.create(String.format("https://console.cloud.google.com/bigquery?project=crypto-eon-164220&p=crypto-eon-164220&d=tweets&t=%s&page=table", this.bigQueryTableName()));
         return bigQueryTableURL;
     }
 
@@ -179,6 +184,10 @@ public class Event {
         return toDeploymentName(normalizedName);
     }
 
+    public String bigQueryTableName() {
+        return toBigqueryTableName(normalizedName);
+    }
+
 
     public V1Deployment toDeployment(String kafkaServers, String tweetStoreVersion) {
         return new V1DeploymentBuilder()
@@ -247,7 +256,7 @@ public class Event {
     }
 
     @Override
-    public boolean equals(Object o){
+    public boolean equals(Object o) {
         if (o == this) {
             return true;
         }
