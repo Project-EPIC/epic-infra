@@ -16,7 +16,7 @@ Requirements: `mvn`
         <dependency>
             <groupId>edu.colorado.cs.epic</groupId>
             <artifactId>authlib</artifactId>
-            <version>1.0.0</version>
+            <version>1.1.0</version>
         </dependency>
 ```
 
@@ -31,10 +31,7 @@ AddAuthToEnv.register(environment);
 Where `environment` is your Environment parameter. To make testing easier, you can add a production variable on your configuration file such that it can be turned on and off without needing to recompile. Example:
 
 ```java
-if (configuration.getProduction()) {
-   AddAuthToEnv.register(environment);
-}
-
+AddAuthToEnv.register(environment, configuration.getProduction());
 ```
 ### Authentificating a request from a client
 
@@ -63,7 +60,7 @@ Accepted annotations to protect your resources:
 To access the logged in user from a resource method, you can add the following parameter:
 
 ```java
-@Auth FirebaseUser user
+@Auth Optional<FirebaseUser> user
 ```
 
 More information available: https://www.dropwizard.io/1.3.9/docs/manual/auth.html
