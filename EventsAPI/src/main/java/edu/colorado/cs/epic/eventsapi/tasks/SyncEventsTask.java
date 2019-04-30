@@ -1,6 +1,7 @@
 package edu.colorado.cs.epic.eventsapi.tasks;
 
 import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.Iterables;
 import edu.colorado.cs.epic.eventsapi.api.Event;
 import edu.colorado.cs.epic.eventsapi.core.DatabaseController;
 import edu.colorado.cs.epic.eventsapi.core.DataprocController;
@@ -10,9 +11,7 @@ import io.kubernetes.client.ApiException;
 import org.apache.log4j.Logger;
 
 import java.io.PrintWriter;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created by admin on 19/3/19.
@@ -36,6 +35,7 @@ public class SyncEventsTask extends Task {
     public void execute(ImmutableMultimap<String, String> immutableMultimap, PrintWriter printWriter) throws Exception {
         List<Event> k8sEventsList = k8scontroller.getActiveEvents();
         List<Event> dbActiveList = dbcontroller.getActiveEvents();
+        Collection<String> authors = immutableMultimap.asMap().getOrDefault("author", Collections.singleton("system@epic.cs.colorado.edu"));
         Set<Event> toBeStopped = new HashSet<>(k8sEventsList);
         toBeStopped.removeAll(dbActiveList);
         Set<Event> toBeStarted = new HashSet<>(dbActiveList);
@@ -44,6 +44,7 @@ public class SyncEventsTask extends Task {
         for (Event event : toBeStopped) {
             try {
                 k8scontroller.stopEvent(event.getNormalizedName());
+                dbcontroller.pauseEvent(event.getNormalizedName(), authors.iterator().next());
                 String out = String.format("Stopped event filter for %s", event.getNormalizedName());
                 logger.info(out);
                 if (printWriter != null) {
@@ -64,6 +65,7 @@ public class SyncEventsTask extends Task {
         for (Event event : toBeStarted) {
             try {
                 k8scontroller.startEvent(event);
+                dbcontroller.startEvent(event.getNormalizedName(), authors.iterator().next());
                 String out = String.format("Started event filter for %s", event.getNormalizedName());
                 logger.info(out);
                 if (printWriter != null) {

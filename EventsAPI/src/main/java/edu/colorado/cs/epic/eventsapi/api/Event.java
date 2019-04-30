@@ -16,6 +16,8 @@ import java.util.List;
 
 @JsonSnakeCase
 public class Event {
+
+
     public enum Status {
         ACTIVE, NOT_ACTIVE, FAILED
     }
@@ -32,6 +34,8 @@ public class Event {
     private Timestamp createdAt;
 
     private URI bigQueryTableURL;
+
+    private String author;
 
     public static String toDeploymentName(String name) {
         return name + "-tweet-filter";
@@ -67,6 +71,13 @@ public class Event {
         this.createdAt = new Timestamp(System.currentTimeMillis());
     }
 
+    public String getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(String author) {
+        this.author = author;
+    }
     @JsonProperty
     public URI getBigQueryTableURL() {
         if (bigQueryTableURL ==null)

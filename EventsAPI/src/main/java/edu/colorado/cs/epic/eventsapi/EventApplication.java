@@ -56,10 +56,8 @@ public class EventApplication extends Application<EventConfiguration> {
 
         final DataprocController dataprocController = new DataprocController(configuration.getGcloudProjectID(), "global", configuration.getTemplateNameDataproc());
 
-        if (configuration.getProduction()) {
-            AddAuthToEnv.register(environment);
-        }
 
+        AddAuthToEnv.register(environment,configuration.getProduction());
 
         final FilterRegistration.Dynamic cors =
                 environment.servlets().addFilter("CORS", CrossOriginFilter.class);
