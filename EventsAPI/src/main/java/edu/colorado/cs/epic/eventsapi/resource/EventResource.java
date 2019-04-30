@@ -118,7 +118,7 @@ public class EventResource {
     @PUT
     @Path("/{id}/{status}")
     public Response setStatus(@PathParam("id") String normalized_name, @PathParam("status") Event.Status status, @Context UriInfo uriInfo, @Auth Optional<FirebaseUser> user) {
-        Event event;
+        ExtendedEvent event;
         try {
             event = controller.getEvent(normalized_name);
             event.setStatus(status);
