@@ -3,12 +3,9 @@ package edu.colorado.cs.epic.tweetsapi.api;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.hibernate.validator.constraints.NotEmpty;
 
-
-public class TweetAnnotation {
+public class AnnotatedTags {
     @NotEmpty
     private String tag;
-    @NotEmpty
-    private String tweet;
     @NotEmpty
     private String tweetId;
     @NotEmpty
@@ -16,31 +13,24 @@ public class TweetAnnotation {
 
     private String authUser;
 
-    public TweetAnnotation(String tag, String tweet, String tweetId, String eventName) {
-        this.tag = tag;
-        this.tweet = tweet;
+    public AnnotatedTags(String tag, String tweetId, String eventName) {
+        this.tag=tag;
         this.tweetId = tweetId;
         this.eventName = eventName;
     }
 
-    public TweetAnnotation(){}
+    public AnnotatedTags(){}
+
     @JsonProperty
-    public String getTag() { return tag; }
+    public String getTag() {
+        return tag;
+    }
 
     @JsonProperty
     public void setTag(String tag) {
         this.tag = tag;
     }
 
-    @JsonProperty
-    public String getTweet() {
-        return tweet;
-    }
-
-    @JsonProperty
-    public void setTweet(String tweet) {
-        this.tweet = tweet;
-    }
 
     @JsonProperty
     public String getTweetId() {
@@ -64,4 +54,3 @@ public class TweetAnnotation {
     @JsonProperty
     public void setAuthUser(String authUser) { this.authUser = authUser; }
 }
-

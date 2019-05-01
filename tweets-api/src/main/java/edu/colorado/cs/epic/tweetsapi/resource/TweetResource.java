@@ -141,7 +141,7 @@ public class TweetResource {
         return tweets.toString();
     }
 
-    public enum AggregationBucket {
+    protected enum AggregationBucket {
         hour,
         day,
         month
