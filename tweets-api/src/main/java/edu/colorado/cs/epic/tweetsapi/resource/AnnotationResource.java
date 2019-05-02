@@ -13,7 +13,7 @@ import java.util.List;
 import io.dropwizard.auth.*;
 import java.util.Optional;
 
-@Path("/annotation/")
+@Path("/annotation")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @RolesAllowed("ADMIN")
@@ -24,6 +24,11 @@ public class AnnotationResource {
     public AnnotationResource(DatabaseController annotationsdb){
         logger=Logger.getLogger(AnnotationResource.class.getName());
         this.annotationsdb=annotationsdb;
+    }
+    @GET
+    @Path("/test")
+    public Response test(){
+        return Response.ok().build();
     }
 
     @DELETE
@@ -41,7 +46,7 @@ public class AnnotationResource {
     }
 
     @GET
-    public List<AnnotatedTags>  returnAnnotations(@QueryParam("tweetID") List<String> tweet_id, @QueryParam("eventName") String event_name){
+    public List<AnnotatedTags>  returnAnnotations(@QueryParam("tweetID") List<String> tweet_id, @QueryParam("eventName") String event_name, @Auth Optional<FirebaseUser> user){
         return annotationsdb.getAnnotations(tweet_id, event_name);
     }
 

@@ -60,7 +60,7 @@ public class TweetsApplication extends Application<TweetsConfiguration> {
         // Configure CORS parameters
         cors.setInitParameter("allowedOrigins", "*");
         cors.setInitParameter("allowedHeaders", "X-Requested-With,Authorization,Content-Type,Accept,Origin");
-        cors.setInitParameter("allowedMethods", "OPTIONS,GET,HEAD");
+        cors.setInitParameter("allowedMethods", "OPTIONS,GET,HEAD,POST,DELETE,LIST");
 
         Storage storage = StorageOptions.getDefaultInstance().getService();
         Bucket bucket = storage.get("epic-collect");
