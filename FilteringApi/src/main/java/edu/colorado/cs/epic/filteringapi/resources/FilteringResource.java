@@ -77,16 +77,16 @@ public class FilteringResource {
       query = String.format("SELECT * FROM `crypto-eon-164220.%s`", bqTempFile);
       return runQuery(query, eventName, keyword, pageNumber, pageSize, false);
     }
-    else
+    else {
       // Get results of a new query run by BigQuery 
-      query = String.format("SELECT text, extended_tweet.full_text, created_at,"
+      query = String.format("SELECT id, text, extended_tweet.full_text, created_at,"
       + "user.profile_image_url_https, _File_Name AS filename\n"
       + "FROM `crypto-eon-164220.%s`\n"
       + "WHERE text LIKE @keyword OR "
       + "extended_tweet.full_text IS NOT NULL AND "
       + "extended_tweet.full_text LIKE @keyword\n", eventTableName);
       return runQuery(query, eventName, keyword, pageNumber, pageSize, true);
-    
+    }
   }
 
   private String runQuery(String query, String eventName, String keyword, Integer pageNumber, Integer pageSize, Boolean loadCache) {
@@ -123,6 +123,28 @@ public class FilteringResource {
       // Build the final result object with meta data and the requested page of tweets
       StringBuilder tweets = new StringBuilder();
 
+      // Prepare and append tweet list object
+      JSONArray tweetArray = new JSONArray();
+      TableResult pageToReturn = queryJob.getQueryResults(
+        BigQuery.QueryResultsOption.pageSize(pageSize),
+        BigQuery.QueryResultsOption.startIndex((pageNumber - 1) * pageSize)
+      );      
+      // Iterate through the requested page
+      int numTweets = 0;
+      for (FieldValueList row : pageToReturn.getValues()) { 
+        JSONObject tweetObject = new JSONObject(); 
+        tweetObject.put("id", row.get("id").getStringValue());         
+        tweetObject.put("text", row.get("text").getStringValue()); 
+        tweetObject.put("extended_tweet", row.get("full_text").isNull()?"":row.get("full_text").getStringValue()); 
+        tweetObject.put("created_at", row.get("created_at").getStringValue()); 
+        tweetObject.put("profile_image", row.get("profile_image_url_https").getStringValue()); 
+        tweetObject.put("filename", row.get("filename").getStringValue()); 
+        tweetArray.add(tweetObject);
+        numTweets ++;
+      } 
+      tweets.append("{\"tweets\":");
+      tweets.append(tweetArray.toJSONString());
+
       // Prepare and append meta data object
       JSONObject metaObject = new JSONObject();     
       metaObject.put("event_name", eventName);
@@ -132,33 +154,15 @@ public class FilteringResource {
       metaObject.put("count", pageSize);
       metaObject.put("total_count", queryJob.getQueryResults().getTotalRows());
       metaObject.put("num_pages", (int) Math.ceil((double) queryJob.getQueryResults().getTotalRows() / pageSize));       
-      tweets.append("{\"meta\":");
+      metaObject.put("tweet_count", numTweets);
+      tweets.append(",\"meta\":");
       tweets.append(metaObject.toJSONString());     
-
-      // Prepare and append tweet list object
-      JSONArray tweetArray = new JSONArray();
-      TableResult pageToReturn = queryJob.getQueryResults(
-        BigQuery.QueryResultsOption.pageSize(pageSize),
-        BigQuery.QueryResultsOption.startIndex((pageNumber - 1) * pageSize)
-      );      
-      // Iterate through the requested page
-      for (FieldValueList row : pageToReturn.getValues()) { 
-        JSONObject tweetObject = new JSONObject();         
-        tweetObject.put("text", row.get("text").getStringValue()); 
-        tweetObject.put("extended_tweet", row.get("full_text").isNull()?"":row.get("full_text").getStringValue()); 
-        tweetObject.put("created_at", row.get("created_at").getStringValue()); 
-        tweetObject.put("profile_image", row.get("profile_image_url_https").getStringValue()); 
-        tweetObject.put("filename", row.get("filename").getStringValue()); 
-        tweetArray.add(tweetObject);
-      } 
-      tweets.append(",\"tweets\":");
-      tweets.append(tweetArray.toJSONString());
       tweets.append("}");
+      
       return tweets.toString();
 
     } catch (Exception e) {
       throw new WebApplicationException(Response.Status.NOT_FOUND);
     }
   }
-
 }
