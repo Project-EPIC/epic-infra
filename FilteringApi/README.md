@@ -52,7 +52,8 @@ List tweets for `event_name` event, filtered by `keyword` in tweet text and exte
         "job_status":"DONE",
         "tweet_count":1,
         "total_count":48,
-        "num_pages":48,     
+        "num_pages":48,  
+        "count":1,   
         "page":1,
         "event_name":"winter",
         "keyword":"colorado"
@@ -61,12 +62,14 @@ List tweets for `event_name` event, filtered by `keyword` in tweet text and exte
 ```
 **Meta fields**
 
+- `job_status`: Returns status value of the requested query job.
 - `tweet_count`: Number of filtered tweets contained in the `$.tweets` array.
 - `total_count`: Total number of filtered tweets for the current event.
 - `num_pages`: Total number of available pages with the current count.
-- `event_name`: Returns normalized name for current event.
 - `count`: Returns value for `count` parameter.
 - `page`: Return value for `page` parameter.
+- `event_name`: Returns normalized name for current event.
+- `keyword`: Returns value for requested `keyword`.
 
 **Status code**
 
