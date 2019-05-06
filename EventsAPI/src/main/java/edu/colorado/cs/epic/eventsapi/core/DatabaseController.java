@@ -1,28 +1,26 @@
 package edu.colorado.cs.epic.eventsapi.core;
 
-import edu.colorado.cs.epic.eventsapi.api.Event;
-import edu.colorado.cs.epic.eventsapi.api.EventActivity;
-import edu.colorado.cs.epic.eventsapi.api.ExtendedEvent;
+import edu.colorado.cs.epic.eventsapi.api.*;
+import org.apache.log4j.Logger;
 import org.jdbi.v3.core.Jdbi;
 import org.jdbi.v3.core.mapper.reflect.BeanMapper;
 import org.jdbi.v3.core.statement.PreparedBatch;
 
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by admin on 19/3/19.
  */
 public class DatabaseController {
 
+    private final Logger logger;
+    private final Jdbi annotationPostgres;
     private Jdbi postgres;
 
-    public DatabaseController(Jdbi postgres) {
-
+    public DatabaseController(Jdbi postgres, Jdbi annotationPostgres) {
+        logger = Logger.getLogger(DatabaseController.class.getName());
         this.postgres = postgres;
+        this.annotationPostgres = annotationPostgres;
     }
 
     public boolean eventExists(String normalizedName) {
@@ -119,7 +117,7 @@ public class DatabaseController {
     public void pauseEvent(String normalizedName, String author) {
         postgres.withHandle(handle -> handle.createUpdate("INSERT INTO event_activity (type, time, author, event_name) VALUES (:type, :time, :author, :event_name)")
                 .bind("event_name", normalizedName)
-                .bindBean(new EventActivity(EventActivity.Type.PAUSE_EVENT,author))
+                .bindBean(new EventActivity(EventActivity.Type.PAUSE_EVENT, author))
                 .execute());
     }
 
@@ -144,5 +142,97 @@ public class DatabaseController {
                 .mapTo(String.class)
                 .list());
     }
+
+    public void deleteAnnotation(String eventName, String tweetId, String tag) {
+        annotationPostgres.withHandle(handle -> {
+            handle.createUpdate("DELETE from annotation where tag=:tag and tweet_id=:tweetId and event_name=':eventName RETURNING *;")
+                    .bind("tag", tag)
+                    .bind("tweetId", tweetId)
+                    .bind("eventName", eventName)
+                    .execute();
+            try {
+                handle.createUpdate("DELETE from tweets where tweet_id=:tweetId;")
+                        .bind("tweetId", tweetId)
+                        .execute();
+
+            } catch (Exception e) {
+                logger.warn("Avoiding tweet deletion");
+            }
+            return 0;
+        });
+    }
+
+    public List<TweetAnnotation> getAnnotations(List<String> tweetIds, String eventName) {
+        if (tweetIds.isEmpty()) {
+            return annotationPostgres.withHandle(handle -> new ArrayList<>(
+                    handle.select(
+                            "select * from annotation where event_name= :eventName;")
+                            .bind("eventName", eventName)
+                            .mapToBean(TweetAnnotation.class)
+                            .list()
+            ));
+        }
+        return annotationPostgres.withHandle(handle -> new ArrayList<>(
+                handle.select(
+                        "select * from annotation where tweet_id in (<tweetIds>) and event_name= :eventName;")
+                        .bind("eventName", eventName)
+                        .bindList("tweetIds", tweetIds)
+                        .mapToBean(TweetAnnotation.class)
+                        .list()
+        ));
+    }
+
+    public Optional<TweetAnnotation> getAnnotation(String eventName, String tweetId, String tag) {
+
+        return annotationPostgres.withHandle(handle ->
+                handle.select(
+                        "select * from annotation where tweet_id = :tweetId and tag = :tag and event_name= :eventName;")
+                        .bind("eventName", eventName)
+                        .bind("tweetId", tweetId)
+                        .bind("tag", tag)
+                        .mapToBean(TweetAnnotation.class)
+                        .findFirst()
+        );
+    }
+
+    public List<TweetAnnotation> getAllAnnotations(List<String> tweet_ids) {
+        if (tweet_ids.isEmpty()) {
+            return annotationPostgres.withHandle(handle -> new ArrayList<>(
+                    handle.select(
+                            "select * from annotation;")
+                            .mapToBean(TweetAnnotation.class)
+                            .list()
+            ));
+        }
+
+        return annotationPostgres.withHandle(handle -> new ArrayList<>(
+                handle.select(
+                        "select * from annotation where tweet_id in (<tweetIds>);")
+
+                        .bindList("tweetIds", tweet_ids)
+                        .mapToBean(TweetAnnotation.class)
+                        .list()
+        ));
+    }
+
+    public void addAnnotation(ExtendedTweetAnnotation annotation) {
+        annotationPostgres.withHandle(handle -> {
+            handle.createUpdate("INSERT into tweets (tweet_id, tweet) values (:tweetId,:tweet)  ON CONFLICT(tweet_id) do NOTHING")
+                    .bindBean(annotation)
+                    .execute();
+            return handle.createUpdate("INSERT INTO annotation (tweet_id, tag, event_name, authuser) VALUES (:tweetId, :tag, :eventName, :authUser) ON CONFLICT(tweet_id,tag,event_name) do NOTHING")
+                    .bindBean(annotation)
+                    .execute();
+        });
+    }
+
+    public boolean annotationExists(ExtendedTweetAnnotation tweetAnnotation){
+        return annotationPostgres.withHandle(handle -> handle.createQuery("SELECT count(*) FROM annotation WHERE tweet_id=:tweetId AND tag=:tag AND event_name=:eventName")
+                .bindBean(tweetAnnotation)
+                .mapTo(Integer.class)
+                .findOnly()
+        ) > 0;
+    }
+
 
 }

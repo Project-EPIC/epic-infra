@@ -12,6 +12,10 @@ public class EventConfiguration extends Configuration {
     @NotNull
     private DataSourceFactory database = new DataSourceFactory();
 
+    @Valid
+    @NotNull
+    private DataSourceFactory annotationDatabase = new DataSourceFactory();
+
     @NotEmpty
     private String firehoseConfigMapName;
 
@@ -123,5 +127,15 @@ public class EventConfiguration extends Configuration {
     @JsonProperty
     public void setCollectBucketName(String collectBucketName) {
         this.collectBucketName = collectBucketName;
+    }
+
+    @JsonProperty("annotationDatabase")
+    public void setAnnotationDataSourceFactory(DataSourceFactory factory) {
+        this.annotationDatabase = factory;
+    }
+
+    @JsonProperty("annotationDatabase")
+    public DataSourceFactory getAnnotationDataSourceFactory() {
+        return annotationDatabase;
     }
 }

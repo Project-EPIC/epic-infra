@@ -1,5 +1,6 @@
 package edu.colorado.cs.epic.eventsapi.core;
 
+import com.codahale.metrics.health.HealthCheck;
 import edu.colorado.cs.epic.eventsapi.api.Event;
 import io.kubernetes.client.ApiClient;
 import io.kubernetes.client.ApiException;
@@ -126,6 +127,15 @@ public class KubernetesController {
             logger.info("ConfigMap already existis. Replacing...");
             api.replaceNamespacedConfigMap(configMapName, namespace, config, null, null);
         }
+
+    }
+
+    public V1PodList getAllPods() throws ApiException {
+        Configuration.setDefaultApiClient(client);
+        CoreV1Api api = new CoreV1Api();
+
+        return api.listPodForAllNamespaces(null, null, null, null, null, null, null, null, null);
+
 
     }
 }

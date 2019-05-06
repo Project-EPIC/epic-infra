@@ -4,9 +4,7 @@ import com.google.cloud.storage.Bucket;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 import edu.colorado.cs.epic.AddAuthToEnv;
-import edu.colorado.cs.epic.tweetsapi.core.DatabaseController;
 import edu.colorado.cs.epic.tweetsapi.health.GoogleCloudStorageHealthCheck;
-import edu.colorado.cs.epic.tweetsapi.resource.AnnotationResource;
 import edu.colorado.cs.epic.tweetsapi.resource.RootResource;
 import edu.colorado.cs.epic.tweetsapi.resource.TweetResource;
 import io.dropwizard.Application;
@@ -45,10 +43,6 @@ public class TweetsApplication extends Application<TweetsConfiguration> {
     @Override
     public void run(TweetsConfiguration configuration, Environment environment) throws IOException {
 
-        final JdbiFactory factory = new JdbiFactory();
-        final Jdbi jdbi = factory.build(environment, configuration.getDataSourceFactory(), "postgresql");
-        final DatabaseController dbController = new DatabaseController(jdbi);
-
         final FilterRegistration.Dynamic cors =
                 environment.servlets().addFilter("CORS", CrossOriginFilter.class);
         cors.addMappingForUrlPatterns(EnumSet.allOf(DispatcherType.class), true, "/*");
@@ -60,7 +54,7 @@ public class TweetsApplication extends Application<TweetsConfiguration> {
         // Configure CORS parameters
         cors.setInitParameter("allowedOrigins", "*");
         cors.setInitParameter("allowedHeaders", "X-Requested-With,Authorization,Content-Type,Accept,Origin");
-        cors.setInitParameter("allowedMethods", "OPTIONS,GET,HEAD,POST,DELETE,LIST");
+        cors.setInitParameter("allowedMethods", "OPTIONS,GET,HEAD");
 
         Storage storage = StorageOptions.getDefaultInstance().getService();
         Bucket bucket = storage.get("epic-collect");
@@ -68,7 +62,6 @@ public class TweetsApplication extends Application<TweetsConfiguration> {
 
         environment.jersey().register(new RootResource());
         environment.jersey().register(new TweetResource(bucket));
-        environment.jersey().register(new AnnotationResource(dbController));
 
     }
 }

@@ -9,6 +9,7 @@ import edu.colorado.cs.epic.eventsapi.core.DatabaseController;
 import edu.colorado.cs.epic.eventsapi.core.DataprocController;
 import edu.colorado.cs.epic.eventsapi.core.KubernetesController;
 import edu.colorado.cs.epic.eventsapi.health.KubernetesConnectionHealthCheck;
+import edu.colorado.cs.epic.eventsapi.resource.AnnotationResource;
 import edu.colorado.cs.epic.eventsapi.resource.EventResource;
 import edu.colorado.cs.epic.eventsapi.resource.RootResource;
 import edu.colorado.cs.epic.eventsapi.tasks.SyncEventsTask;
@@ -47,13 +48,13 @@ public class EventApplication extends Application<EventConfiguration> {
 
     @Override
     public void run(EventConfiguration configuration, Environment environment) throws IOException {
-        ApiClient client = Config.defaultClient();
         final JdbiFactory factory = new JdbiFactory();
         final Jdbi jdbi = factory.build(environment, configuration.getDataSourceFactory(), "postgresql");
-        final DatabaseController dbController = new DatabaseController(jdbi);
+        final Jdbi annotationJdbi = factory.build(environment, configuration.getAnnotationDataSourceFactory(), "annotationpostgres");
+        final DatabaseController dbController = new DatabaseController(jdbi, annotationJdbi);
         final BigQueryController bqController = new BigQueryController(configuration.getCollectBucketName());
 
-        final KubernetesController k8sController = new KubernetesController(client, configuration.getKafkaServers(), configuration.getTweetStoreVersion(), configuration.getNamespace(), configuration.getFirehoseConfigMapName());
+        final KubernetesController k8sController = new KubernetesController(Config.defaultClient(), configuration.getKafkaServers(), configuration.getTweetStoreVersion(), configuration.getNamespace(), configuration.getFirehoseConfigMapName());
 
 
         final DataprocController dataprocController = new DataprocController(configuration.getGcloudProjectID(), "global", configuration.getTemplateNameDataproc());
@@ -72,11 +73,12 @@ public class EventApplication extends Application<EventConfiguration> {
         cors.setInitParameter("allowedMethods", "OPTIONS,GET,PUT,POST,DELETE,HEAD");
 
 
-        environment.healthChecks().register("kubernetes", new KubernetesConnectionHealthCheck(client));
+        environment.healthChecks().register("kubernetes", new KubernetesConnectionHealthCheck(k8sController));
 
         SyncEventsTask task = new SyncEventsTask(k8sController, dbController, dataprocController);
         environment.admin().addTask(task);
         environment.jersey().register(new EventResource(dbController, bqController, task));
+        environment.jersey().register(new AnnotationResource(dbController));
         environment.jersey().register(new RootResource());
 
 
