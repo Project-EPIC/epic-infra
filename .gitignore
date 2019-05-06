@@ -1,5 +1,8 @@
 .DS_Store
-EventsAPI/.idea
-EventsAPI/target
-EventsAPI/EventsAPI.iml
-EventsAPI/src/main/java/eventapi/resource/TestResourceClass.java
+.idea/
+target/
+*.iml
+.project
+.classpath
+.settings
+.factorypath
