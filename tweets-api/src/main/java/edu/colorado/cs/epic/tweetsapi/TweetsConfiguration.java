@@ -13,12 +13,6 @@ public class TweetsConfiguration extends Configuration {
     @NotNull
     private Boolean production;
 
-    @Valid
-    @NotNull
-    private DataSourceFactory database = new DataSourceFactory();
-    public TweetsConfiguration() {
-
-    }
 
     @JsonProperty
     public Boolean getProduction() {
@@ -28,16 +22,6 @@ public class TweetsConfiguration extends Configuration {
     @JsonProperty
     public void setProduction(Boolean production) {
         this.production = production;
-    }
-
-    @JsonProperty("database")
-    public void setDataSourceFactory(DataSourceFactory factory) {
-        this.database = factory;
-    }
-
-    @JsonProperty("database")
-    public DataSourceFactory getDataSourceFactory() {
-        return database;
     }
 
 
