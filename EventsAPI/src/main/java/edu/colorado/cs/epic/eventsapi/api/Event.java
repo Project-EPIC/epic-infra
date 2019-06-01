@@ -33,7 +33,6 @@ public class Event {
 
     private Timestamp createdAt;
 
-    private URI bigQueryTableURL;
 
     private String author;
 
@@ -83,17 +82,6 @@ public class Event {
         this.author = author;
     }
 
-    @JsonProperty
-    public URI getBigQueryTableURL() {
-        if (bigQueryTableURL == null)
-            bigQueryTableURL = URI.create(String.format("https://console.cloud.google.com/bigquery?project=crypto-eon-164220&p=crypto-eon-164220&d=tweets&t=%s&page=table", this.bigQueryTableName()));
-        return bigQueryTableURL;
-    }
-
-    @JsonProperty
-    public void setBigQueryTableURL(URI bigQueryTableURL) {
-        this.bigQueryTableURL = bigQueryTableURL;
-    }
 
     @JsonProperty
     public String getNormalizedName() {

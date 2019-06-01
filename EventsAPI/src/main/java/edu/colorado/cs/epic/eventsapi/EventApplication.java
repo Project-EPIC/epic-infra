@@ -51,8 +51,8 @@ public class EventApplication extends Application<EventConfiguration> {
         final JdbiFactory factory = new JdbiFactory();
         final Jdbi jdbi = factory.build(environment, configuration.getDataSourceFactory(), "postgresql");
         final Jdbi annotationJdbi = factory.build(environment, configuration.getAnnotationDataSourceFactory(), "annotationpostgres");
-        final DatabaseController dbController = new DatabaseController(jdbi, annotationJdbi);
         final BigQueryController bqController = new BigQueryController(configuration.getCollectBucketName());
+        final DatabaseController dbController = new DatabaseController(jdbi, annotationJdbi, bqController);
 
         final KubernetesController k8sController = new KubernetesController(Config.defaultClient(), configuration.getKafkaServers(), configuration.getTweetStoreVersion(), configuration.getNamespace(), configuration.getFirehoseConfigMapName());
 

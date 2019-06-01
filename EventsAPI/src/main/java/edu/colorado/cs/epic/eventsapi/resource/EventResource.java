@@ -57,8 +57,6 @@ public class EventResource {
 
 
         controller.insertEvent(event);
-        bqController.createBigQueryTable(event);
-
         syncInfrastructure(user);
 
         return Response.created(uriInfo.getRequestUriBuilder().path(event.getNormalizedName()).build()).entity(event).build();
@@ -98,6 +96,20 @@ public class EventResource {
         syncInfrastructure(user);
         event = controller.getEvent(normalized_name);
         return Response.accepted(uriInfo.getRequestUriBuilder().path(event.getNormalizedName()).build()).entity(event).build();
+    }
+
+    @PUT
+    @Path("/big_query/{normalized_name}/")
+    public ExtendedEvent createBigQueryTable(@PathParam("normalized_name") String normalizedName) {
+        ExtendedEvent event;
+        try {
+            event = controller.getEvent(normalizedName);
+            bqController.createBigQueryTable(event);
+        } catch (IllegalStateException e) {
+            throw new WebApplicationException(Response.Status.NOT_FOUND);
+        }
+        event.setBigQueryTableURL(bqController.getEventTableURL(event));
+        return event;
     }
 
     private void syncInfrastructure(Optional<FirebaseUser> user) {

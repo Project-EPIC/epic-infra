@@ -15,11 +15,13 @@ public class DatabaseController {
 
     private final Logger logger;
     private final Jdbi annotationPostgres;
+    private final BigQueryController bqController;
     private Jdbi postgres;
 
-    public DatabaseController(Jdbi postgres, Jdbi annotationPostgres) {
+    public DatabaseController(Jdbi postgres, Jdbi annotationPostgres, BigQueryController bqController) {
         logger = Logger.getLogger(DatabaseController.class.getName());
         this.postgres = postgres;
+        this.bqController = bqController;
         this.annotationPostgres = annotationPostgres;
     }
 
@@ -95,8 +97,7 @@ public class DatabaseController {
     }
 
     public ExtendedEvent getEvent(String normalizedName) {
-
-        return postgres.withHandle(handle -> {
+        ExtendedEvent retEvent = postgres.withHandle(handle -> {
             ExtendedEvent event = handle.createQuery("SELECT * FROM events WHERE normalized_name=:normalizedName ORDER BY normalized_name")
                     .bind("normalizedName", normalizedName)
                     .mapToBean(ExtendedEvent.class)
@@ -112,6 +113,12 @@ public class DatabaseController {
             return event;
 
         });
+        if (bqController.tableExists(retEvent)) {
+            retEvent.setBigQueryTableURL(bqController.getEventTableURL(retEvent));
+        } else {
+            retEvent.setBigQueryTableURL(null);
+        }
+        return retEvent;
     }
 
     public void pauseEvent(String normalizedName, String author) {

@@ -9,6 +9,8 @@ import edu.colorado.cs.epic.eventsapi.api.Event;
 import edu.colorado.cs.epic.eventsapi.resource.EventResource;
 import org.apache.log4j.Logger;
 
+import java.net.URI;
+
 import static com.google.api.client.util.Charsets.UTF_8;
 
 public class BigQueryController {
@@ -23,12 +25,9 @@ public class BigQueryController {
     }
 
     public void createBigQueryTable(Event event) {
-        // Create empty file to create folder structure
-        Storage storage = StorageOptions.getDefaultInstance().getService();
-        BlobId blobId = BlobId.of(bucketName, event.getNormalizedName() + "/_EMPTY");
-        BlobInfo blobInfo = BlobInfo.newBuilder(blobId).setContentType("text/plain").build();
-        storage.create(blobInfo, "".getBytes(UTF_8));
-        logger.info(String.format("Created file in %s", bucketName));
+        if (tableExists(event)){
+            return;
+        }
 
         // Create big query table
         BigQuery bigquery = BigQueryOptions.getDefaultInstance().getService();
@@ -47,4 +46,20 @@ public class BigQueryController {
         bigquery.create(tableInfo, BigQuery.TableOption.fields(BigQuery.TableField.EXTERNAL_DATA_CONFIGURATION));
         logger.info(String.format("Created big query table %s", event.bigQueryTableName()));
     }
+
+    public Boolean tableExists(Event event) {
+        BigQuery bigquery = BigQueryOptions.getDefaultInstance().getService();
+        Table table;
+        try {
+            table = bigquery.getTable(TableId.of("tweets", event.bigQueryTableName()));
+        } catch (Exception e) {
+            return false;
+        }
+        return table != null;
+    }
+
+    public URI getEventTableURL(Event event) {
+        return URI.create(String.format("https://console.cloud.google.com/bigquery?project=crypto-eon-164220&p=crypto-eon-164220&d=tweets&t=%s&page=table", event.bigQueryTableName()));
+    }
 }
+
