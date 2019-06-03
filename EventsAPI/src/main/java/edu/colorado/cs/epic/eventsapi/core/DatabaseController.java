@@ -114,9 +114,9 @@ public class DatabaseController {
 
         });
         if (bqController.tableExists(retEvent)) {
-            retEvent.setBigQueryTableURL(bqController.getEventTableURL(retEvent));
+            retEvent.setBigQueryTable(retEvent.bigQueryTableName());
         } else {
-            retEvent.setBigQueryTableURL(null);
+            retEvent.setBigQueryTable(null);
         }
         return retEvent;
     }

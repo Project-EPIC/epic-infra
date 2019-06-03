@@ -11,7 +11,7 @@ import java.util.List;
 public class ExtendedEvent extends Event {
 
     private List<EventActivity> activity;
-    private URI bigQueryTableURL;
+    private String bigQueryTable;
 
 
     public ExtendedEvent() {
@@ -35,13 +35,13 @@ public class ExtendedEvent extends Event {
     }
 
     @JsonProperty
-    public URI getBigQueryTableURL() {
-        return bigQueryTableURL;
+    public String getBigQueryTable() {
+        return bigQueryTable;
     }
 
     @JsonProperty
-    public void setBigQueryTableURL(URI bigQueryTableURL) {
-        this.bigQueryTableURL = bigQueryTableURL;
+    public void setBigQueryTable(String bigQueryTable) {
+        this.bigQueryTable = bigQueryTable;
     }
 
 }

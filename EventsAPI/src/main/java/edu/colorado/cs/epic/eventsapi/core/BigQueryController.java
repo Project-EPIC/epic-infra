@@ -58,8 +58,5 @@ public class BigQueryController {
         return table != null;
     }
 
-    public URI getEventTableURL(Event event) {
-        return URI.create(String.format("https://console.cloud.google.com/bigquery?project=crypto-eon-164220&p=crypto-eon-164220&d=tweets&t=%s&page=table", event.bigQueryTableName()));
-    }
 }
 

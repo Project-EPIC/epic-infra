@@ -108,7 +108,7 @@ public class EventResource {
         } catch (IllegalStateException e) {
             throw new WebApplicationException(Response.Status.NOT_FOUND);
         }
-        event.setBigQueryTableURL(bqController.getEventTableURL(event));
+        event.setBigQueryTable(event.bigQueryTableName());
         return event;
     }
 
