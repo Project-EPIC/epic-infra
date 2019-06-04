@@ -13,6 +13,8 @@ public class TweetsConfiguration extends Configuration {
     @NotNull
     private Boolean production;
 
+    @NotNull
+    private String projectId;
 
     @JsonProperty
     public Boolean getProduction() {
@@ -24,5 +26,13 @@ public class TweetsConfiguration extends Configuration {
         this.production = production;
     }
 
+    @JsonProperty
+    public String getProjectId() {
+        return projectId;
+    }
 
+    @JsonProperty
+    public void setProjectId(String projectId) {
+        this.projectId = projectId;
+    }
 }

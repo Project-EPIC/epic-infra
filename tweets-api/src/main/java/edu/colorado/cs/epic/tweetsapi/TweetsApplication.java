@@ -6,6 +6,7 @@ import com.google.cloud.storage.StorageOptions;
 import edu.colorado.cs.epic.AddAuthToEnv;
 import edu.colorado.cs.epic.tweetsapi.health.GoogleCloudStorageHealthCheck;
 import edu.colorado.cs.epic.tweetsapi.resource.RootResource;
+import edu.colorado.cs.epic.tweetsapi.resource.TranslateResource;
 import edu.colorado.cs.epic.tweetsapi.resource.TweetResource;
 import io.dropwizard.Application;
 import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
@@ -54,7 +55,7 @@ public class TweetsApplication extends Application<TweetsConfiguration> {
         // Configure CORS parameters
         cors.setInitParameter("allowedOrigins", "*");
         cors.setInitParameter("allowedHeaders", "X-Requested-With,Authorization,Content-Type,Accept,Origin");
-        cors.setInitParameter("allowedMethods", "OPTIONS,GET,HEAD");
+        cors.setInitParameter("allowedMethods", "OPTIONS,GET,HEAD,POST");
 
         Storage storage = StorageOptions.getDefaultInstance().getService();
         Bucket bucket = storage.get("epic-collect");
@@ -62,6 +63,7 @@ public class TweetsApplication extends Application<TweetsConfiguration> {
 
         environment.jersey().register(new RootResource());
         environment.jersey().register(new TweetResource(bucket));
+        environment.jersey().register(new TranslateResource(configuration.getProjectId()));
 
     }
 }

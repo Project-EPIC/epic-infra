@@ -1,2 +1,2 @@
 production: ${PRODUCTION:-true}
-
+projectId: ${PROJECT_ID:-crypto-eon-164220}
