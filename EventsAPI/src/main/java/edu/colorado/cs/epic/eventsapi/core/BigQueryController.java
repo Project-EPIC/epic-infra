@@ -49,13 +49,19 @@ public class BigQueryController {
 
     public Boolean tableExists(Event event) {
         BigQuery bigquery = BigQueryOptions.getDefaultInstance().getService();
-        Table table;
+
         try {
-            table = bigquery.getTable(TableId.of("tweets", event.bigQueryTableName()));
+//            TableId tableId = TableId.of();
+            for (Table table  : bigquery.listTables("tweets").iterateAll()) {
+                if (table.getGeneratedId().split("\\.")[1].equals(event.bigQueryTableName())) {
+                    return true;
+                }
+            }
         } catch (Exception e) {
+            e.printStackTrace();
             return false;
         }
-        return table != null;
+        return false;
     }
 
 }
