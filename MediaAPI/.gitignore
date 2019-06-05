@@ -1,0 +1,5 @@
+target/
+MentionsAPI.iml
+.idea/
+dependency-reduced-pom.xml
+*.iml
