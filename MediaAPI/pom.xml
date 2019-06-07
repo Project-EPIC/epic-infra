@@ -6,7 +6,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>edu.colorado.cs.epic.mediaapi</groupId>
-    <artifactId>MediaAPI</artifactId>
+    <artifactId>mediaapi</artifactId>
     <version>1.0.0</version>
 
     <name>MediaAPI</name>
