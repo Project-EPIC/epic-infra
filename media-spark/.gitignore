@@ -1,0 +1,6 @@
+# Don't track content of these folders
+dependency-reduced-pom.xml
+MediaSpark.iml
+spark-warehouse
+target	
+.idea
