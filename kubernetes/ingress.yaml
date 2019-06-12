@@ -18,6 +18,10 @@ spec:
         backend:
           serviceName: events-api
           servicePort: 8080
+      - path: /media/*
+        backend:
+          serviceName: media-api
+          servicePort: 8080
       - path: /mentions/*
         backend:
           serviceName: mentions-api
