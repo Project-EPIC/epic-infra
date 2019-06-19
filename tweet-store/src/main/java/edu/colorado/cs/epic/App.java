@@ -104,7 +104,7 @@ public class App {
 
     private static String checkFileCreation(KafkaConsumer<String, String> consumer, List<ConsumerRecord<String, String>> buffer, String folder) {
         String currentFolder = new SimpleDateFormat(pattern).format(new Date());
-        if (buffer.size() >= minBatchSize || !folder.equals(currentFolder)) {
+        if (buffer.size() >= minBatchSize || (!folder.equals(currentFolder) && !buffer.isEmpty())) {
 
             // Calculate filename
             String filename = String.format("%s/%stweet-%d-%d.json.gz", eventName, folder, (new Date()).getTime(),buffer.size());
