@@ -52,6 +52,8 @@ public class App {
         props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
         props.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
 
+
+
         // Connect to Kafka
         KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props);
         log.info(String.format("Connecting to Kafka servers: %s", kafkaServers));
@@ -66,6 +68,10 @@ public class App {
         String folder = new SimpleDateFormat(pattern).format(new Date());
 
         log.info(String.format("Listening for keywords: %s", String.join(", ", keywords)));
+
+        // Create shutdown hook to save tweets read by current worker and commit results to Kafka
+        String finalFolder = folder;
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> saveTweets(consumer, buffer, finalFolder)));
         while (true) {
 
             // Check if Kafka connection is up. Kill system otherwise.
@@ -105,35 +111,39 @@ public class App {
     private static String checkFileCreation(KafkaConsumer<String, String> consumer, List<ConsumerRecord<String, String>> buffer, String folder) {
         String currentFolder = new SimpleDateFormat(pattern).format(new Date());
         if (buffer.size() >= minBatchSize || (!folder.equals(currentFolder) && !buffer.isEmpty())) {
+            saveTweets(consumer, buffer, folder);
 
-            // Calculate filename
-            String filename = String.format("%s/%stweet-%d-%d.json.gz", eventName, folder, (new Date()).getTime(),buffer.size());
-            log.info(String.format("Saving %d tweets in %s", buffer.size(), filename));
-
-            // Get Google Storage instance
-            Storage storage = StorageOptions.getDefaultInstance().getService();
-            BlobId blobId = BlobId.of(bucketName, filename);
-            BlobInfo blobInfo = BlobInfo.newBuilder(blobId).setContentType("application/json").build();
-
-            // Convert buffer to new-line delimited json
-            String tweets = buffer.stream().map(ConsumerRecord::value).reduce((r1, r2) -> r1 + "\n" + r2).get();
-
-            // GZip tweets
-            ByteArrayOutputStream obj = new ByteArrayOutputStream();
-            try {
-                GZIPOutputStream gzip = new GZIPOutputStream(obj);
-                gzip.write(tweets.getBytes(UTF_8));
-                gzip.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-                System.exit(1);
-            }
-
-            // Store tweets, commit to consumer and clear buffer
-            storage.create(blobInfo, obj.toByteArray());
-            consumer.commitSync();
-            buffer.clear();
         }
         return currentFolder;
+    }
+
+    private static void saveTweets(KafkaConsumer<String, String> consumer, List<ConsumerRecord<String, String>> buffer, String folder) {
+        // Calculate filename
+        String filename = String.format("%s/%stweet-%d-%d.json.gz", eventName, folder, (new Date()).getTime(),buffer.size());
+        log.info(String.format("Saving %d tweets in %s", buffer.size(), filename));
+
+        // Get Google Storage instance
+        Storage storage = StorageOptions.getDefaultInstance().getService();
+        BlobId blobId = BlobId.of(bucketName, filename);
+        BlobInfo blobInfo = BlobInfo.newBuilder(blobId).setContentType("application/json").build();
+
+        // Convert buffer to new-line delimited json
+        String tweets = buffer.stream().map(ConsumerRecord::value).reduce((r1, r2) -> r1 + "\n" + r2).get();
+
+        // GZip tweets
+        ByteArrayOutputStream obj = new ByteArrayOutputStream();
+        try {
+            GZIPOutputStream gzip = new GZIPOutputStream(obj);
+            gzip.write(tweets.getBytes(UTF_8));
+            gzip.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+
+        // Store tweets, commit to consumer and clear buffer
+        storage.create(blobInfo, obj.toByteArray());
+        consumer.commitSync();
+        buffer.clear();
     }
 }
