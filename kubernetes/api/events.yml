@@ -21,7 +21,7 @@ spec:
             secretName: keyfile
       containers:
       - name: events-api
-        image: projectepic/eventsapi:1.0.26
+        image: projectepic/eventsapi:1.0.30
         imagePullPolicy: Always
         resources:
           limits:
