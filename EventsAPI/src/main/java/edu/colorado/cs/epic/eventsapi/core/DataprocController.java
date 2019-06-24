@@ -54,7 +54,7 @@ public class DataprocController {
 
 
         InstantiateWorkflowTemplateRequest request = new InstantiateWorkflowTemplateRequest();
-        request.setRequestId(String.format("%s-%s", dateName, eventName));
+        request.setRequestId(String.format("%s-%d", dateName, eventName.hashCode()));
         request.setParameters(parameters);
 
         String identifier = String.format("projects/%s/regions/%s/workflowTemplates/%s", projectId, region, templateName);

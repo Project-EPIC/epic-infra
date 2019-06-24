@@ -6,6 +6,8 @@ import io.kubernetes.client.ApiClient;
 import io.kubernetes.client.ApiException;
 import io.kubernetes.client.Configuration;
 import io.kubernetes.client.apis.AppsV1Api;
+import io.kubernetes.client.apis.AppsV1beta1Api;
+import io.kubernetes.client.apis.AutoscalingV1Api;
 import io.kubernetes.client.apis.CoreV1Api;
 import io.kubernetes.client.models.*;
 
@@ -78,21 +80,38 @@ public class KubernetesController {
     public void stopEvent(String normalizedName) throws ApiException {
         Configuration.setDefaultApiClient(client);
         AppsV1Api api = new AppsV1Api();
-
+        AutoscalingV1Api apiAutoscaler = new AutoscalingV1Api();
         api.deleteNamespacedDeployment(Event.toDeploymentName(normalizedName), namespace, new V1DeleteOptions(), null, null, null, null, null);
+        try {
+            apiAutoscaler.deleteNamespacedHorizontalPodAutoscaler(Event.toAutoscalerName(normalizedName), namespace,new V1DeleteOptions(),null,null, null,null,null);
+        } catch (ApiException e) {
+            logger.warn("Autoscaler was not deleted successfully");
+            e.printStackTrace();
+        }
+
     }
 
     public void startEvent(Event event) throws ApiException {
         V1Deployment deploy = event.toDeployment(kafkaServers, tweetStoreVersion);
+        V1HorizontalPodAutoscaler autoscaler = event.toAutoScaler();
 
         Configuration.setDefaultApiClient(client);
         AppsV1Api api = new AppsV1Api();
+        AutoscalingV1Api apiAutoscaler = new AutoscalingV1Api();
+
         try {
             api.createNamespacedDeployment(namespace, deploy, false, null, null);
         } catch (ApiException e) {
             logger.info("Already existing deployment");
             api.replaceNamespacedDeployment(event.deployName(), namespace, deploy, null, null);
         }
+        try {
+            apiAutoscaler.createNamespacedHorizontalPodAutoscaler(namespace,autoscaler,false,null,null);
+        } catch (ApiException e) {
+            logger.info("Autoscaler was not started. Trying to replace.");
+            apiAutoscaler.replaceNamespacedHorizontalPodAutoscaler(event.autoscalerName(),namespace,autoscaler,null,null);
+        }
+
 
     }
 

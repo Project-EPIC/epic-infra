@@ -3,9 +3,7 @@ package edu.colorado.cs.epic.eventsapi.api;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.dropwizard.jackson.JsonSnakeCase;
 import io.kubernetes.client.custom.Quantity;
-import io.kubernetes.client.models.V1Deployment;
-import io.kubernetes.client.models.V1DeploymentBuilder;
-import io.kubernetes.client.models.V1EnvVar;
+import io.kubernetes.client.models.*;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import java.net.URI;
@@ -42,6 +40,10 @@ public class Event {
 
     public static String toBigqueryTableName(String name) {
         return name.replace("-", "_");
+    }
+
+    public static String toAutoscalerName(String name) {
+        return toDeploymentName(name)+"-scaler";
     }
 
 
@@ -172,6 +174,8 @@ public class Event {
         return toDeploymentName(normalizedName);
     }
 
+    public String autoscalerName() {return toAutoscalerName(normalizedName);}
+
     public String bigQueryTableName() {
         return toBigqueryTableName(normalizedName);
     }
@@ -195,7 +199,7 @@ public class Event {
                 .addToLabels("app", "tweet-filter")
                 .endMetadata()
                 .withNewSpec()
-                .withNewTerminationGracePeriodSeconds(10)
+                .withNewTerminationGracePeriodSeconds(120)
                 .addNewContainer()
                 .withName("tweet-filter")
                 .withImage("projectepic/tweet-store:" + tweetStoreVersion)
@@ -241,6 +245,24 @@ public class Event {
                 .endSpec()
                 .build();
 
+    }
+
+    public V1HorizontalPodAutoscaler toAutoScaler() {
+        return new V1HorizontalPodAutoscalerBuilder()
+                .editOrNewMetadata()
+                .withName(autoscalerName())
+                .endMetadata()
+                .withNewSpec()
+                .editOrNewScaleTargetRef()
+                .withApiVersion("apps/v1beta1")
+                .withKind("Deployment")
+                .withName(deployName())
+                .endScaleTargetRef()
+                .withMinReplicas(1)
+                .withMaxReplicas(3)
+                .withNewTargetCPUUtilizationPercentage(90)
+                .endSpec()
+                .build();
     }
 
     @Override
