@@ -49,8 +49,7 @@ public class DataprocController {
                 .build();
 
         HashMap<String, String> parameters = new HashMap<>();
-        parameters.put("INPUT_JSON", String.format("gs://epic-collect/%s/*/*/*/*/*", eventName));
-        parameters.put("OUTPUT_FOLDER", String.format("gs://epic-analysis-results/spark/mentions/%s/%s", eventName, dateFolder));
+        parameters.put("EVENT_NAME", eventName);
 
 
         InstantiateWorkflowTemplateRequest request = new InstantiateWorkflowTemplateRequest();

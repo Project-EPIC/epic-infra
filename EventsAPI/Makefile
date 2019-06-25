@@ -1,6 +1,6 @@
 all: jar
 
-TAG_CLIENT = 1.0.30
+TAG_CLIENT = 1.0.31
 PROJECT_NAME = eventsapi
 
 
