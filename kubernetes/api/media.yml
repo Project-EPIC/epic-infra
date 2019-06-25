@@ -21,7 +21,7 @@ spec:
              secretName: keyfile
       containers:
       - name: media-api
-        image: projectepic/mediaapi:1.0.0
+        image: projectepic/mediaapi:1.0.1
         imagePullPolicy: Always
         volumeMounts:
          - mountPath: /private
