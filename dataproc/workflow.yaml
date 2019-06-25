@@ -2,16 +2,18 @@ jobs:
 - sparkJob:
     args:
     - gs://epic-historic-tweets/2017 Hurricane Harvey/*
-    - gs://epic-analysis-results/2017 Hurricane Harvey/mentions
     mainJarFileUri: gs://epic-spark-jars/MentionsSpark-1.0.jar
   stepId: mentions
+- sparkJob:
+    args:
+    - gs://epic-historic-tweets/2017 Hurricane Harvey/*
+    mainJarFileUri: gs://epic-spark-jars/MediaSpark-1.0.jar
+  stepId: media
 parameters:
-- name: INPUT_JSON
+- name: EVENT_NAME
   fields:
   - jobs['mentions'].sparkJob.args[0]
-- name: OUTPUT_FOLDER
-  fields:
-  - jobs['mentions'].sparkJob.args[1]
+  - jobs['media'].sparkJob.args[0]
 placement:
   managedCluster:
     clusterName: epic-spark
