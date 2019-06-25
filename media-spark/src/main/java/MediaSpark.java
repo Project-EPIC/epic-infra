@@ -7,6 +7,7 @@ import static org.apache.spark.sql.functions.*;
 
 
 import java.io.File;
+import java.util.Date;
 
 public class MediaSpark {
   public static void main(String[] args) {
@@ -17,9 +18,10 @@ public class MediaSpark {
     SparkSession spark = SparkSession.builder().appName("Media Spark").getOrCreate();
     //Dataset<String> logData = spark.read().textFile(logFile).cache();
 
+    String eventName = args[0];
     // A JSON dataset is pointed to by path
     // Iterate through the directory to input all the timeline JSON files from an event
-    Dataset<Row> timeline = spark.read().json(args[0]);
+    Dataset<Row> timeline = spark.read().json(String.format("gs://epic-collect/%s/*/*/*/*/*", eventName));
 
     // Creates a temporary view using the DataFrame
     timeline.createOrReplaceTempView("timeline");
@@ -34,8 +36,10 @@ public class MediaSpark {
     // Select the media id, the image link, and the tweet url from the media block
     Dataset<Row> namesDF2 = spark.sql("SELECT user, col.id AS media_id, col.media_url_https  AS image_link, col.expanded_url AS tweet_url FROM expTimeline");
 
+    long count = namesDF2.count();
+
     // Write the result of the query to our destination JSON file
-    namesDF2.coalesce(1).write().mode(SaveMode.Overwrite).json(args[1]);
+    namesDF2.coalesce(1).write().mode(SaveMode.Overwrite).json(String.format("gs://epic-analysis-results/spark/media/%s/%d/%d/", eventName, (new Date()).getTime(), count));
 
     // Stop Spark session
     spark.stop();
