@@ -1,6 +1,7 @@
 package edu.colorado.cs.epic.mentionsapi.resources;
 
 import com.google.api.gax.paging.Page;
+import com.google.cloud.ReadChannel;
 import com.google.cloud.storage.*;
 
 import javax.annotation.security.RolesAllowed;
@@ -15,10 +16,10 @@ import io.dropwizard.jersey.params.IntParam;
 import org.apache.log4j.Logger;
 import org.json.simple.JSONObject;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStreamReader;
-import java.io.LineNumberReader;
+import java.io.*;
+import java.nio.channels.Channels;
 import java.util.NoSuchElementException;
+import java.util.Scanner;
 
 
 @Path("/mentions/")
@@ -65,14 +66,8 @@ public class MentionsResource {
         }
 
 
-        // Store the content of the JSON file
-        ByteArrayInputStream bais = new ByteArrayInputStream(lastBlob.getContent());
-
-        InputStreamReader reader = new InputStreamReader(bais);
+        InputStreamReader reader = new InputStreamReader(Channels.newInputStream(lastBlob.reader()));
         LineNumberReader in = new LineNumberReader(reader);
-
-
-
 
         StringBuilder data = new StringBuilder();
 
@@ -87,10 +82,8 @@ public class MentionsResource {
             throw new WebApplicationException(Response.Status.BAD_REQUEST);
         }
 
-        // Calculate total number of lines
-        long remainingLines = in.lines().count();
-        long totalCount = remainingLines + startIndex + returnedTweets;
 
+        int totalCount = Integer.valueOf(lastBlob.getName().split("/")[4]);
         // remove last comma
         data.setLength(data.length() - 1);
 

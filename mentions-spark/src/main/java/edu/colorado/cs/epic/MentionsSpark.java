@@ -7,6 +7,7 @@ import static org.apache.spark.sql.functions.*;
 
 
 import java.io.File;
+import java.util.Date;
 
 public class MentionsSpark {
   public static void main(String[] args) {
@@ -17,9 +18,11 @@ public class MentionsSpark {
     SparkSession spark = SparkSession.builder().appName("edu.colorado.cs.epic.MentionsSpark").getOrCreate();
     //Dataset<String> logData = spark.read().textFile(logFile).cache();
 
+    String eventName = args[0];
+
     // A JSON dataset is pointed to by path
     // Iterate through the directory to input all the timeline JSON files from an event
-    Dataset<Row> timeline = spark.read().json(args[0]);
+    Dataset<Row> timeline = spark.read().json(String.format("gs://epic-collect/%s/*/*/*/*/*", eventName));
     // Print all the JSON files
     //timeline.printSchema();
 
@@ -48,7 +51,9 @@ public class MentionsSpark {
     //namesDF2.printSchema();
 
     // Write the result of the query to our destination JSON file
-    namesDF2.coalesce(1).write().mode(SaveMode.Overwrite).json(args[1]);
+    long count = namesDF2.count();
+
+    namesDF2.coalesce(1).write().mode(SaveMode.Overwrite).json(String.format("gs://epic-analysis-results/spark/mentions/%s/%d/%d/", eventName, (new Date()).getTime(), count));
 
     /** USEFUL CODE:
 
