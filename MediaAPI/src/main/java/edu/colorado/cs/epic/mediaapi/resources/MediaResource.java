@@ -18,6 +18,7 @@ import org.json.simple.JSONObject;
 import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
 import java.io.LineNumberReader;
+import java.nio.channels.Channels;
 import java.util.NoSuchElementException;
 
 
@@ -66,13 +67,8 @@ public class MediaResource {
 
 
         // Store the content of the JSON file
-        ByteArrayInputStream bais = new ByteArrayInputStream(lastBlob.getContent());
-
-        InputStreamReader reader = new InputStreamReader(bais);
+        InputStreamReader reader = new InputStreamReader(Channels.newInputStream(lastBlob.reader()));
         LineNumberReader in = new LineNumberReader(reader);
-
-
-
 
         StringBuilder data = new StringBuilder();
 
@@ -88,8 +84,7 @@ public class MediaResource {
         }
 
         // Calculate total number of lines
-        long remainingLines = in.lines().count();
-        long totalCount = remainingLines + startIndex + returnedTweets;
+        int totalCount = Integer.valueOf(lastBlob.getName().split("/")[4]);
 
         // remove last comma
         data.setLength(data.length() - 1);
