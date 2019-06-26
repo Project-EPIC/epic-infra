@@ -184,7 +184,7 @@ public class TweetResource {
                         // Get string to group by
                         item -> finalParser.format(item.getDate()),
                         // Creator for returning class
-                        LinkedHashMap::new,
+                        TreeMap::new,
                         // How to sum for each item
                         Collectors.summingInt(EventIndex.Item::getSize)
                 ));
