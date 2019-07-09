@@ -1,0 +1,1622 @@
+{"fields": [
+  {
+    "fields": [
+      {
+        "mode": "NULLABLE",
+        "name": "full_text",
+        "type": "STRING"
+      }
+    ],
+    "mode": "NULLABLE",
+    "name": "extended_tweet",
+    "type": "RECORD"
+  },
+  {
+    "fields": [
+      {
+        "mode": "NULLABLE",
+        "name": "display",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "expanded",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "url",
+        "type": "STRING"
+      }
+    ],
+    "mode": "NULLABLE",
+    "name": "quoted_status_permalink",
+    "type": "RECORD"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "quoted_status_id_str",
+    "type": "INTEGER"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "possibly_sensitive",
+    "type": "BOOLEAN"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "quoted_status_id",
+    "type": "INTEGER"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "timestamp_ms",
+    "type": "INTEGER"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "lang",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "filter_level",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "favorited",
+    "type": "BOOLEAN"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "in_reply_to_user_id_str",
+    "type": "INTEGER"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "coordinates",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "in_reply_to_user_id",
+    "type": "INTEGER"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "in_reply_to_status_id",
+    "type": "INTEGER"
+  },
+  {
+    "fields": [
+      {
+        "fields": [
+          {
+            "mode": "NULLABLE",
+            "name": "followers",
+            "type": "BOOLEAN"
+          }
+        ],
+        "mode": "NULLABLE",
+        "name": "scopes",
+        "type": "RECORD"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "quoted_status_id_str",
+        "type": "INTEGER"
+      },
+      {
+        "fields": [
+          {
+            "mode": "NULLABLE",
+            "name": "display",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "expanded",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "url",
+            "type": "STRING"
+          }
+        ],
+        "mode": "NULLABLE",
+        "name": "quoted_status_permalink",
+        "type": "RECORD"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "quoted_status_id",
+        "type": "INTEGER"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "possibly_sensitive",
+        "type": "BOOLEAN"
+      },
+      {
+        "fields": [
+          {
+            "mode": "NULLABLE",
+            "name": "full_text",
+            "type": "STRING"
+          }
+        ],
+        "mode": "NULLABLE",
+        "name": "extended_tweet",
+        "type": "RECORD"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "lang",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "filter_level",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "favorited",
+        "type": "BOOLEAN"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "in_reply_to_user_id_str",
+        "type": "INTEGER"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "coordinates",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "in_reply_to_user_id",
+        "type": "INTEGER"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "in_reply_to_status_id",
+        "type": "INTEGER"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "retweeted",
+        "type": "BOOLEAN"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "source",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "id_str",
+        "type": "INTEGER"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "text",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "in_reply_to_status_id_str",
+        "type": "INTEGER"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "id",
+        "type": "INTEGER"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "truncated",
+        "type": "BOOLEAN"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "quote_count",
+        "type": "INTEGER"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "created_at",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "in_reply_to_screen_name",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "geo",
+        "type": "STRING"
+      },
+      {
+        "fields": [
+          {
+            "mode": "NULLABLE",
+            "name": "attributes",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "country",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "name",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "bounding_box",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "country_code",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "place_type",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "full_name",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "url",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "id",
+            "type": "STRING"
+          }
+        ],
+        "mode": "NULLABLE",
+        "name": "place",
+        "type": "RECORD"
+      },
+      {
+        "fields": [
+          {
+            "mode": "NULLABLE",
+            "name": "quoted_status_id_str",
+            "type": "INTEGER"
+          },
+          {
+            "fields": [
+              {
+                "mode": "NULLABLE",
+                "name": "full_text",
+                "type": "STRING"
+              }
+            ],
+            "mode": "NULLABLE",
+            "name": "extended_tweet",
+            "type": "RECORD"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "lang",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "filter_level",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "quoted_status_id",
+            "type": "INTEGER"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "possibly_sensitive",
+            "type": "BOOLEAN"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "favorited",
+            "type": "BOOLEAN"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "in_reply_to_user_id",
+            "type": "INTEGER"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "in_reply_to_status_id",
+            "type": "INTEGER"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "retweeted",
+            "type": "BOOLEAN"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "source",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "id_str",
+            "type": "INTEGER"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "text",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "in_reply_to_status_id_str",
+            "type": "INTEGER"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "place",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "reply_count",
+            "type": "INTEGER"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "id",
+            "type": "INTEGER"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "truncated",
+            "type": "BOOLEAN"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "quote_count",
+            "type": "INTEGER"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "created_at",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "in_reply_to_user_id_str",
+            "type": "INTEGER"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "coordinates",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "in_reply_to_screen_name",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "geo",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "contributors",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "retweet_count",
+            "type": "INTEGER"
+          },
+          {
+            "fields": [
+              {
+                "mode": "NULLABLE",
+                "name": "follow_request_sent",
+                "type": "STRING"
+              },
+              {
+                "mode": "NULLABLE",
+                "name": "notifications",
+                "type": "STRING"
+              },
+              {
+                "mode": "NULLABLE",
+                "name": "default_profile",
+                "type": "BOOLEAN"
+              },
+              {
+                "mode": "NULLABLE",
+                "name": "profile_image_url_https",
+                "type": "STRING"
+              },
+              {
+                "mode": "NULLABLE",
+                "name": "profile_text_color",
+                "type": "STRING"
+              },
+              {
+                "mode": "NULLABLE",
+                "name": "profile_sidebar_fill_color",
+                "type": "STRING"
+              },
+              {
+                "mode": "NULLABLE",
+                "name": "profile_sidebar_border_color",
+                "type": "STRING"
+              },
+              {
+                "mode": "NULLABLE",
+                "name": "profile_link_color",
+                "type": "STRING"
+              },
+              {
+                "mode": "NULLABLE",
+                "name": "profile_background_tile",
+                "type": "BOOLEAN"
+              },
+              {
+                "mode": "NULLABLE",
+                "name": "profile_background_image_url_https",
+                "type": "STRING"
+              },
+              {
+                "mode": "NULLABLE",
+                "name": "profile_background_color",
+                "type": "STRING"
+              },
+              {
+                "mode": "NULLABLE",
+                "name": "protected",
+                "type": "BOOLEAN"
+              },
+              {
+                "mode": "NULLABLE",
+                "name": "description",
+                "type": "STRING"
+              },
+              {
+                "mode": "NULLABLE",
+                "name": "url",
+                "type": "STRING"
+              },
+              {
+                "mode": "NULLABLE",
+                "name": "verified",
+                "type": "BOOLEAN"
+              },
+              {
+                "mode": "NULLABLE",
+                "name": "location",
+                "type": "STRING"
+              },
+              {
+                "mode": "NULLABLE",
+                "name": "translator_type",
+                "type": "STRING"
+              },
+              {
+                "mode": "NULLABLE",
+                "name": "profile_image_url",
+                "type": "STRING"
+              },
+              {
+                "mode": "NULLABLE",
+                "name": "favourites_count",
+                "type": "INTEGER"
+              },
+              {
+                "mode": "NULLABLE",
+                "name": "screen_name",
+                "type": "STRING"
+              },
+              {
+                "mode": "NULLABLE",
+                "name": "name",
+                "type": "STRING"
+              },
+              {
+                "mode": "NULLABLE",
+                "name": "id",
+                "type": "INTEGER"
+              },
+              {
+                "mode": "NULLABLE",
+                "name": "lang",
+                "type": "STRING"
+              },
+              {
+                "mode": "NULLABLE",
+                "name": "profile_background_image_url",
+                "type": "STRING"
+              },
+              {
+                "mode": "NULLABLE",
+                "name": "utc_offset",
+                "type": "STRING"
+              },
+              {
+                "mode": "NULLABLE",
+                "name": "created_at",
+                "type": "STRING"
+              },
+              {
+                "mode": "NULLABLE",
+                "name": "following",
+                "type": "STRING"
+              },
+              {
+                "mode": "NULLABLE",
+                "name": "id_str",
+                "type": "INTEGER"
+              },
+              {
+                "mode": "NULLABLE",
+                "name": "geo_enabled",
+                "type": "BOOLEAN"
+              },
+              {
+                "mode": "NULLABLE",
+                "name": "friends_count",
+                "type": "INTEGER"
+              },
+              {
+                "mode": "NULLABLE",
+                "name": "contributors_enabled",
+                "type": "BOOLEAN"
+              },
+              {
+                "mode": "NULLABLE",
+                "name": "default_profile_image",
+                "type": "BOOLEAN"
+              },
+              {
+                "mode": "NULLABLE",
+                "name": "profile_use_background_image",
+                "type": "BOOLEAN"
+              },
+              {
+                "mode": "NULLABLE",
+                "name": "followers_count",
+                "type": "INTEGER"
+              },
+              {
+                "mode": "NULLABLE",
+                "name": "listed_count",
+                "type": "INTEGER"
+              },
+              {
+                "mode": "NULLABLE",
+                "name": "profile_banner_url",
+                "type": "STRING"
+              },
+              {
+                "mode": "NULLABLE",
+                "name": "statuses_count",
+                "type": "INTEGER"
+              },
+              {
+                "mode": "NULLABLE",
+                "name": "time_zone",
+                "type": "STRING"
+              },
+              {
+                "mode": "NULLABLE",
+                "name": "is_translator",
+                "type": "BOOLEAN"
+              }
+            ],
+            "mode": "NULLABLE",
+            "name": "user",
+            "type": "RECORD"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "is_quote_status",
+            "type": "BOOLEAN"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "favorite_count",
+            "type": "INTEGER"
+          }
+        ],
+        "mode": "NULLABLE",
+        "name": "quoted_status",
+        "type": "RECORD"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "reply_count",
+        "type": "INTEGER"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "contributors",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "retweet_count",
+        "type": "INTEGER"
+      },
+      {
+        "fields": [
+          {
+            "mode": "NULLABLE",
+            "name": "follow_request_sent",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "notifications",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "default_profile",
+            "type": "BOOLEAN"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "profile_image_url_https",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "profile_text_color",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "profile_sidebar_fill_color",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "profile_sidebar_border_color",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "profile_link_color",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "profile_background_tile",
+            "type": "BOOLEAN"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "profile_background_image_url_https",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "profile_background_color",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "protected",
+            "type": "BOOLEAN"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "description",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "url",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "verified",
+            "type": "BOOLEAN"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "location",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "translator_type",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "profile_image_url",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "favourites_count",
+            "type": "INTEGER"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "screen_name",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "name",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "id",
+            "type": "INTEGER"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "lang",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "profile_background_image_url",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "utc_offset",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "created_at",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "following",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "id_str",
+            "type": "INTEGER"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "geo_enabled",
+            "type": "BOOLEAN"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "friends_count",
+            "type": "INTEGER"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "contributors_enabled",
+            "type": "BOOLEAN"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "default_profile_image",
+            "type": "BOOLEAN"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "profile_use_background_image",
+            "type": "BOOLEAN"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "followers_count",
+            "type": "INTEGER"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "listed_count",
+            "type": "INTEGER"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "profile_banner_url",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "statuses_count",
+            "type": "INTEGER"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "time_zone",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "is_translator",
+            "type": "BOOLEAN"
+          }
+        ],
+        "mode": "NULLABLE",
+        "name": "user",
+        "type": "RECORD"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "is_quote_status",
+        "type": "BOOLEAN"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "favorite_count",
+        "type": "INTEGER"
+      }
+    ],
+    "mode": "NULLABLE",
+    "name": "retweeted_status",
+    "type": "RECORD"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "retweeted",
+    "type": "BOOLEAN"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "source",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "id_str",
+    "type": "INTEGER"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "text",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "in_reply_to_status_id_str",
+    "type": "INTEGER"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "id",
+    "type": "INTEGER"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "truncated",
+    "type": "BOOLEAN"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "quote_count",
+    "type": "INTEGER"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "created_at",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "in_reply_to_screen_name",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "geo",
+    "type": "STRING"
+  },
+  {
+    "fields": [
+      {
+        "mode": "NULLABLE",
+        "name": "attributes",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "country",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "name",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "bounding_box",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "country_code",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "place_type",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "full_name",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "url",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "id",
+        "type": "STRING"
+      }
+    ],
+    "mode": "NULLABLE",
+    "name": "place",
+    "type": "RECORD"
+  },
+  {
+    "fields": [
+      {
+        "fields": [
+          {
+            "mode": "NULLABLE",
+            "name": "full_text",
+            "type": "STRING"
+          }
+        ],
+        "mode": "NULLABLE",
+        "name": "extended_tweet",
+        "type": "RECORD"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "quoted_status_id_str",
+        "type": "INTEGER"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "lang",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "filter_level",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "quoted_status_id",
+        "type": "INTEGER"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "possibly_sensitive",
+        "type": "BOOLEAN"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "favorited",
+        "type": "BOOLEAN"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "in_reply_to_user_id",
+        "type": "INTEGER"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "in_reply_to_status_id",
+        "type": "INTEGER"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "retweeted",
+        "type": "BOOLEAN"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "source",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "id_str",
+        "type": "INTEGER"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "text",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "in_reply_to_status_id_str",
+        "type": "INTEGER"
+      },
+      {
+        "fields": [
+          {
+            "mode": "NULLABLE",
+            "name": "attributes",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "country",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "name",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "bounding_box",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "country_code",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "place_type",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "full_name",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "url",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "id",
+            "type": "STRING"
+          }
+        ],
+        "mode": "NULLABLE",
+        "name": "place",
+        "type": "RECORD"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "reply_count",
+        "type": "INTEGER"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "id",
+        "type": "INTEGER"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "truncated",
+        "type": "BOOLEAN"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "quote_count",
+        "type": "INTEGER"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "created_at",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "in_reply_to_user_id_str",
+        "type": "INTEGER"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "coordinates",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "in_reply_to_screen_name",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "geo",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "contributors",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "retweet_count",
+        "type": "INTEGER"
+      },
+      {
+        "fields": [
+          {
+            "mode": "NULLABLE",
+            "name": "follow_request_sent",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "notifications",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "default_profile",
+            "type": "BOOLEAN"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "profile_image_url_https",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "profile_text_color",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "profile_sidebar_fill_color",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "profile_sidebar_border_color",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "profile_link_color",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "profile_background_tile",
+            "type": "BOOLEAN"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "profile_background_image_url_https",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "profile_background_color",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "protected",
+            "type": "BOOLEAN"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "description",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "url",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "verified",
+            "type": "BOOLEAN"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "location",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "translator_type",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "profile_image_url",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "favourites_count",
+            "type": "INTEGER"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "screen_name",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "name",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "id",
+            "type": "INTEGER"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "lang",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "profile_background_image_url",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "utc_offset",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "created_at",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "following",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "id_str",
+            "type": "INTEGER"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "geo_enabled",
+            "type": "BOOLEAN"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "friends_count",
+            "type": "INTEGER"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "contributors_enabled",
+            "type": "BOOLEAN"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "default_profile_image",
+            "type": "BOOLEAN"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "profile_use_background_image",
+            "type": "BOOLEAN"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "followers_count",
+            "type": "INTEGER"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "listed_count",
+            "type": "INTEGER"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "profile_banner_url",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "statuses_count",
+            "type": "INTEGER"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "time_zone",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "is_translator",
+            "type": "BOOLEAN"
+          }
+        ],
+        "mode": "NULLABLE",
+        "name": "user",
+        "type": "RECORD"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "is_quote_status",
+        "type": "BOOLEAN"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "favorite_count",
+        "type": "INTEGER"
+      }
+    ],
+    "mode": "NULLABLE",
+    "name": "quoted_status",
+    "type": "RECORD"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "reply_count",
+    "type": "INTEGER"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "contributors",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "retweet_count",
+    "type": "INTEGER"
+  },
+  {
+    "fields": [
+      {
+        "mode": "NULLABLE",
+        "name": "follow_request_sent",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "notifications",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "default_profile",
+        "type": "BOOLEAN"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "profile_image_url_https",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "profile_text_color",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "profile_sidebar_fill_color",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "profile_sidebar_border_color",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "profile_link_color",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "profile_background_tile",
+        "type": "BOOLEAN"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "profile_background_image_url_https",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "profile_background_color",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "protected",
+        "type": "BOOLEAN"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "description",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "url",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "verified",
+        "type": "BOOLEAN"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "location",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "translator_type",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "profile_image_url",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "favourites_count",
+        "type": "INTEGER"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "screen_name",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "name",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "id",
+        "type": "INTEGER"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "lang",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "profile_background_image_url",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "utc_offset",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "created_at",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "following",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "id_str",
+        "type": "INTEGER"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "geo_enabled",
+        "type": "BOOLEAN"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "friends_count",
+        "type": "INTEGER"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "contributors_enabled",
+        "type": "BOOLEAN"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "default_profile_image",
+        "type": "BOOLEAN"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "profile_use_background_image",
+        "type": "BOOLEAN"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "followers_count",
+        "type": "INTEGER"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "listed_count",
+        "type": "INTEGER"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "profile_banner_url",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "statuses_count",
+        "type": "INTEGER"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "time_zone",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "is_translator",
+        "type": "BOOLEAN"
+      }
+    ],
+    "mode": "NULLABLE",
+    "name": "user",
+    "type": "RECORD"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "is_quote_status",
+    "type": "BOOLEAN"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "favorite_count",
+    "type": "INTEGER"
+  }
+]
+}
