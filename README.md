@@ -24,6 +24,7 @@ Tweets are stored following a `EVENT/YYYY/MM/DD/HH/` folder structure (a tweet r
 In order to deploy you will need:
 - Docker CLI installed (Ex: `brew install docker`)
 - A [hub.docker.com](https://hub.docker.com/) account and your Docker CLI connected to it (`docker login`)
+- Editor access to [Project EPIC Docker Hub organization](https://cloud.docker.com/orgs/projectepic/teams).
 - Editor access to the GCloud project.
 - `kubectl` installed (Ex: `brew install kubectl`)
 - `kubectl` connected to the corresponding cluster (Project EPIC: `gcloud container clusters get-credentials epic-prod --zone us-central1-c --project crypto-eon-164220`)
