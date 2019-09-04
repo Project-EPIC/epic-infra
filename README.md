@@ -42,6 +42,13 @@ In order to deploy you will need:
 - `kubectl` connected to the corresponding cluster (Project EPIC: `gcloud container clusters get-credentials epic-prod --zone us-central1-c --project crypto-eon-164220`)
 
 ------
+# Deployment
+
+- Create managed Postgres instance (see [cloudsql instructions](./cloudsql))
+- Create Dataproc workflow (see [dataproc instructions](./dataproc))
+- Create a Kubernetes cluster and deploy services (see [kubernetes instructions](./kubernetes))
+
+------
 
 ## Frequent errors
 
