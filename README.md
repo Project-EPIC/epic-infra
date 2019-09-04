@@ -18,6 +18,18 @@ Tweets are stored following a `EVENT/YYYY/MM/DD/HH/` folder structure (a tweet r
 
 
 ------------
+# Requirements
+List of requirements for deploying or developing in this repository.
+
+## Development
+
+In order to work on the services you will need the following:
+- Installed java 8. (Ex: `brew install java8`)
+- Installed maven. (Ex: `brew install mvn`)
+- Install our authlib: `cd authlib && mvn install`.
+- Log in on your GCloud CLI. `gcloud auth login`
+- Create a default token using your GCloud user. `gcloud auth application-default login`
+
 
 ## Deploying
 
