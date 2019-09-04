@@ -8,10 +8,10 @@ CREATE TABLE events (
 );
 
 CREATE TABLE event_activity (
-  type varchar(20),
-  time timestamp,
-  author varchar(80),
-  event_name text REFERENCES events(normalized_name)
+  type VARCHAR(20),
+  time TIMESTAMP,
+  author VARCHAR(80),
+  event_name TEXT REFERENCES events(normalized_name)
 );
 
 
