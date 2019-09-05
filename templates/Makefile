@@ -1,6 +1,7 @@
 all: jar
 
 TAG_CLIENT = 1.0.0
+# Replace API_NAME with your API name
 PROJECT_NAME = API_NAME
 
 
