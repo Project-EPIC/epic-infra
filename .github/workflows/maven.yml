@@ -14,7 +14,7 @@ jobs:
       with:
         java-version: 1.8
     - name: Build with Maven
-      run: mvn deploy -Dtoken=$GITHUB_TOKEN
+      run: mvn deploy -Dtoken=$GITHUB_TOKEN -Dregistry=https://maven.pkg.github.com/project-epic/epic-infra
       working-directory: authlib
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
