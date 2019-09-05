@@ -2,10 +2,18 @@
 
 This contains the library to do authentication and authorization for all Project EPIC microservices.
 
-## Install on local service
+## Release new version
 
-- Add following snippet to your dependencies on `pom.xml`:
+- Configure your local maven installation to use GitHub to push the package (you can learn how to do so [here](https://help.github.com/en/articles/configuring-apache-maven-for-use-with-github-package-registry#authenticating-to-github-package-registry))
+- Update version in `pom.xml`
+- `mvn deploy`
 
+
+
+
+## Install on service
+
+- Add dependency on `pom.xml`.
 ```xml
         <dependency>
             <groupId>edu.colorado.cs.epic</groupId>
@@ -13,15 +21,10 @@ This contains the library to do authentication and authorization for all Project
             <version>1.1.0</version>
         </dependency>
 ```
-
-## Install on DropWizard
-
-To install, add the following code on your Application run method:
-
+- To install, add the following code on your Application run method:
 ```java
 AddAuthToEnv.register(environment);
 ```
-
 Where `environment` is your Environment parameter. To make testing easier, you can add a production variable on your configuration file such that it can be turned on and off without needing to recompile. Example:
 
 ```java
