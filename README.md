@@ -27,6 +27,7 @@ In order to work on the services you will need the following:
 - Installed java 8. (Ex: `brew install java8`)
 - Installed maven. (Ex: `brew install mvn`)
 - Install our authlib: `cd authlib && mvn install`.
+- Set up your local Maven installation to pull from GitHub repository (read how to do so [here](https://help.github.com/en/articles/configuring-apache-maven-for-use-with-github-package-registry#authenticating-to-github-package-registry))
 - Log in on your GCloud CLI. `gcloud auth login`
 - Create a default token using your GCloud user. `gcloud auth application-default login`
 
