@@ -5,7 +5,7 @@ WORKDIR /home/API_NAME
  
 # Replace API_NAME for the API_NAME from the Makefile
 ADD target/API_NAME.jar /home/API_NAME/API_NAME.jar
-ADD eventapi.yml /home/API_NAME/config.yml
+ADD config.yml /home/API_NAME/config.yml
  
 EXPOSE 8080 8081
  
