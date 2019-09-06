@@ -26,6 +26,7 @@ List of requirements for deploying or developing in this repository.
 In order to work on the services you will need the following:
 - Installed java 8. (Ex: `brew install java8`)
 - Installed maven. (Ex: `brew install mvn`)
+- Installed Make (Ex: `brew install make`)
 - Install our authlib: `cd authlib && mvn install`.
 - Set up your local Maven installation to pull from GitHub repository (read how to do so [here](https://help.github.com/en/articles/configuring-apache-maven-for-use-with-github-package-registry#authenticating-to-github-package-registry))
 - Log in on your GCloud CLI. `gcloud auth login`
@@ -41,9 +42,38 @@ In order to deploy you will need:
 - Editor access to the GCloud project.
 - `kubectl` installed (Ex: `brew install kubectl`)
 - `kubectl` connected to the corresponding cluster (Project EPIC: `gcloud container clusters get-credentials epic-prod --zone us-central1-c --project crypto-eon-164220`)
+------
+# New service
+
+## Start development
+
+Requirements: [Development requirements](#development)
+- Read [Getting started guide for DropWizard](https://www.dropwizard.io/1.3.14/docs/getting-started.html)
+- `mvn archetype:generate -DarchetypeGroupId=io.dropwizard.archetypes -DarchetypeArtifactId=java-simple -DarchetypeVersion=1.3.9`
+- Add AuthLib as a dependency (follow instructions [here](authlib/#install-on-service))
+- Add authentification on your service (follow instructions [here](authlib/#install-on-service))
+- Add CORS configuration (see instructions [here](authlib#cors-specification))
+- Add Makefile to service (you can copy from the [Makefile template](templates/Makefile)
+- Add Dockerfile to service (you can copy from the [Dockerfile template](templates/Dockerfile)
+- Add root resource under resources folder and register it on the application (you can copy root resource from the [EventsAPI example](EventsAPI/src/main/java/edu/colorado/cs/epic/eventsapi/resource/RootResource.java)
+- Add `config.yml` file copying from [this template](templates/config.yml)
+- Set up your configuration to retrieve production key-value (see [this example](MediaAPI/src/main/java/edu/colorado/cs/epic/mediaapi/MediaAPIConfiguration.java))
+- Set up your application to get [configuration parameters from environment variables](https://www.dropwizard.io/0.8.0/docs/manual/core.html#environment-variables)
+- Run project locally: `make run`
+
+## Deployment
+
+- (ONLY FIRST TIME) Create new Kubernetes [definition file](templates/api.yml) in the [api folder](kubernetes/api)
+- Make sure your resources are protected with the right annotations (see how to do it [here](authlib#protect-resources))
+- Make sure you have [health checks](https://www.dropwizard.io/0.8.0/docs/manual/core.html#health-checks) configured properly for external dependencies
+- Update image version in `Makefile`
+- Create and upload docker image: `make deploy`
+- Update docker image version in your [api definition file](kubernetes/api)
+- `kubectl replace -f api/NEW.yml` (replace NEW with your api file name)
+
 
 ------
-# Deployment
+# System deployment
 
 - Create managed Postgres instance (see [cloudsql instructions](./cloudsql))
 - Create Dataproc workflow (see [dataproc instructions](./dataproc))
