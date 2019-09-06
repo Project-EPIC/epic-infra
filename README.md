@@ -79,6 +79,58 @@ Requirements: [Development requirements](#development)
 - Create Dataproc workflow (see [dataproc instructions](./dataproc))
 - Create a Kubernetes cluster and deploy services (see [kubernetes instructions](./kubernetes))
 
+-----
+
+# Queries
+
+How to run diverse queries on the system with new and old data.
+
+## Collection query
+
+Streaming collection for events happenning at the moment
+
+- Open [dashboard.gerard.space](https://dashboard.gerard.space)
+- Select _Events_ on side bar.
+- Press the pink button on the left-down corner
+- Fill form with information on event and use keywords field to add keywords to collect from. Read more about how Twitter tracking works [here](https://developer.twitter.com/en/docs/tweets/filter-realtime/guides/basic-stream-parameters#track)
+
+## BigQuery query
+
+- Open desired table (see sections below)
+- Click _Query table_
+- Build SQL statement for the query we are interested in. See [syntax here](https://cloud.google.com/bigquery/docs/reference/standard-sql/query-syntax).
+- Run query
+- Download data by clicking _Save results_
+
+### Open table for new infrastructure event
+
+Query on an event collected in the new infrastrucure
+
+- Open [dashboard.gerard.space](https://dashboard.gerard.space)
+- Select _Events_ on side bar.
+- Select event to query
+- Select _Dashboard_ tab on top
+- (ONLY FIRST TIME) Click _Create BigQuery Table_ 
+- Click _Explore in BigQuery_
+
+## Open table on legacy imported events
+
+- Open [historic dataset](https://console.cloud.google.com/bigquery?project=crypto-eon-164220&p=crypto-eon-164220&d=historic&page=dataset) in BigQuery
+- If table exists: [Execute query](#bigquery-query)
+- Else:
+- Click _Create table_
+- Set table configuration to the following (if not specified, leave as defaulted):
+  - _Create table from_: "Google Cloud Storage"
+  - _Select file..._: Browse file in `epic-historic_tweets` bucket, in the corresponding folder and select one file. Replace filename with wildcard instead (Ex: `epic-historic-tweets/2012 Canada Fires/*`)
+  - _File format_: "JSON (newline delimited)"
+  - _Table type_: "External table"
+  - _Table name_: Fill with a distinct table name
+  - Check _Auto detect - Schema and input parameters_ box
+  - _Advanced options_:
+    - _Number of errors allowed_: 2147483647
+    - Check _Ignore unknown values_ box
+-  Click _Create table_
+
 ------
 
 ## Frequent errors
