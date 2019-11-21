@@ -34,6 +34,12 @@
       <artifactId>guava</artifactId>
       <version>23.6-jre</version>
     </dependency>
+    <dependency>
+      <groupId>io.kubernetes</groupId>
+      <artifactId>client-java</artifactId>
+      <version>4.0.0</version>
+      <scope>compile</scope>
+    </dependency>
   </dependencies>
 
   <build>
