@@ -1,6 +1,6 @@
-# Tweet store service
+# Tweet GEO update
 
-Service that pulls tweets from Kafka, checks wether they belong to an specific event and store them in Google Cloud Storage.
+Script that updates GEO JSON objects found in tweets, by stringifying any occurances of place/bounding_box attribute.
 
 ## Run
 
@@ -20,18 +20,9 @@ Requirements: `mvn`, `make`, `java 8`.
 
 - `make`
 
-## Output
+## Input/Output
 
-This service generates gzipped files  to Google Cloud Storage. The format for the file is comprised of the following:
+This service receives a JSON file of tweets and returns another copy of the file but with updated GEO JSON attributes.
 
-`yyyy/MM/dd/HH/`
-
-## Configuration
-### Environment variables
-
-- `BATCH_SIZE`: Number of tweets to create a file.
-- `KAFKA_TOPIC`: Topic where tweets need to be pulled from.
-- `KAFKA_SERVER`: Servers where Kafka is hosted.
-- `EVENT_NAME`: Name for event that the service needs to collect for.
-- `BUCKET_NAME`: Name of the bucket where data needs to be saved.
-- `KEYWORDS`: Keywords that compose the event. Helps decide wether a tweets if from the current event or not.
+## Note
+Work is still in progress for this service.

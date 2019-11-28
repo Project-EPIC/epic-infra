@@ -27,15 +27,16 @@
 
 ## Endpoints
 
-### GET `/filtering/{event_name}/{keyword}`
+### GET `/filtering/{event_name}`
 
-List tweets for `event_name` event, filtered by `keyword` in tweet text and extended text.
+List tweets for `event_name` event, filtered by a list of `keywords` in tweet text and extended text.
 
 **GET parameters**
+- `keywords`: Keywords separated by commas.
 - `count`: Number of tweets per page. Defaults to 100. Maximum 1000.
 - `page`: Page number (gets specified page according to count). Defaults to 1
 
-**Response (GET `/tweets/winter/colorado?page=1&count=1`)**
+**Response (GET `/filtering/winter?keywords=colorado,denver?page=1&count=1`)**
 ```json
 {
   "tweets": [
