@@ -26,3 +26,11 @@ This service receives a JSON file of tweets and returns another copy of the file
 
 ## Note
 Work is still in progress for this service.
+To do:
+- add an endpoint for updating historical/finished events
+- add an endpoint for updating an array of 1000 tweets for updating active events
+- deploy endpoints
+
+- References:
+https://cloud.google.com/storage/docs/gsutil/addlhelp/HowSubdirectoriesWork
+https://stackoverflow.com/questions/33690136/how-to-create-an-empty-folder-in-google-cloud-bucket-using-java-api
