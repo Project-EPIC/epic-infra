@@ -18,8 +18,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-
-import java.io.UnsupportedEncodingException;
+// import java.io.UnsupportedEncodingException;
 
 import java.util.*;
 import java.util.concurrent.*;
@@ -50,9 +49,10 @@ public class App {
         String srcBucketName = "epic-collect";
         String destBucketName = "epic-collect-new";
         String eventName= "winter";
-        asynEventUpdate(eventName, srcBucketName, destBucketName);
+        int totalTweetCount = asynEventUpdate(eventName, srcBucketName, destBucketName);
         // eventUpdate(eventName, srcBucketName, destBucketName);
         // updateTweetData(storage, srcBucketName, srcfileName, destBucketName, destfileName);
+        System.out.println("\nTotal tweet count: " + totalTweetCount);
 
         Instant finish = Instant.now();
         long timeElapsed = Duration.between(start, finish).toMillis(); //in millis
@@ -71,12 +71,7 @@ public class App {
 
     }
 
-    private static void otherTask(String name) {
-        System.out.println("I'm other task! " + name);
-    }
-
     private static String readZipTweetJsonFile(Storage storage, String srcFolder, String srcFile) {
-
         // Check if source bucket is found
         Bucket bucket = storage.get(srcFolder, Storage.BucketGetOption.fields(Storage.BucketField.values()));
         if (bucket != null) {
@@ -142,38 +137,15 @@ public class App {
         return "";
     }
 
-    public static void asynEventUpdate(String eventName, String srcBucketName, String destBucketName) {
+    public static Integer asynEventUpdate(String eventName, String srcBucketName, String destBucketName) {
 
+        int sum = 0; 
         // Get Google Storage instance
         Storage storage = StorageOptions.getDefaultInstance().getService();
         // Define the source bucket
         Bucket bucket = storage.get(srcBucketName, Storage.BucketGetOption.fields(Storage.BucketField.values()));
 
-        
-
         ExecutorService executor = Executors.newCachedThreadPool();
-        // List<Callable<Integer>> listOfCallable = Arrays.asList(
-        // () -> 1,
-        // () -> 2,
-        // () -> 3);
-
-        // try {
-        //     List<Future<Integer>> futures = executor.invokeAll(listOfCallable);
-        //     int sum = futures.stream().map(f -> {
-        //     try {
-        //         return f.get();
-        //     } catch (Exception e) {
-        //         throw new IllegalStateException(e);
-        //     }
-        //     }).mapToInt(Integer::intValue).sum();
-        //     System.out.println(sum);
-        // } catch (InterruptedException e) {// thread was interrupted
-        //     e.printStackTrace();
-        // } finally {
-        //     // shut down the executor manually
-        //     executor.shutdown();
-        // }
-
         Set<Callable<Integer>> callables = new HashSet<Callable<Integer>>();
 
         // Iterate through all blobs found in the event folder in the source bucket
@@ -186,21 +158,11 @@ public class App {
                     }
                 });
             }
-
         }
 
         try {
-            int c = 0;
             List<Future<Integer>> futures = executor.invokeAll(callables);
-            // for (Future<String> future : futures){
-            //     try {
-            //         c = c +1;
-            //         System.out.println(c + ": " + future.get());
-            //     } catch (Exception e) {
-            //         throw new IllegalStateException(e);
-            //     }
-            // }
-            int sum = futures.stream().map(future -> {
+            sum = futures.stream().map(future -> {
                 try {
                     return future.get();
                 } catch (Exception e) {
@@ -208,16 +170,14 @@ public class App {
                 }
             }).mapToInt(Integer::intValue).sum();
 
-            System.out.println("\nTotal tweet count: " + sum);
-
+            
         } catch (InterruptedException e) {
             e.printStackTrace();
         } finally {
             // shut down the executor manually
             executor.shutdown();
         }
-
-        
+        return sum;
     }
 
     public static void eventUpdate(String eventName, String srcBucketName, String destBucketName){
@@ -249,8 +209,7 @@ public class App {
         // Check if source bucket is found
         Bucket srcBucket = storage.get(srcFolder, Storage.BucketGetOption.fields(Storage.BucketField.values()));
         if (srcBucket != null) {
-
-            
+        
             Blob blob = storage.get(srcFolder, srcFile);
             if (blob != null) {
                 // Define an input stream to read an original zip file
@@ -405,6 +364,83 @@ public class App {
             }
         }
         return obj;
+    }
+
+    public static String tweetGeoUpdate(String srcBuffer) throws IOException {
+
+        if (!srcBuffer.isEmpty()) {
+    
+          int count = 0;
+    
+          // Define an input stream for the received string buffer
+          ByteArrayInputStream inStream = new ByteArrayInputStream(srcBuffer.getBytes(UTF_8));
+          // Define an output stream to create a new zip file
+          ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+          try {
+            // GZIPOutputStream gzipOut = new GZIPOutputStream(outStream);
+            // Define a temp stream to read tweet objects
+            ByteArrayOutputStream tempStream = new ByteArrayOutputStream();
+            int oneByte;
+            while ((oneByte = inStream.read()) != -1) {
+    
+              if ((char) oneByte != '\n') { // oneByte == 10
+                tempStream.write(oneByte);
+              } else {
+    
+                // If byte is a new line, i.e. end of a tweet bytes,
+                // Increment tweet count
+                count = count + 1;
+                System.out.printf("\rTweet count: %-8d file: %-100s", count);
+    
+                // Create a string tweet object and copy tweet bytes from the temp stream
+                String tweet = new String(tempStream.toByteArray(), "UTF-8");
+    
+                // Update tweet object
+                String updatedTweet = fixGeoTaggedTweet(tweet);
+                // System.out.println(updatedTweet);
+                // System.out.println("`````````````");
+    
+                // Clear the temp stream
+                tempStream.reset();
+    
+                // Add an updated tweet bytes to the output stream
+                outStream.write(updatedTweet.getBytes(UTF_8));
+                // Add a new line byte
+                outStream.write(oneByte);
+              }
+            }
+    
+            // If end of file, add the last tweet bytes,
+            // Increment tweet count
+            count = count + 1;
+            // System.out.printf("\rTweet count: %d\n", count);
+            System.out.printf("\rTweet count: %-8d file: %-100s", count);
+    
+            // Create a string tweet object and copy tweet bytes from the temp stream
+            String tweet = new String(tempStream.toByteArray(), "UTF-8");
+    
+            // Update tweet object
+            String updatedTweet = fixGeoTaggedTweet(tweet);
+            // System.out.println(updatedTweet);
+            // System.out.println("`````````````");
+    
+            // Close the temp stream
+            tempStream.close();
+    
+            // Add an updated tweet bytes to the output file
+            outStream.write(updatedTweet.getBytes(UTF_8));
+    
+            inStream.close();
+            outStream.close();
+    
+            return outStream.toString();
+    
+          } catch (IOException e) {
+            e.printStackTrace();
+            System.exit(1);
+          }
+        }    
+        return "";
     }
 
 }

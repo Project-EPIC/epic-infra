@@ -5,11 +5,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>edu.colorado.cs.epic</groupId>
-    <artifactId>tweet-geo-update</artifactId>
+    <artifactId>geo-update</artifactId>
     <version>1.0</version>
     <packaging>jar</packaging>
 
-    <name>tweet-geo-update</name>
+    <name>geo-update</name>
     <url>http://epic.cs.colorado.edu</url>
 
     <properties>
@@ -17,7 +17,7 @@
         <maven.compiler.source>1.7</maven.compiler.source>
         <maven.compiler.target>1.7</maven.compiler.target>
         <jdk.version>1.8</jdk.version>
-        <mainClass>edu.colorado.cs.epic.App</mainClass>
+        <mainClass>edu.colorado.cs.epic.geoupdate.App</mainClass>
     </properties>
 
     <dependencies>

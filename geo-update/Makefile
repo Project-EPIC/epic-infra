@@ -1,11 +1,11 @@
 all: jar
 
 TAG_CLIENT = 1.0.16
-PROJECT_NAME = tweet-geo-update
+PROJECT_NAME = geo-update
 
 
 run: jar
-	java -jar target/tweet-geo-update.jar
+	java -jar target/geo-update.jar
 
 
 build: jar
@@ -21,10 +21,10 @@ clean:
 	docker rmi projectepic/$(PROJECT_NAME) || :
 	mvn clean
 
-jar: target/tweet-geo-update.jar
+jar: target/geo-update.jar
 
-target/tweet-geo-update.jar: src/main/java/edu/colorado/cs/epic/App.java
+target/geo-update.jar: src/main/java/edu/colorado/cs/epic/geoupdate/App.java
 	mvn package
-	rm target/tweet-geo-update-*-javadoc.jar
-	rm target/tweet-geo-update-*-sources.jar
-	mv target/tweet-geo-update-*.jar target/tweet-geo-update.jar
+	rm target/geo-update-*-javadoc.jar
+	rm target/geo-update-*-sources.jar
+	mv target/geo-update-*.jar target/geo-update.jar
