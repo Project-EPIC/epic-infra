@@ -21,7 +21,7 @@ spec:
              secretName: keyfile
       containers:
       - name: filtering-api
-        image: projectepic/filteringapi:1.0.1
+        image: projectepic/filteringapi:1.0.4
         imagePullPolicy: Always
         volumeMounts:
          - mountPath: /private

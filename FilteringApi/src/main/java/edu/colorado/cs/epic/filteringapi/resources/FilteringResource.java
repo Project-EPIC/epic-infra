@@ -104,7 +104,7 @@ public class FilteringResource {
       }
 
       query += textConditional + " OR " + extendedTweetConditional;
-      return runQueryquery, eventName, keywordsArr, pageNumber, pageSize, true);
+      return runQuery(query, eventName, keywordsArr, pageNumber, pageSize, true);
     }
   }
 
