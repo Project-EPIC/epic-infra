@@ -38,8 +38,9 @@ import org.json.simple.JSONObject;
 public class FilteringResource {
   private final Logger logger;
   private final LoadingCache<String, String> queryTempFilesCache;
+  private final BigQuery bigquery;
 
-  public FilteringResource() {
+  public FilteringResource(BigQuery bigqueryClient) {
     this.logger = Logger.getLogger(FilteringResource.class.getName());
     queryTempFilesCache = CacheBuilder.newBuilder().expireAfterWrite(10, TimeUnit.MINUTES)
         .build(new CacheLoader<String, String>() {
@@ -48,6 +49,7 @@ public class FilteringResource {
             return "";
           }
         });
+    bigquery = bigqueryClient;
   }
 
   @GET
@@ -102,7 +104,7 @@ public class FilteringResource {
       }
 
       query += textConditional + " OR " + extendedTweetConditional;
-      return runQuery(query, eventName, keywordsArr, pageNumber, pageSize, true);
+      return runQueryquery, eventName, keywordsArr, pageNumber, pageSize, true);
     }
   }
 
@@ -110,7 +112,7 @@ public class FilteringResource {
       Boolean loadCache) {
     try {
       // Define a BigQuery client
-      BigQuery bigquery = BigQueryOptions.getDefaultInstance().getService();
+      // BigQuery bigquery = BigQueryOptions.getDefaultInstance().getService();
 
       // Build the requested query
       QueryJobConfiguration.Builder queryConfigBuilder = QueryJobConfiguration.newBuilder(query).setUseLegacySql(false)
@@ -166,7 +168,7 @@ public class FilteringResource {
       // Prepare and append meta data object
       JSONObject metaObject = new JSONObject();
       metaObject.put("event_name", eventName);
-      metaObject.put("keyword", String.join(",", keywords));
+      metaObject.put("keywords", String.join(",", keywords));
       metaObject.put("job_status", queryJob.getStatus().getState().toString());
       metaObject.put("page", pageNumber);
       metaObject.put("count", pageSize);

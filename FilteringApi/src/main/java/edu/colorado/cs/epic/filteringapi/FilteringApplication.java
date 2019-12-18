@@ -8,7 +8,11 @@ import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import org.eclipse.jetty.servlets.CrossOriginFilter;
 
+import com.google.cloud.bigquery.BigQuery;
+import com.google.cloud.bigquery.BigQueryOptions;
+
 import edu.colorado.cs.epic.AddAuthToEnv;
+import edu.colorado.cs.epic.filteringapi.health.GoogleBigQueryHealthCheck;
 import edu.colorado.cs.epic.filteringapi.resources.FilteringResource;
 import edu.colorado.cs.epic.filteringapi.resources.RootResource;
 
@@ -51,7 +55,10 @@ public class FilteringApplication extends Application<FilteringConfiguration> {
     cors.setInitParameter("allowedHeaders", "X-Requested-With,Authorization,Content-Type,Accept,Origin");
     cors.setInitParameter("allowedMethods", "OPTIONS,GET,HEAD");
 
+    BigQuery bigquery = BigQueryOptions.getDefaultInstance().getService();
+    environment.healthChecks().register("bigquery", new GoogleBigQueryHealthCheck(bigquery));
+
     environment.jersey().register(new RootResource());
-    environment.jersey().register(new FilteringResource());
+    environment.jersey().register(new FilteringResource(bigquery));
   }
 }
