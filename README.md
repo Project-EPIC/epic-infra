@@ -67,7 +67,7 @@ Requirements: [Development requirements](#development)
 - Make sure your resources are protected with the right annotations (see how to do it [here](authlib#protect-resources))
 - Make sure you have [health checks](https://www.dropwizard.io/0.8.0/docs/manual/core.html#health-checks) configured properly for external dependencies
 - Update image version in `Makefile`
-- Create and upload docker image: `make deploy`
+- Create and upload docker image: `make push`
 - Update docker image version in your [api definition file](kubernetes/api)
 - `kubectl replace -f api/NEW.yml` (replace NEW with your api file name)
 
