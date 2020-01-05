@@ -66,10 +66,20 @@ Requirements: [Development requirements](#development)
 - (ONLY FIRST TIME) Create new Kubernetes [definition file](templates/api.yml) in the [api folder](kubernetes/api)
 - Make sure your resources are protected with the right annotations (see how to do it [here](authlib#protect-resources))
 - Make sure you have [health checks](https://www.dropwizard.io/0.8.0/docs/manual/core.html#health-checks) configured properly for external dependencies
+- Add new path field in spec within `ingress.yaml`
+  - Ex. 
+  ```
+      - path: /new-api-folder/*
+        backend:
+          serviceName: new-api
+          servicePort: 8080
+  ```
 - Update image version in `Makefile`
 - Create and upload docker image: `make push`
 - Update docker image version in your [api definition file](kubernetes/api)
-- `kubectl replace -f api/NEW.yml` (replace NEW with your api file name)
+- `kubectl replace -f api/NEW.yml` (replace NEW with your api file name), or
+  `kubectl apply -f api/NEW.yml` 
+- `kubectl apply -f ingress.yaml`
 
 
 ------
