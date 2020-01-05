@@ -36,151 +36,203 @@ import org.json.simple.JSONObject;
 @Consumes(MediaType.APPLICATION_JSON)
 @RolesAllowed("ADMIN")
 public class FilteringResource {
-  private final Logger logger;
-  private final LoadingCache<String, String> queryTempFilesCache;
+	private final Logger logger;
+	private final LoadingCache<String, String> queryTempFilesCache;
 
-  public FilteringResource() {
-    this.logger = Logger.getLogger(FilteringResource.class.getName());
-    queryTempFilesCache = CacheBuilder.newBuilder().expireAfterWrite(10, TimeUnit.MINUTES)
-        .build(new CacheLoader<String, String>() {
-          @Override
-          public String load(String key) {
-            return "";
-          }
-        });
-  }
+	public FilteringResource() {
+		this.logger = Logger.getLogger(FilteringResource.class.getName());
+		queryTempFilesCache = CacheBuilder.newBuilder().expireAfterWrite(10, TimeUnit.MINUTES)
+				.build(new CacheLoader<String, String>() {
+					@Override
+					public String load(String key) {
+						return "";
+					}
+				});
+	}
 
-  @GET
-  @Path("/{eventName}")
-  public String getFilteredTweetsByKeywords(@PathParam("eventName") String eventName,
-      @QueryParam("keywords") @Size(min = 1) String keywords, // At least one keyword
-      @QueryParam("page") @DefaultValue("1") @Min(1) IntParam page,
-      @QueryParam("count") @DefaultValue("100") @Min(1) @Max(1000) IntParam pageCount) throws InterruptedException {
+	@GET
+	@Path("/{eventName}")
+	public String getFilteredTweetsByKeywords(@PathParam("eventName") String eventName,
+			@QueryParam("allWords") @DefaultValue("") String allWords, // All keywords (AND)
+			@QueryParam("phrase") @DefaultValue("") String phrase, // Exact phrase
+			@QueryParam("anyWords") @DefaultValue("") String anyWords, // Any keywords (OR)
+			@QueryParam("notWords") @DefaultValue("") String notWords, // None of these keywords
+			@QueryParam("startDate") String startDate, @QueryParam("endDate") String endDate,
+			@QueryParam("page") @DefaultValue("1") @Min(1) IntParam page,
+			@QueryParam("count") @DefaultValue("100") @Min(1) @Max(1000) IntParam pageCount)
+			throws InterruptedException {
 
-    int pageNumber = page.get();
-    int pageSize = pageCount.get();
-    String eventTableName = "tweets." + eventName;
-    String bqTempFile = "";
-    String query = "";
-    String[] keywordsArr = keywords.split(",");
-    Arrays.sort(keywordsArr); // sort the keywords so we have an expected order
+		// Modify all strings to be lower case
+		allWords = allWords.toLowerCase();
+		phrase = phrase.toLowerCase();
+		anyWords = anyWords.toLowerCase();
+		notWords = notWords.toLowerCase();
 
-    // Trim keyword strings
-    for (int i = 0; i < keywordsArr.length; i++) {
-      keywordsArr[i] = keywordsArr[i].trim();
-    }
+		int pageNumber = page.get();
+		int pageSize = pageCount.get();
+		String eventTableName = "tweets." + eventName;
+		String bqTempFile = "";
+		String query = "";
 
-    // when searching for cached results
-    // Check if the requested query is found in the cache
-    try {
-      bqTempFile = queryTempFilesCache.get(eventName + String.join(",", keywordsArr));
-    } catch (ExecutionException e) {
-      logger.error("Issue accessing Google Cloud", e);
-      throw new WebApplicationException(Response.Status.SERVICE_UNAVAILABLE);
-    }
-    if (!bqTempFile.isEmpty()) {
-      // Retrieve results from a temporary file cached by BigQuery
-      query = String.format("SELECT * FROM `crypto-eon-164220.%s`", bqTempFile);
-      return runQuery(query, eventName, keywordsArr, pageNumber, pageSize, false);
-    } else {
-      // Get results of a new query run by BigQuery
-      query = String.format(
-          "SELECT id, text, extended_tweet.full_text, created_at,"
-              + "user.profile_image_url_https, _File_Name AS filename\n" + "FROM `crypto-eon-164220.%s` WHERE ",
-          eventTableName);
+		String[] allWordsArr = allWords.split(",");
+		String[] anyWordsArr = anyWords.split(",");
+		String[] notWordsArr = notWords.split(",");
 
-      // Build conditional statement for each keyword
-      String textConditional = "";
-      String extendedTweetConditional = "";
-      for (int i = 0; i < keywordsArr.length; i++) {
-        textConditional += String.format("text LIKE @keyword%d", i);
-        extendedTweetConditional += String.format("extended_tweet.full_text LIKE @keyword%d", i);
-        if (i < keywordsArr.length - 1) {
-          textConditional += " OR ";
-          extendedTweetConditional += " OR ";
-        }
-      }
+		// sort the keywords so we have an expected order
+		Arrays.sort(allWordsArr);
+		Arrays.sort(anyWordsArr);
+		Arrays.sort(notWordsArr);
 
-      query += textConditional + " OR " + extendedTweetConditional;
-      return runQuery(query, eventName, keywordsArr, pageNumber, pageSize, true);
-    }
-  }
+		// when searching for cached results
+		// Check if the requested query is found in the cache
+		String paramString = String.join(",", allWordsArr) + phrase + String.join(",", anyWordsArr)
+				+ String.join(",", notWordsArr);
+		String cacheName = eventName + paramString;
+		try {
+			bqTempFile = queryTempFilesCache.get(cacheName);
+		} catch (ExecutionException e) {
+			logger.error("Issue accessing Google Cloud", e);
+			throw new WebApplicationException(Response.Status.SERVICE_UNAVAILABLE);
+		}
 
-  private String runQuery(String query, String eventName, String[] keywords, Integer pageNumber, Integer pageSize,
-      Boolean loadCache) {
-    try {
-      // Define a BigQuery client
-      BigQuery bigquery = BigQueryOptions.getDefaultInstance().getService();
+		if (bqTempFile.isEmpty()) {
+			// The cached file is empty so create a new query for BigQuery
+			query = String.format("SELECT id, text, extended_tweet.full_text, created_at,"
+					+ "user.profile_image_url_https, _File_Name AS filename\n" + "FROM `crypto-eon-164220.%s` WHERE ",
+					eventTableName);
 
-      // Build the requested query
-      QueryJobConfiguration.Builder queryConfigBuilder = QueryJobConfiguration.newBuilder(query).setUseLegacySql(false)
-          .setUseQueryCache(true);
+			Boolean hasClause = false;
 
-      // Add keywords into query
-      for (int i = 0; i < keywords.length; i++) {
-        queryConfigBuilder.addNamedParameter("keyword" + i, QueryParameterValue.string("%" + keywords[i] + "%"));
-      }
-      QueryJobConfiguration queryConfig = queryConfigBuilder.build();
+			if (allWords.length() > 0) {
+				// Add conditional clause in query to include only tweets that includes all of
+				// these words
+				query += buildConditionalClause(allWordsArr, false, true);
+				hasClause = true;
+			}
 
-      // Create a job ID to safely retry running the query
-      JobId jobId = JobId.of(UUID.randomUUID().toString());
-      Job queryJob = bigquery.create(JobInfo.newBuilder(queryConfig).setJobId(jobId).build());
-      // Wait for the query to complete
-      queryJob = queryJob.waitFor();
+			if (phrase.length() > 0) {
+				// Add conditional clause in the query to include only tweets that contain this
+				// exact phrase
+				if (hasClause) {
+					query += " AND ";
+				}
+				hasClause = true;
+				query += buildConditionalClause(new String[]{phrase}, false, true);
+			}
 
-      // Get the results
-      QueryJobConfiguration queryJobConfig = queryJob.getConfiguration();
+			if (anyWords.length() > 0) {
+				// Add conditional clause in the query to include tweets that includes any of
+				// these words
+				if (hasClause) {
+					query += " AND ";
+				}
+				hasClause = true;
+				query += buildConditionalClause(anyWordsArr, false, false);
+			}
 
-      if (loadCache) {
-        // Cache query's temp file if first time requested query, or query not found in
-        // cache
-        String destDataset = queryJobConfig.getDestinationTable().getDataset();
-        String destTable = queryJobConfig.getDestinationTable().getTable();
-        queryTempFilesCache.put(eventName + String.join(",", keywords), destDataset + '.' + destTable);
-      }
+			if (notWords.length() > 0) {
+				// Add conditonal clause in the query to include tweets that do not contain all
+				// of these words
+				if (hasClause) {
+					query += " AND ";
+				}
+				query += buildConditionalClause(notWordsArr, true, true);
+			}
+		} else {
+			// Retrieve results from a temporary file cached by BigQuery
+			query = String.format("SELECT * FROM `crypto-eon-164220.%s`", bqTempFile);
+		}
 
-      // Build the final result object with meta data and the requested page of tweets
-      StringBuilder tweets = new StringBuilder();
+		// Build the requested query
+		QueryJobConfiguration.Builder queryConfigBuilder = QueryJobConfiguration.newBuilder(query)
+				.setUseLegacySql(false).setUseQueryCache(true);
+		QueryJobConfiguration queryConfig = queryConfigBuilder.build();
 
-      // Prepare and append tweet list object
-      JSONArray tweetArray = new JSONArray();
-      TableResult pageToReturn = queryJob.getQueryResults(BigQuery.QueryResultsOption.pageSize(pageSize),
-          BigQuery.QueryResultsOption.startIndex((pageNumber - 1) * pageSize));
+		System.out.println(query);
+		return "";
+		// return runQuery(queryConfig, paramString, eventName, pageNumber, pageSize, bqTempFile.isEmpty());
+	}
 
-      // Iterate through the requested page
-      int numTweets = 0;
-      for (FieldValueList row : pageToReturn.getValues()) {
-        JSONObject tweetObject = new JSONObject();
-        tweetObject.put("id", row.get("id").getStringValue());
-        tweetObject.put("text", row.get("text").getStringValue());
-        tweetObject.put("extended_tweet", row.get("full_text").isNull() ? "" : row.get("full_text").getStringValue());
-        tweetObject.put("created_at", row.get("created_at").getStringValue());
-        tweetObject.put("profile_image", row.get("profile_image_url_https").getStringValue());
-        tweetObject.put("filename", row.get("filename").getStringValue());
-        tweetArray.add(tweetObject);
-        numTweets++;
-      }
-      tweets.append("{\"tweets\":");
-      tweets.append(tweetArray.toJSONString());
+	private String buildConditionalClause(String[] arr, Boolean isNot, Boolean isAnd) {
+		String clause = "(";
+		String condition = isAnd ? " AND " : " OR ";
+		String notStr = isNot ? " NOT LIKE " : " LIKE ";
+		for (int i = 0; i < arr.length; i++) {
+			clause += String.format("(LOWER(text) %s '%%%s%%' OR LOWER(extended_tweet.full_text) %s '%%%s%%')", notStr, arr[i], notStr, arr[i]);
+			if (i < arr.length - 1) {
+				clause += condition;
+			}
+		}
+		clause += ")";
+		return clause;
+	}
 
-      // Prepare and append meta data object
-      JSONObject metaObject = new JSONObject();
-      metaObject.put("event_name", eventName);
-      metaObject.put("keyword", String.join(",", keywords));
-      metaObject.put("job_status", queryJob.getStatus().getState().toString());
-      metaObject.put("page", pageNumber);
-      metaObject.put("count", pageSize);
-      metaObject.put("total_count", queryJob.getQueryResults().getTotalRows());
-      metaObject.put("num_pages", (int) Math.ceil((double) queryJob.getQueryResults().getTotalRows() / pageSize));
-      metaObject.put("tweet_count", numTweets);
-      tweets.append(",\"meta\":");
-      tweets.append(metaObject.toJSONString());
-      tweets.append("}");
+	private String runQuery(QueryJobConfiguration queryConfig, String paramString, String eventName, Integer pageNumber,
+			Integer pageSize, Boolean createCache) {
+		try {
+			// Define a BigQuery client
+			BigQuery bigquery = BigQueryOptions.getDefaultInstance().getService();
 
-      return tweets.toString();
+			// Create a job ID to safely retry running the query
+			JobId jobId = JobId.of(UUID.randomUUID().toString());
+			Job queryJob = bigquery.create(JobInfo.newBuilder(queryConfig).setJobId(jobId).build());
 
-    } catch (Exception e) {
-      throw new WebApplicationException(Response.Status.NOT_FOUND);
-    }
-  }
+			// Wait for the query to complete
+			queryJob = queryJob.waitFor();
+
+			// Get the results
+			QueryJobConfiguration queryJobConfig = queryJob.getConfiguration();
+
+			if (createCache) {
+				// Cache query's temp file if first time requested query, or query not found in
+				String destDataset = queryJobConfig.getDestinationTable().getDataset();
+				String destTable = queryJobConfig.getDestinationTable().getTable();
+				queryTempFilesCache.put(eventName + paramString, destDataset + '.' + destTable);
+			}
+
+			// Build the final result object with meta data and the requested page of tweets
+			StringBuilder tweets = new StringBuilder();
+
+			// Prepare and append tweet list object
+			JSONArray tweetArray = new JSONArray();
+			TableResult pageToReturn = queryJob.getQueryResults(BigQuery.QueryResultsOption.pageSize(pageSize),
+					BigQuery.QueryResultsOption.startIndex((pageNumber - 1) * pageSize));
+
+			// Iterate through the requested page
+			int numTweets = 0;
+			for (FieldValueList row : pageToReturn.getValues()) {
+				JSONObject tweetObject = new JSONObject();
+				tweetObject.put("id", row.get("id").getStringValue());
+				tweetObject.put("text", row.get("text").getStringValue());
+				tweetObject.put("extended_tweet",
+						row.get("full_text").isNull() ? "" : row.get("full_text").getStringValue());
+				tweetObject.put("created_at", row.get("created_at").getStringValue());
+				tweetObject.put("profile_image", row.get("profile_image_url_https").getStringValue());
+				tweetObject.put("filename", row.get("filename").getStringValue());
+				tweetArray.add(tweetObject);
+				numTweets++;
+			}
+			tweets.append("{\"tweets\":");
+			tweets.append(tweetArray.toJSONString());
+
+			// Prepare and append meta data object
+			JSONObject metaObject = new JSONObject();
+			metaObject.put("event_name", eventName);
+			metaObject.put("params", paramString);
+			metaObject.put("job_status", queryJob.getStatus().getState().toString());
+			metaObject.put("page", pageNumber);
+			metaObject.put("count", pageSize);
+			metaObject.put("total_count", queryJob.getQueryResults().getTotalRows());
+			metaObject.put("num_pages", (int) Math.ceil((double) queryJob.getQueryResults().getTotalRows() / pageSize));
+			metaObject.put("tweet_count", numTweets);
+			tweets.append(",\"meta\":");
+			tweets.append(metaObject.toJSONString());
+			tweets.append("}");
+
+			return tweets.toString();
+
+		} catch (Exception e) {
+			throw new WebApplicationException(Response.Status.NOT_FOUND);
+		}
+	}
 }
