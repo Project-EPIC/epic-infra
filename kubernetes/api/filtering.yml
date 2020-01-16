@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: filtering-api
+  labels:
+    app: filtering-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: filtering-api
+  template:
+    metadata:
+      labels:
+        app: filtering-api
+    spec:
+      terminationGracePeriodSeconds: 10
+      volumes:
+         - name: keyfiles
+           secret:
+             secretName: keyfile
+      containers:
+      - name: filtering-api
+        image: projectepic/filteringapi:1.0.4
+        imagePullPolicy: Always
+        volumeMounts:
+         - mountPath: /private
+           name: keyfiles
+        resources:
+          limits:
+           memory: 700Mi
+           cpu: "80m"
+          requests:
+           memory: 500Mi
+           cpu: "80m"
+        ports:
+          - containerPort: 8080
+          - containerPort: 8081
+        livenessProbe:
+          periodSeconds: 60
+          httpGet:
+            path: /healthcheck
+            port: 8081
+          initialDelaySeconds: 120
+          timeoutSeconds: 5
+        readinessProbe:
+          periodSeconds: 20
+          httpGet:
+            path: /healthcheck
+            port: 8081
+          initialDelaySeconds: 40
+          timeoutSeconds: 5
+        env:
+         - name: GOOGLE_APPLICATION_CREDENTIALS
+           value: /private/keyfile.json
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: filtering-api
+spec:
+  type: NodePort
+  ports:
+  - port: 8080
+    name: client
+  selector:
+    app: filtering-api
