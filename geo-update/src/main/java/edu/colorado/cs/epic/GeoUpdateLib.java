@@ -4,140 +4,48 @@ import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.Bucket;
-// import com.google.cloud.storage.Bucket.BucketSourceOption;
 import com.google.cloud.storage.BucketInfo;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.Storage.BlobListOption;
-// import com.google.cloud.storage.Storage.BlobSourceOption;
-// import com.google.cloud.storage.Storage.BlobGetOption;
 import com.google.cloud.storage.StorageOptions;
-// import com.google.cloud.storage.StorageException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-// import java.io.UnsupportedEncodingException;
 
 import java.util.*;
 import java.util.concurrent.*;
-// import java.util.logging.Logger;
 import java.util.zip.GZIPOutputStream;
 import java.util.zip.GZIPInputStream;
 
 import java.time.*;
 
-// import org.json.simple.JSONObject;
-// import org.json.simple.parser.JSONParser;
 import org.apache.wink.json4j.JSONException;
 import org.apache.wink.json4j.OrderedJSONObject;
 
-public class App {
+public class GeoUpdateLib {
 
     public static void main(String[] args) {
-
-        // String srcBucketName = "epic-historic-tweets";
-        // String destBucketName = "epic-historic-tweets-new";
-        // String srcfileName = "2012 Hurricane Sandy/tweets_0.json.gz";
-        // String destfileName = "2012 Hurricane Sandy/tweets_0_new.json.gz";
-
         System.out.println("\nStart processing ...");
         Instant start = Instant.now();
 
-        // Define a source bucket name
+        // Define an event name and a source and destination bucket names
         String srcBucketName = "epic-collect";
         String destBucketName = "epic-collect-new";
         String eventName= "winter";
         int totalTweetCount = asynEventUpdate(eventName, srcBucketName, destBucketName);
-        // eventUpdate(eventName, srcBucketName, destBucketName);
-        // updateTweetData(storage, srcBucketName, srcfileName, destBucketName, destfileName);
         System.out.println("\nTotal tweet count: " + totalTweetCount);
 
         Instant finish = Instant.now();
         long timeElapsed = Duration.between(start, finish).toMillis(); //in millis
         System.out.println(String.format("Processing time: %d millis", timeElapsed));
-
-        // application/json
-        // application/x-gzip
-
-        // Storage storage = StorageOptions.getDefaultInstance().getService();
-        // readZipTweetJsonFile(storage, "geo-script-testing-data",
-        // "tweet_problem.json");
-
-        // updateTweetData(storage, "epic-collect",
-        // "winter/2019/04/14/02/tweet-1555210800000-768.json.gz",
-        // "geo-script-testing-data", "tweet-1555210800000-768-4.json.gz");
-
-    }
-
-    private static String readZipTweetJsonFile(Storage storage, String srcFolder, String srcFile) {
-        // Check if source bucket is found
-        Bucket bucket = storage.get(srcFolder, Storage.BucketGetOption.fields(Storage.BucketField.values()));
-        if (bucket != null) {
-
-            // Define a buffer for tweet object bytes
-            ArrayList<String> buffer = new ArrayList<String>();
-
-            // Define output stream to create a new file
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-
-            // Define input stream to read the original zip file
-            Blob blob = storage.get(srcFolder, srcFile);
-            ByteArrayInputStream fileInputStream = new ByteArrayInputStream(blob.getContent());
-            try {
-                // GZIPInputStream gzipInputStream = new GZIPInputStream(fileInputStream);
-                // Read the first byte data from the input stream
-                int data = fileInputStream.read();
-                // Iterate through all receiving bytes from the input stream
-                while (data != -1) {
-                    if ((char) data == '\n') {
-                        // If byte is a new line,
-                        // copy a tweet bytes from the output stream
-                        byte byteArray[] = outputStream.toByteArray();
-                        // add a new tweet to the buffer
-                        String tweet = new String(byteArray);
-                        String updatedTweet = fixGeoTaggedTweet(tweet);
-                        buffer.add(updatedTweet);
-                        System.out.println(updatedTweet);
-                        System.out.println("`````````````");
-                        // Clear the output stream
-                        outputStream.reset();
-                    } else {
-                        // Add byte data to the output stream
-                        outputStream.write(data);
-                    }
-                    // Read byte data from the input stream
-                    data = fileInputStream.read();
-                }
-                // Add last tweet
-                byte byteArray[] = outputStream.toByteArray();
-                String tweet = new String(byteArray);
-                // String updatedTweet = fixGeoTaggedTweet(tweet);
-                buffer.add(tweet);
-                System.out.println(tweet);
-                System.out.println("`````````````");
-                System.out.println(buffer.size() + " tweet objects have been extracted from " + srcFile + ".");
-
-                // Return a large string containing all tweets found in the buffer,
-                // separated by new line return values.
-                String tweets = String.join("\n", buffer);
-                fileInputStream.close();
-                buffer.clear();
-                return tweets;
-
-            } catch (IOException e) {
-                e.printStackTrace();
-                System.exit(1);
-            }
-        } else {
-            System.out.println("The source bucket " + srcFolder + " is not found.");
-        }
-
-        return "";
     }
 
     public static Integer asynEventUpdate(String eventName, String srcBucketName, String destBucketName) {
+        // Updates all tweet files stored for an event, 
+        // located in a cloud storage folder named by the event. 
 
         int sum = 0; 
         // Get Google Storage instance
@@ -180,32 +88,11 @@ public class App {
         return sum;
     }
 
-    public static void eventUpdate(String eventName, String srcBucketName, String destBucketName){
-
-        // Get Google Storage instance 
-        Storage storage = StorageOptions.getDefaultInstance().getService();
-        // Define the source bucket
-        Bucket bucket = storage.get(srcBucketName, Storage.BucketGetOption.fields(Storage.BucketField.values()));
-       
-        // List the blobs in a particular bucket
-        System.out.println("Available files:");
-        int c = 0;
-        BlobListOption blobListOption = Storage.BlobListOption.prefix(eventName);
-        for (Blob currentBlob: bucket.list(blobListOption).iterateAll()) {
-            if (currentBlob.getName().endsWith("json.gz") // && currentBlob.getContentType().equals("application/json")
-                ){
-                c = c +1;
-                System.out.println(c + ": " + currentBlob.getName());
-                // updateTweetData(storage, srcBucketName, currentBlob.getName(), destBucketName, currentBlob.getName());
-            }
-
-        }
-    }
     
     private static Integer updateTweetData(Storage storage, String srcFolder, String srcFile, String destFolder, String destFile) {
+        // Reads a source tweet file, then creates an updated version as a destination file.
 
         int count = 0;
-        // System.out.println(srcFile);
         // Check if source bucket is found
         Bucket srcBucket = storage.get(srcFolder, Storage.BucketGetOption.fields(Storage.BucketField.values()));
         if (srcBucket != null) {
@@ -317,17 +204,8 @@ public class App {
                 // The order in which items are put into the instance controls the order in which they are serialized out. 
                 // https://wink.apache.org/documentation/1.1.2/api/org/apache/wink/json4j/OrderedJSONObject.html
                
-                        
-                // ByteBuffer byteBuffer = StandardCharsets.UTF_8.encode(myString)
-                // String value = new String(tweet, "UTF-8");
-                // new String(tweet, "UTF-8");
                 OrderedJSONObject tweetJSON = new OrderedJSONObject(tweet);
-                // tweetJSON = tweet.toJ
                 OrderedJSONObject updatedTweetJSON = parseNestedJson(tweetJSON);
-                // System.out.println(tweet);
-                // System.out.println("........"); 
-                // System.out.println(tweetJSON);
-                // System.out.println("______________"); 
 
                 return updatedTweetJSON.toString();
 
@@ -367,6 +245,7 @@ public class App {
     }
 
     public static String tweetGeoUpdate(String srcBuffer) throws IOException {
+        // Reads a buffer of tweets, then returns an updated buffer.
 
         if (!srcBuffer.isEmpty()) {
     
