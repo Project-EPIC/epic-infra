@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.util.EnumSet;
 
 public class FilteringApplication extends Application<FilteringConfiguration> {
-  
   public static void main(final String[] args) throws Exception {
     new FilteringApplication().run(args);
   }

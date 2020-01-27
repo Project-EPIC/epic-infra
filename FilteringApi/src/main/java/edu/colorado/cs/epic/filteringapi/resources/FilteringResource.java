@@ -38,8 +38,9 @@ import org.json.simple.JSONObject;
 public class FilteringResource {
 	private final Logger logger;
 	private final LoadingCache<String, String> queryTempFilesCache;
+	private final BigQuery bigquery;
 
-	public FilteringResource() {
+	public FilteringResource(BigQuery bigqueryClient) {
 		this.logger = Logger.getLogger(FilteringResource.class.getName());
 		queryTempFilesCache = CacheBuilder.newBuilder().expireAfterWrite(10, TimeUnit.MINUTES)
 				.build(new CacheLoader<String, String>() {
@@ -48,19 +49,20 @@ public class FilteringResource {
 						return "";
 					}
 				});
+		bigquery = bigqueryClient;
 	}
 
 	@GET
 	@Path("/{eventName}")
 	public String getFilteredTweetsByKeywords(@PathParam("eventName") String eventName,
-			@QueryParam("allWords") @DefaultValue("") String allWords, // All keywords (AND)
-			@QueryParam("phrase") @DefaultValue("") String phrase, // Exact phrase
-			@QueryParam("anyWords") @DefaultValue("") String anyWords, // Any keywords (OR)
-			@QueryParam("notWords") @DefaultValue("") String notWords, // None of these keywords
-			@QueryParam("startDate") String startDate, @QueryParam("endDate") String endDate,
-			@QueryParam("page") @DefaultValue("1") @Min(1) IntParam page,
-			@QueryParam("count") @DefaultValue("100") @Min(1) @Max(1000) IntParam pageCount)
-			throws InterruptedException {
+		@QueryParam("allWords") @DefaultValue("") String allWords, // All keywords (AND)
+		@QueryParam("phrase") @DefaultValue("") String phrase, // Exact phrase
+		@QueryParam("anyWords") @DefaultValue("") String anyWords, // Any keywords (OR)
+		@QueryParam("notWords") @DefaultValue("") String notWords, // None of these keywords
+		@QueryParam("startDate") String startDate, @QueryParam("endDate") String endDate,
+		@QueryParam("page") @DefaultValue("1") @Min(1) IntParam page,
+		@QueryParam("count") @DefaultValue("100") @Min(1) @Max(1000) IntParam pageCount)
+		throws InterruptedException {
 
 		// Modify all strings to be lower case
 		allWords = allWords.toLowerCase();
@@ -83,8 +85,8 @@ public class FilteringResource {
 		Arrays.sort(anyWordsArr);
 		Arrays.sort(notWordsArr);
 
-		// when searching for cached results
-		// Check if the requested query is found in the cache
+		// When searching for cached results
+		// check if the requested query is found in the cache
 		String paramString = String.join(",", allWordsArr) + phrase + String.join(",", anyWordsArr)
 				+ String.join(",", notWordsArr);
 		String cacheName = eventName + paramString;
@@ -104,15 +106,13 @@ public class FilteringResource {
 			Boolean hasClause = false;
 
 			if (allWords.length() > 0) {
-				// Add conditional clause in query to include only tweets that includes all of
-				// these words
+				// Add conditional clause in query to include only tweets that includes all of these words
 				query += buildConditionalClause(allWordsArr, false, true);
 				hasClause = true;
 			}
 
 			if (phrase.length() > 0) {
-				// Add conditional clause in the query to include only tweets that contain this
-				// exact phrase
+				// Add conditional clause in the query to include only tweets that contain this exact phrase
 				if (hasClause) {
 					query += " AND ";
 				}
@@ -121,8 +121,7 @@ public class FilteringResource {
 			}
 
 			if (anyWords.length() > 0) {
-				// Add conditional clause in the query to include tweets that includes any of
-				// these words
+				// Add conditional clause in the query to include tweets that includes any of these words
 				if (hasClause) {
 					query += " AND ";
 				}
@@ -131,8 +130,7 @@ public class FilteringResource {
 			}
 
 			if (notWords.length() > 0) {
-				// Add conditonal clause in the query to include tweets that do not contain all
-				// of these words
+				// Add conditonal clause in the query to include tweets that do not contain all of these words
 				if (hasClause) {
 					query += " AND ";
 				}
@@ -148,9 +146,7 @@ public class FilteringResource {
 				.setUseLegacySql(false).setUseQueryCache(true);
 		QueryJobConfiguration queryConfig = queryConfigBuilder.build();
 
-		System.out.println(query);
-		return "";
-		// return runQuery(queryConfig, paramString, eventName, pageNumber, pageSize, bqTempFile.isEmpty());
+		return runQuery(queryConfig, paramString, eventName, pageNumber, pageSize, bqTempFile.isEmpty());
 	}
 
 	private String buildConditionalClause(String[] arr, Boolean isNot, Boolean isAnd) {
@@ -170,9 +166,6 @@ public class FilteringResource {
 	private String runQuery(QueryJobConfiguration queryConfig, String paramString, String eventName, Integer pageNumber,
 			Integer pageSize, Boolean createCache) {
 		try {
-			// Define a BigQuery client
-			BigQuery bigquery = BigQueryOptions.getDefaultInstance().getService();
-
 			// Create a job ID to safely retry running the query
 			JobId jobId = JobId.of(UUID.randomUUID().toString());
 			Job queryJob = bigquery.create(JobInfo.newBuilder(queryConfig).setJobId(jobId).build());
@@ -198,14 +191,13 @@ public class FilteringResource {
 			TableResult pageToReturn = queryJob.getQueryResults(BigQuery.QueryResultsOption.pageSize(pageSize),
 					BigQuery.QueryResultsOption.startIndex((pageNumber - 1) * pageSize));
 
-			// Iterate through the requested page
+			// Iterate through the requested page and append the tweets to the return object
 			int numTweets = 0;
 			for (FieldValueList row : pageToReturn.getValues()) {
 				JSONObject tweetObject = new JSONObject();
 				tweetObject.put("id", row.get("id").getStringValue());
 				tweetObject.put("text", row.get("text").getStringValue());
-				tweetObject.put("extended_tweet",
-						row.get("full_text").isNull() ? "" : row.get("full_text").getStringValue());
+				tweetObject.put("extended_tweet", row.get("full_text").isNull() ? "" : row.get("full_text").getStringValue());
 				tweetObject.put("created_at", row.get("created_at").getStringValue());
 				tweetObject.put("profile_image", row.get("profile_image_url_https").getStringValue());
 				tweetObject.put("filename", row.get("filename").getStringValue());
@@ -215,7 +207,7 @@ public class FilteringResource {
 			tweets.append("{\"tweets\":");
 			tweets.append(tweetArray.toJSONString());
 
-			// Prepare and append meta data object
+			// Prepare and append meta data object to return object
 			JSONObject metaObject = new JSONObject();
 			metaObject.put("event_name", eventName);
 			metaObject.put("params", paramString);
@@ -230,7 +222,6 @@ public class FilteringResource {
 			tweets.append("}");
 
 			return tweets.toString();
-
 		} catch (Exception e) {
 			throw new WebApplicationException(Response.Status.NOT_FOUND);
 		}
