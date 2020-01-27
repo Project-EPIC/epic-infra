@@ -20,6 +20,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import java.util.*;
 import java.util.logging.Logger;
 import java.util.zip.GZIPOutputStream;
+import edu.colorado.cs.epic.GeoUpdateLib;
 
 /**
  * Hello world!
@@ -142,6 +143,9 @@ public class App {
         if (!buffer.isEmpty()) {
             // Convert buffer to new-line delimited json
             String tweets = buffer.stream().map(ConsumerRecord::value).reduce((r1, r2) -> r1 + "\n" + r2).get();
+
+            // import edu.colorado.cs.epic.App;
+            String updatedGeoTweets = GeoUpdateLib.tweetGeoUpdate(tweets);
 
             // GZip tweets
             ByteArrayOutputStream obj = new ByteArrayOutputStream();
