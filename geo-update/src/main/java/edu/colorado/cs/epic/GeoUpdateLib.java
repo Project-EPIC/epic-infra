@@ -255,69 +255,64 @@ public class GeoUpdateLib {
           ByteArrayInputStream inStream = new ByteArrayInputStream(srcBuffer.getBytes(UTF_8));
           // Define an output stream to create a new zip file
           ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-          try {
-            // GZIPOutputStream gzipOut = new GZIPOutputStream(outStream);
-            // Define a temp stream to read tweet objects
-            ByteArrayOutputStream tempStream = new ByteArrayOutputStream();
-            int oneByte;
-            while ((oneByte = inStream.read()) != -1) {
-    
+
+          // GZIPOutputStream gzipOut = new GZIPOutputStream(outStream);
+          // Define a temp stream to read tweet objects
+          ByteArrayOutputStream tempStream = new ByteArrayOutputStream();
+          int oneByte;
+          while ((oneByte = inStream.read()) != -1) {
+
               if ((char) oneByte != '\n') { // oneByte == 10
-                tempStream.write(oneByte);
+              tempStream.write(oneByte);
               } else {
-    
-                // If byte is a new line, i.e. end of a tweet bytes,
-                // Increment tweet count
-                count = count + 1;
-                System.out.printf("\rTweet count: %-8d file: %-100s", count);
-    
-                // Create a string tweet object and copy tweet bytes from the temp stream
-                String tweet = new String(tempStream.toByteArray(), "UTF-8");
-    
-                // Update tweet object
-                String updatedTweet = fixGeoTaggedTweet(tweet);
-                // System.out.println(updatedTweet);
-                // System.out.println("`````````````");
-    
-                // Clear the temp stream
-                tempStream.reset();
-    
-                // Add an updated tweet bytes to the output stream
-                outStream.write(updatedTweet.getBytes(UTF_8));
-                // Add a new line byte
-                outStream.write(oneByte);
+
+              // If byte is a new line, i.e. end of a tweet bytes,
+              // Increment tweet count
+              count = count + 1;
+              System.out.printf("\rTweet count: %-8d file: %-100s", count);
+
+              // Create a string tweet object and copy tweet bytes from the temp stream
+              String tweet = new String(tempStream.toByteArray(), "UTF-8");
+
+              // Update tweet object
+              String updatedTweet = fixGeoTaggedTweet(tweet);
+              // System.out.println(updatedTweet);
+              // System.out.println("`````````````");
+
+              // Clear the temp stream
+              tempStream.reset();
+
+              // Add an updated tweet bytes to the output stream
+              outStream.write(updatedTweet.getBytes(UTF_8));
+              // Add a new line byte
+              outStream.write(oneByte);
               }
-            }
-    
-            // If end of file, add the last tweet bytes,
-            // Increment tweet count
-            count = count + 1;
-            // System.out.printf("\rTweet count: %d\n", count);
-            System.out.printf("\rTweet count: %-8d file: %-100s", count);
-    
-            // Create a string tweet object and copy tweet bytes from the temp stream
-            String tweet = new String(tempStream.toByteArray(), "UTF-8");
-    
-            // Update tweet object
-            String updatedTweet = fixGeoTaggedTweet(tweet);
-            // System.out.println(updatedTweet);
-            // System.out.println("`````````````");
-    
-            // Close the temp stream
-            tempStream.close();
-    
-            // Add an updated tweet bytes to the output file
-            outStream.write(updatedTweet.getBytes(UTF_8));
-    
-            inStream.close();
-            outStream.close();
-    
-            return outStream.toString();
-    
-          } catch (IOException e) {
-            e.printStackTrace();
-            System.exit(1);
           }
+
+          // If end of file, add the last tweet bytes,
+          // Increment tweet count
+          count = count + 1;
+          // System.out.printf("\rTweet count: %d\n", count);
+          System.out.printf("\rTweet count: %-8d file: %-100s", count);
+
+          // Create a string tweet object and copy tweet bytes from the temp stream
+          String tweet = new String(tempStream.toByteArray(), "UTF-8");
+
+          // Update tweet object
+          String updatedTweet = fixGeoTaggedTweet(tweet);
+          // System.out.println(updatedTweet);
+          // System.out.println("`````````````");
+
+          // Close the temp stream
+          tempStream.close();
+
+          // Add an updated tweet bytes to the output file
+          outStream.write(updatedTweet.getBytes(UTF_8));
+
+          inStream.close();
+          outStream.close();
+
+          return outStream.toString();
         }    
         return "";
     }
