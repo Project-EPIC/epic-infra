@@ -23,8 +23,6 @@ clean:
 
 jar: target/geo-update.jar
 
-target/geo-update.jar: src/main/java/edu/colorado/cs/epic/geoupdate/App.java
+target/geo-update.jar: src/main/java/edu/colorado/cs/epic/GeoUpdateLib.java
 	mvn package
-	rm target/geo-update-*-javadoc.jar
-	rm target/geo-update-*-sources.jar
 	mv target/geo-update-*.jar target/geo-update.jar

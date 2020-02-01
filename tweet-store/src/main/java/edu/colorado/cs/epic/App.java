@@ -27,7 +27,6 @@ import edu.colorado.cs.epic.GeoUpdateLib;
  */
 public class App {
 
-
     private static Logger log = Logger.getLogger(App.class.getName());
 
     // Get configuration from environment
@@ -35,9 +34,8 @@ public class App {
     private static final String kafkaTopic = System.getenv().getOrDefault("KAFKA_TOPIC", "tweets");
     private static final String kafkaServers = System.getenv().getOrDefault("KAFKA_SERVER", "127.0.0.1:9092");
     private static final String eventName = System.getenv().getOrDefault("EVENT_NAME", "test");
-    private static final String bucketName = System.getenv().getOrDefault("BUCKET_NAME", "epic-collect");
-    private static final String[] keywords = System.getenv().getOrDefault("KEYWORDS", "hey,me,gerard")
-            .replace(" ", "")
+    private static final String bucketName = System.getenv().getOrDefault("BUCKET_NAME", "epic-collect-new");
+    private static final String[] keywords = System.getenv().getOrDefault("KEYWORDS", "hey,me,gerard").replace(" ", "")
             .split(",");
 
     // Static configuration
@@ -55,7 +53,6 @@ public class App {
         props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
         props.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
 
-
         // Connect to Kafka
         KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props);
         log.info(String.format("Connecting to Kafka servers: %s", kafkaServers));
@@ -71,7 +68,8 @@ public class App {
 
         log.info(String.format("Listening for keywords: %s", String.join(", ", keywords)));
 
-        // Create shutdown hook to save tweets read by current worker and commit results to Kafka
+        // Create shutdown hook to save tweets read by current worker and commit results
+        // to Kafka
         String finalFolder = folder;
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             log.info("Finishing process...Done");
@@ -110,7 +108,8 @@ public class App {
                     if (record.value().toLowerCase().contains(keyword.toLowerCase())) {
                         buffer.add(record);
 
-                        // Check if we need to save tweets (if batchsize has been reached or if we need to dump it because we are changing folder
+                        // Check if we need to save tweets (if batchsize has been reached or if we need
+                        // to dump it because we are changing folder
                         folder = checkFileCreation(consumer, buffer, folder);
                         break;
                     }
@@ -121,7 +120,8 @@ public class App {
 
     }
 
-    private static String checkFileCreation(KafkaConsumer<String, String> consumer, List<ConsumerRecord<String, String>> buffer, String folder) {
+    private static String checkFileCreation(KafkaConsumer<String, String> consumer,
+            List<ConsumerRecord<String, String>> buffer, String folder) {
         String currentFolder = new SimpleDateFormat(pattern).format(new Date());
         if (buffer.size() >= minBatchSize || (!folder.equals(currentFolder) && !buffer.isEmpty())) {
             saveTweets(consumer, buffer, folder);
@@ -130,9 +130,11 @@ public class App {
         return currentFolder;
     }
 
-    private static void saveTweets(KafkaConsumer<String, String> consumer, List<ConsumerRecord<String, String>> buffer, String folder) {
+    private static void saveTweets(KafkaConsumer<String, String> consumer, List<ConsumerRecord<String, String>> buffer,
+            String folder) {
         // Calculate filename
-        String filename = String.format("%s/%stweet-%d-%d.json.gz", eventName, folder, (new Date()).getTime(), buffer.size());
+        String filename = String.format("%s/%stweet-%d-%d.json.gz", eventName, folder, (new Date()).getTime(),
+                buffer.size());
         log.info(String.format("Saving %d tweets in %s", buffer.size(), filename));
 
         // Get Google Storage instance
@@ -145,22 +147,22 @@ public class App {
             String tweets = buffer.stream().map(ConsumerRecord::value).reduce((r1, r2) -> r1 + "\n" + r2).get();
 
             // import edu.colorado.cs.epic.App;
-            String updatedGeoTweets = GeoUpdateLib.tweetGeoUpdate(tweets);
-
-            // GZip tweets
             ByteArrayOutputStream obj = new ByteArrayOutputStream();
             try {
+                String updatedGeoTweets = GeoUpdateLib.tweetGeoUpdate(tweets);
+
+                // GZip tweets
                 GZIPOutputStream gzip = new GZIPOutputStream(obj);
-                gzip.write(tweets.getBytes(UTF_8));
+                gzip.write(updatedGeoTweets.getBytes(UTF_8));
                 gzip.close();
             } catch (IOException e) {
                 e.printStackTrace();
                 System.exit(1);
             }
+
             storage.create(blobInfo, obj.toByteArray());
             buffer.clear();
         }
-
 
         // Store tweets, commit to consumer and clear buffer
         consumer.commitSync();
