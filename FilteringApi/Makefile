@@ -1,6 +1,6 @@
 all: jar
 
-TAG_CLIENT = 1.0.1
+TAG_CLIENT = 1.0.4
 PROJECT_NAME = filteringapi
 
 

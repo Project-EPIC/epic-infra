@@ -36,7 +36,7 @@ List tweets for `event_name` event, filtered by a list of `keywords` in tweet te
 - `count`: Number of tweets per page. Defaults to 100. Maximum 1000.
 - `page`: Page number (gets specified page according to count). Defaults to 1
 
-**Response (GET `/filtering/winter?keywords=colorado,denver?page=1&count=1`)**
+**Response (GET `/filtering/winter?keywords=colorado,lakewood?page=1&count=1`)**
 ```json
 {
   "tweets": [
@@ -57,7 +57,7 @@ List tweets for `event_name` event, filtered by a list of `keywords` in tweet te
         "count":1,   
         "page":1,
         "event_name":"winter",
-        "keyword":"colorado"
+        "keywords":"colorado,lakewood"
   }
 }
 ```
@@ -70,7 +70,7 @@ List tweets for `event_name` event, filtered by a list of `keywords` in tweet te
 - `count`: Returns value for `count` parameter.
 - `page`: Return value for `page` parameter.
 - `event_name`: Returns normalized name for current event.
-- `keyword`: Returns value for requested `keyword`.
+- `keywords`: Returns value for requested `keywords`.
 
 **Status code**
 

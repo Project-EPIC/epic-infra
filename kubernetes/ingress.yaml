@@ -34,3 +34,7 @@ spec:
         backend:
            serviceName: auth-api
            servicePort: 8080
+      - path: /filtering/*
+        backend:
+           serviceName: filtering-api
+           servicePort: 8080
