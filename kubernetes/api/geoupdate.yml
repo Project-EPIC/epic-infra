@@ -21,18 +21,18 @@ spec:
              secretName: keyfile
       containers:
       - name: geo-update-api
-        image: projectepic/geoupdateapi:1.0.0
+        image: projectepic/geoupdateapi:1.0.1
         imagePullPolicy: Always
         volumeMounts:
          - mountPath: /private
            name: keyfiles
         resources:
           limits:
-           memory: 700Mi
-           cpu: "80m"
+           memory: 1000Mi
+           cpu: "150m"
           requests:
-           memory: 500Mi
-           cpu: "80m"
+           memory: 800Mi
+           cpu: "20m"
         ports:
           - containerPort: 8080
           - containerPort: 8081

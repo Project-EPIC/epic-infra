@@ -17,31 +17,30 @@ import javax.servlet.FilterRegistration;
 import java.io.IOException;
 import java.util.EnumSet;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
+
 public class GeoUpdateApplication extends Application<GeoUpdateConfiguration> {
-  
+
   public static void main(final String[] args) throws Exception {
     new GeoUpdateApplication().run(args);
   }
 
   @Override
   public String getName() {
-      return "GeoUpdate";
+    return "GeoUpdate";
   }
 
   @Override
   public void initialize(final Bootstrap<GeoUpdateConfiguration> bootstrap) {
-    bootstrap.setConfigurationSourceProvider(
-      new SubstitutingSourceProvider(bootstrap.getConfigurationSourceProvider(),
-        new EnvironmentVariableSubstitutor(false)
-      )
-    );
+    bootstrap.setConfigurationSourceProvider(new SubstitutingSourceProvider(bootstrap.getConfigurationSourceProvider(),
+        new EnvironmentVariableSubstitutor(false)));
   }
 
   @Override
   public void run(GeoUpdateConfiguration configuration, Environment environment) throws IOException {
 
-    final FilterRegistration.Dynamic cors =
-        environment.servlets().addFilter("CORS", CrossOriginFilter.class);
+    final FilterRegistration.Dynamic cors = environment.servlets().addFilter("CORS", CrossOriginFilter.class);
     cors.addMappingForUrlPatterns(EnumSet.allOf(DispatcherType.class), true, "/*");
 
     AddAuthToEnv.register(environment, configuration.getProduction());
@@ -51,7 +50,9 @@ public class GeoUpdateApplication extends Application<GeoUpdateConfiguration> {
     cors.setInitParameter("allowedHeaders", "X-Requested-With,Authorization,Content-Type,Accept,Origin");
     cors.setInitParameter("allowedMethods", "OPTIONS,GET,HEAD");
 
+    ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(5);
+
     environment.jersey().register(new RootResource());
-    environment.jersey().register(new GeoUpdateResource());
+    environment.jersey().register(new GeoUpdateResource(executor));
   }
 }

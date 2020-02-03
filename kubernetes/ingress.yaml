@@ -38,3 +38,7 @@ spec:
         backend:
            serviceName: filtering-api
            servicePort: 8080
+      - path: /geoupdate/*
+        backend:
+          serviceName: geo-update-api
+          servicePort: 8080
