@@ -7,13 +7,10 @@ import io.dropwizard.configuration.SubstitutingSourceProvider;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import org.eclipse.jetty.servlets.CrossOriginFilter;
-import com.google.cloud.storage.Storage;
-import com.google.cloud.storage.StorageOptions;
 
 import edu.colorado.cs.epic.AddAuthToEnv;
 import edu.colorado.cs.epic.geoupdateapi.resources.GeoUpdateResource;
 import edu.colorado.cs.epic.geoupdateapi.resources.RootResource;
-import edu.colorado.cs.epic.geoupdateapi.health.GoogleCloudStorageHealthCheck;
 
 import javax.servlet.DispatcherType;
 import javax.servlet.FilterRegistration;
@@ -52,9 +49,6 @@ public class GeoUpdateApplication extends Application<GeoUpdateConfiguration> {
     cors.setInitParameter("allowedOrigins", "*");
     cors.setInitParameter("allowedHeaders", "X-Requested-With,Authorization,Content-Type,Accept,Origin");
     cors.setInitParameter("allowedMethods", "OPTIONS,GET,HEAD");
-
-    Storage storage = StorageOptions.getDefaultInstance().getService();
-    environment.healthChecks().register("gcloudstorage", new GoogleCloudStorageHealthCheck(storage));
 
     ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(5);
 
