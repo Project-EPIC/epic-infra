@@ -1,5 +1,7 @@
 package edu.colorado.cs.epic.filteringapi.resources;
 
+import edu.colorado.cs.epic.filteringapi.api.FilteringQuery;
+
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.FieldValueList;
 import com.google.cloud.bigquery.Job;
@@ -15,7 +17,6 @@ import com.google.common.cache.LoadingCache;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.UUID;
-import java.util.Arrays;
 
 import javax.annotation.security.RolesAllowed;
 import javax.validation.constraints.Max;
@@ -23,6 +24,8 @@ import javax.validation.constraints.Min;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import io.dropwizard.jersey.params.IntParam;
 import org.apache.log4j.Logger;
 import org.json.simple.JSONArray;
@@ -49,51 +52,22 @@ public class FilteringResource {
 		bigquery = bigqueryClient;
 	}
 
-	@GET
+	@POST
 	@Path("/{eventName}")
 	public String getFilteredTweetsByKeywords(@PathParam("eventName") String eventName,
-			@QueryParam("allWords") @DefaultValue("") String allWords, // All keywords (AND)
-			@QueryParam("phrase") @DefaultValue("") String phrase, // Exact phrase
-			@QueryParam("anyWords") @DefaultValue("") String anyWords, // Any keywords (OR)
-			@QueryParam("notWords") @DefaultValue("") String notWords, // None of these keywords
-			@QueryParam("hashtags") @DefaultValue("") String hashtags, // Hashtags (OR)
-			@QueryParam("language") @DefaultValue("") String language, // twitter language code
-			@QueryParam("startDate") long startDate, // ms since epoch
-			@QueryParam("endDate") long endDate, // ms since epoch
 			@QueryParam("page") @DefaultValue("1") @Min(1) IntParam page,
-			@QueryParam("count") @DefaultValue("100") @Min(1) @Max(1000) IntParam pageCount)
-			throws InterruptedException {
-
-		// Modify all strings to be lower case
-		allWords = allWords.toLowerCase();
-		phrase = phrase.toLowerCase();
-		anyWords = anyWords.toLowerCase();
-		notWords = notWords.toLowerCase();
-		hashtags = hashtags.toLowerCase();
+			@QueryParam("count") @DefaultValue("100") @Min(1) @Max(1000) IntParam pageCount,
+			@NotNull @Valid FilteringQuery filterQuery) throws InterruptedException {
 
 		int pageNumber = page.get();
 		int pageSize = pageCount.get();
 		String eventTableName = "tweets." + eventName;
 		String bqTempFile = "";
 		String query = "";
-		String twitterUTCTimeFormat = "%a %b %d %H:%M:%S +0000 %Y";
-
-		String[] allWordsArr = allWords.split(",");
-		String[] anyWordsArr = anyWords.split(",");
-		String[] notWordsArr = notWords.split(",");
-		String[] hashtagsArr = hashtags.split(",");
-
-		// sort the keywords so we have an expected order
-		Arrays.sort(allWordsArr);
-		Arrays.sort(anyWordsArr);
-		Arrays.sort(notWordsArr);
-		Arrays.sort(hashtagsArr);
 
 		// When searching for cached results
 		// check if the requested query is found in the cache
-		String paramString = String.format("%s,%s,%s,%s,%s,%s,%d,%d", String.join(",", allWordsArr), phrase,
-				String.join(",", anyWordsArr), String.join(",", notWordsArr), String.join(",", hashtagsArr), language,
-				startDate, endDate);
+		String paramString = filterQuery.paramString();
 		String cacheName = eventName + paramString;
 		try {
 			bqTempFile = queryTempFilesCache.get(cacheName);
@@ -104,72 +78,7 @@ public class FilteringResource {
 
 		if (bqTempFile.isEmpty()) {
 			// The cached file is empty so create a new query for BigQuery
-			query = String.format("SELECT id_str, text, timestamp_ms, source,"
-					+ "user.name, user.screen_name, user.verified, user.created_at, user.description,"
-					+ "user.statuses_count, user.favourites_count, user.followers_count, user.friends_count,"
-					+ "user.location, user.time_zone, user.url, user.profile_image_url_https\n"
-					+ "FROM `crypto-eon-164220.%s` WHERE ", eventTableName);
-
-			Boolean hasCondition = false;
-
-			// Query for tweets that includes all of these words
-			if (allWords.length() > 0) {
-				query += addQueryCondition(buildTweetTextCondition(allWordsArr, false, true), hasCondition);
-				hasCondition = true;
-			}
-
-			// Query for tweets that contain this exact phrase
-			if (phrase.length() > 0) {
-				query += addQueryCondition(buildTweetTextCondition(new String[] { phrase }, false, true), hasCondition);
-				hasCondition = true;
-			}
-
-			// Query for tweets that include any of these words
-			if (anyWords.length() > 0) {
-				query += addQueryCondition(buildTweetTextCondition(anyWordsArr, false, false), hasCondition);
-				hasCondition = true;
-			}
-
-			// Query for tweets that do not contain any of these words
-			if (notWords.length() > 0) {
-				query += addQueryCondition(buildTweetTextCondition(notWordsArr, true, true), hasCondition);
-				hasCondition = true;
-			}
-
-			// Query for tweets that include any of these hashtags
-			if (hashtags.length() > 0) {
-				String hashtagColumn = "entities.hashtags";
-				for (int i = 0; i < hashtagsArr.length; i++) {
-					// Wrap all the hashtags in single quotes
-					hashtagsArr[i] = String.format("'%s'", hashtagsArr[i]);
-				}
-				String hashtagCondition = String.format(
-						"(SELECT COUNT(*) FROM UNNEST(%s) WHERE LOWER(text) IN (%s)) > 0", hashtagColumn,
-						String.join(",", hashtagsArr));
-				query += addQueryCondition(hashtagCondition, hasCondition);
-				hasCondition = true;
-			}
-
-			// Query for tweets that were written in a certain language
-			if (language.length() > 0) {
-				String languageQuery = String.format("lang='%s'", language);
-				query += addQueryCondition(languageQuery, hasCondition);
-				hasCondition = true;
-			}
-
-			// Add date range to the query
-			if (startDate != 0 && endDate != 0) {
-				query += addQueryCondition(
-						String.format("(UNIX_MILLIS(PARSE_TIMESTAMP('%s',created_at)) BETWEEN %d AND %d)",
-								twitterUTCTimeFormat, startDate, endDate),
-						hasCondition);
-			} else if (startDate != 0) {
-				query += addQueryCondition(String.format("(UNIX_MILLIS(PARSE_TIMESTAMP('%s',created_at)) >= %d)",
-						twitterUTCTimeFormat, startDate), hasCondition);
-			} else if (endDate != 0) {
-				query += addQueryCondition(String.format("(UNIX_MILLIS(PARSE_TIMESTAMP('%s',created_at)) <= %d)",
-						twitterUTCTimeFormat, endDate), hasCondition);
-			}
+			query = filterQuery.getQueryString(eventTableName);
 		} else {
 			// Retrieve results from a temporary file cached by BigQuery
 			query = String.format("SELECT * FROM `crypto-eon-164220.%s`", bqTempFile);
@@ -181,25 +90,7 @@ public class FilteringResource {
 		QueryJobConfiguration queryConfig = queryConfigBuilder.build();
 
 		return runQuery(queryConfig, paramString, eventName, pageNumber, pageSize, bqTempFile.isEmpty());
-	}
 
-	private String buildTweetTextCondition(String[] arr, Boolean isNot, Boolean isAnd) {
-		String clause = "(";
-		String condition = isAnd ? " AND " : " OR ";
-		String notStr = isNot ? " NOT LIKE " : " LIKE ";
-		for (int i = 0; i < arr.length; i++) {
-			clause += String.format("(LOWER(text) %s '%%%s%%' OR LOWER(extended_tweet.full_text) %s '%%%s%%')", notStr,
-					arr[i], notStr, arr[i]);
-			if (i < arr.length - 1) {
-				clause += condition;
-			}
-		}
-		clause += ")";
-		return clause;
-	}
-
-	private String addQueryCondition(String condition, boolean hasCondition) {
-		return String.format("%s%s", hasCondition ? " AND " : "", condition);
 	}
 
 	private String runQuery(QueryJobConfiguration queryConfig, String paramString, String eventName, Integer pageNumber,

@@ -28,23 +28,19 @@ public class FilteringApplication extends Application<FilteringConfiguration> {
 
   @Override
   public String getName() {
-      return "Filtering";
+    return "Filtering";
   }
 
   @Override
   public void initialize(final Bootstrap<FilteringConfiguration> bootstrap) {
-    bootstrap.setConfigurationSourceProvider(
-      new SubstitutingSourceProvider(bootstrap.getConfigurationSourceProvider(),
-        new EnvironmentVariableSubstitutor(false)
-      )
-    );
+    bootstrap.setConfigurationSourceProvider(new SubstitutingSourceProvider(bootstrap.getConfigurationSourceProvider(),
+        new EnvironmentVariableSubstitutor(false)));
   }
 
   @Override
   public void run(FilteringConfiguration configuration, Environment environment) throws IOException {
 
-    final FilterRegistration.Dynamic cors =
-        environment.servlets().addFilter("CORS", CrossOriginFilter.class);
+    final FilterRegistration.Dynamic cors = environment.servlets().addFilter("CORS", CrossOriginFilter.class);
     cors.addMappingForUrlPatterns(EnumSet.allOf(DispatcherType.class), true, "/*");
 
     AddAuthToEnv.register(environment, configuration.getProduction());
