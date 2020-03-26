@@ -85,12 +85,14 @@ public class FilteringQuery {
 
     public String paramString() {
         String paramString = "(";
-        for (int i = 0; i < predicates.length; i++) {
-            Predicate predicate = predicates[i];
-            if (i > 0) {
-                paramString += predicate.isOr ? ")OR(" : ")AND(";
+        if (predicates != null) {
+            for (int i = 0; i < predicates.length; i++) {
+                Predicate predicate = predicates[i];
+                if (i > 0) {
+                    paramString += predicate.isOr ? ")OR(" : ")AND(";
+                }
+                paramString += predicate.paramString();
             }
-            paramString += predicate.paramString();
         }
         paramString += ")";
         return String.format("%s,%s,%s,%d,%d", paramString, hashtags, language, startDate, endDate);
