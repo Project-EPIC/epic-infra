@@ -35,10 +35,10 @@ public class App {
     private static final String kafkaServers = System.getenv().getOrDefault("KAFKA_SERVER", "127.0.0.1:9092");
     private static final String eventName = System.getenv().getOrDefault("EVENT_NAME", "test");
     private static final String bucketName = System.getenv().getOrDefault("BUCKET_NAME", "epic-collect");
-    private static final String[] keywords = System.getenv().getOrDefault("KEYWORDS", "hey,me,gerard")
-            .replace(" ", "")
-            .split(",");
-
+    private static final String[] keywords = System.getenv().getOrDefault("KEYWORDS", "hey,me,gerard").split(",");
+    private static final ArrayList<String[]> phrases = Arrays.stream(keywords).map(phrase -> phrase.trim().split(" "))
+        .collect(ArrayList<String[]>::new, ArrayList::add, ArrayList::addAll);
+  
     // Static configuration
     private static final int pollDurationMs = 100;
     private static final String pattern = "yyyy/MM/dd/HH/";
@@ -105,8 +105,12 @@ public class App {
 
             // Process all messages
             for (ConsumerRecord<String, String> record : records) {
-                for (String keyword : keywords) {
-                    if (record.value().toLowerCase().contains(keyword.toLowerCase())) {
+                for (String[] phrase : phrases) {
+                    String recordStr = record.value().toLowerCase();
+
+                    // Check that the record contains all terms within the phrase
+                    boolean allTermsInTweet = Arrays.stream(phrase).allMatch(term -> recordStr.contains(term.toLowerCase()));
+                    if (allTermsInTweet) {
                         buffer.add(record);
 
                         // Check if we need to save tweets (if batchsize has been reached or if we need to dump it because we are changing folder
@@ -124,7 +128,6 @@ public class App {
         String currentFolder = new SimpleDateFormat(pattern).format(new Date());
         if (buffer.size() >= minBatchSize || (!folder.equals(currentFolder) && !buffer.isEmpty())) {
             saveTweets(consumer, buffer, folder);
-
         }
         return currentFolder;
     }
