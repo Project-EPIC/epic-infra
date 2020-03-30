@@ -92,8 +92,14 @@ public class Predicate {
         String condition = isOr ? " OR " : " AND ";
         String notStr = isNot ? "NOT LIKE" : "LIKE";
         for (int i = 0; i < arr.length; i++) {
-            clause += String.format("LOWER(text) %s '%%%s%%'", notStr, arr[i]);
-            extendedText += String.format("LOWER(extended_tweet.full_text) %s '%%%s%%'", notStr, arr[i]);
+            if (arr[i].length() == 0) {
+                clause += String.format("LOWER(text) %s ''", notStr);
+                extendedText += String.format("LOWER(extended_tweet.full_text) %s ''", notStr);
+            } else {
+                clause += String.format("LOWER(text) %s '%%%s%%'", notStr, arr[i]);
+                extendedText += String.format("LOWER(extended_tweet.full_text) %s '%%%s%%'", notStr, arr[i]);
+            }
+
             if (i < arr.length - 1) {
                 clause += condition;
                 extendedText += condition;

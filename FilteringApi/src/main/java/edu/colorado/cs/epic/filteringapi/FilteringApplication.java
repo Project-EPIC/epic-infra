@@ -48,7 +48,7 @@ public class FilteringApplication extends Application<FilteringConfiguration> {
     // Configure CORS parameters
     cors.setInitParameter("allowedOrigins", "*");
     cors.setInitParameter("allowedHeaders", "X-Requested-With,Authorization,Content-Type,Accept,Origin");
-    cors.setInitParameter("allowedMethods", "OPTIONS,GET,HEAD");
+    cors.setInitParameter("allowedMethods", "OPTIONS,POST,GET,HEAD");
 
     BigQuery bigquery = BigQueryOptions.getDefaultInstance().getService();
     environment.healthChecks().register("bigquery", new GoogleBigQueryHealthCheck(bigquery));

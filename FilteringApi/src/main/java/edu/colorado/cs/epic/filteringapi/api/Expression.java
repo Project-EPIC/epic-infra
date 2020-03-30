@@ -5,7 +5,6 @@ import edu.colorado.cs.epic.filteringapi.api.ExpressionSelect;
 import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.hibernate.validator.constraints.NotEmpty;
 import java.util.Arrays;
 
 public class Expression {
@@ -15,10 +14,10 @@ public class Expression {
     @NotNull
     ExpressionSelect selectValue;
 
-    @NotEmpty
+    @NotNull
     String text;
 
-    @NotEmpty
+    @NotNull
     String[] textArr;
 
     public Expression() {
