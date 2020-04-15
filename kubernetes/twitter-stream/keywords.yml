@@ -4,4 +4,5 @@ metadata:
   name: keywordsconfig
   namespace: default
 data:
-  keywords: "tornado"
+  keywords: "" # Ex. "tornado,hurricane,storm surge"
+  follows: "" # Ex. "1,2,3"
