@@ -44,7 +44,6 @@ public class EventResource {
 
     @POST
     public Response createEvent(@NotNull @Valid Event event, @Context UriInfo uriInfo, @Auth Optional<FirebaseUser> user) {
-
         event.setCreatedAt(new Timestamp(System.currentTimeMillis()));
         event.setStatus(Event.Status.ACTIVE);
 
@@ -64,16 +63,16 @@ public class EventResource {
 
 
     @GET
-    public List<Event> getEvents() {
-        return controller.getEvents();
+    public List<Event> getEvents(@QueryParam("eventType") @DefaultValue("keywords") String eventType) {
+        return controller.getEvents(eventType);
     }
 
 
     @GET
     @Path("/{normalized_name}")
-    public ExtendedEvent getEvent(@PathParam("normalized_name") String normalized_name) {
+    public ExtendedEvent getEvent(@PathParam("normalized_name") String normalized_name, @QueryParam("eventType") @DefaultValue("keywords") String eventType) {
         try {
-            return controller.getEvent(normalized_name);
+            return controller.getEvent(normalized_name, eventType);
 
         } catch (IllegalStateException e) {
             throw new WebApplicationException(Response.Status.NOT_FOUND);
@@ -82,10 +81,10 @@ public class EventResource {
 
     @PUT
     @Path("/{id}/{status}")
-    public Response setStatus(@PathParam("id") String normalized_name, @PathParam("status") Event.Status status, @Context UriInfo uriInfo, @Auth Optional<FirebaseUser> user) {
+    public Response setStatus(@PathParam("id") String normalized_name, @PathParam("status") Event.Status status, @Context UriInfo uriInfo, @Auth Optional<FirebaseUser> user, @QueryParam("eventType") @DefaultValue("keywords") String eventType) {
         ExtendedEvent event;
         try {
-            event = controller.getEvent(normalized_name);
+            event = controller.getEvent(normalized_name, eventType);
             event.setStatus(status);
             controller.setStatus(normalized_name, status);
 
@@ -94,16 +93,16 @@ public class EventResource {
         }
 
         syncInfrastructure(user);
-        event = controller.getEvent(normalized_name);
+        event = controller.getEvent(normalized_name, eventType);
         return Response.accepted(uriInfo.getRequestUriBuilder().path(event.getNormalizedName()).build()).entity(event).build();
     }
 
     @PUT
     @Path("/big_query/{normalized_name}/")
-    public ExtendedEvent createBigQueryTable(@PathParam("normalized_name") String normalizedName) {
+    public ExtendedEvent createBigQueryTable(@PathParam("normalized_name") String normalizedName, @QueryParam("eventType") @DefaultValue("keywords") String eventType) {
         ExtendedEvent event;
         try {
-            event = controller.getEvent(normalizedName);
+            event = controller.getEvent(normalizedName, eventType);
             bqController.createBigQueryTable(event);
         } catch (IllegalStateException e) {
             throw new WebApplicationException(Response.Status.NOT_FOUND);

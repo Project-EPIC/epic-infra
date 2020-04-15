@@ -38,7 +38,8 @@ public class DatabaseController {
             handle.createUpdate("INSERT INTO events (name, description, normalized_name, status, created_at, author) VALUES (:name,:description,:normalizedName,:status,:createdAt, :author)")
                     .bindBean(event)
                     .execute();
-            PreparedBatch batch = handle.prepareBatch("INSERT INTO keywords (event_name, keyword) VALUES (:name, :keyword)");
+            String tableName = event.getMatchKey().toLowerCase();
+            PreparedBatch batch = handle.prepareBatch(String.format("INSERT INTO %s (event_name, %s) VALUES (:name, :keyword)", tableName, tableName.substring(0, tableName.length() - 1)));
             for (String keyword : event.getKeywords()) {
                 batch.bind("keyword", keyword)
                         .bind("name", event.getNormalizedName())
@@ -52,21 +53,36 @@ public class DatabaseController {
         });
     }
 
+    // Returns keyword events
+    public List<Event> getEvents(String eventType) {
+        String query;
 
-    public List<Event> getEvents() {
-        return postgres.withHandle(handle -> new ArrayList<>(handle.createQuery(
-                "SELECT e.name e_name, e.author e_author, e.normalized_name e_normalized_name, e.description e_description, e.status e_status, e.created_at e_created_at, k.keyword k_key " +
-                        "FROM events e INNER JOIN keywords k ON k.event_name = e.normalized_name " +
-                        "ORDER BY e.normalized_name")
+        // Create query based on the event type
+        switch(eventType.toLowerCase()){
+            case "follows":
+                query = "SELECT e.name e_name, e.author e_author, e.normalized_name e_normalized_name, e.description e_description, e.status e_status, e.created_at e_created_at, j.follow j_key " +
+                    "FROM events e INNER JOIN follows j ON j.event_name = e.normalized_name " +
+                    "ORDER BY e.normalized_name";
+                break;
+            case "keywords":
+            default:
+                query = "SELECT e.name e_name, e.author e_author, e.normalized_name e_normalized_name, e.description e_description, e.status e_status, e.created_at e_created_at, j.keyword j_key " +
+                    "FROM events e INNER JOIN keywords j ON j.event_name = e.normalized_name " +
+                    "ORDER BY e.normalized_name";
+                break;
+        }
+
+        return postgres.withHandle(handle -> new ArrayList<>(handle.createQuery(query)
                 .registerRowMapper(BeanMapper.factory(Event.class, "e"))
-                .registerRowMapper(BeanMapper.factory(String.class, "k"))
+                .registerRowMapper(BeanMapper.factory(String.class, "j"))
                 .reduceRows(new LinkedHashMap<String, Event>(),
                         (map, rowView) -> {
                             Event event = map.computeIfAbsent(
                                     rowView.getColumn("e_normalized_name", String.class),
                                     id -> rowView.getRow(Event.class)
                             );
-                            event.appendKeywords(rowView.getColumn("k_key", String.class));
+                            event.appendKeywords(rowView.getColumn("j_key", String.class));
+                            event.setMatchKey(eventType);
                             return map;
                         })
                 .values()
@@ -75,34 +91,77 @@ public class DatabaseController {
 
 
     public List<Event> getActiveEvents() {
+        List<Event> ret = new ArrayList<>();
+        ret.addAll(getActiveKeywordEvents());
+        ret.addAll(getActiveFollowEvents());
+        return ret;
+    }
+
+    public List<Event> getActiveKeywordEvents() {
         return postgres.withHandle(handle -> new ArrayList<>(handle.createQuery(
-                "SELECT e.name e_name, e.author e_author, e.normalized_name e_normalized_name, e.description e_description, e.status e_status, e.created_at e_created_at, k.keyword k_key " +
-                        "FROM events e INNER JOIN keywords k ON k.event_name = e.normalized_name " +
-                        "WHERE e.status = :activeStatus " +
-                        "ORDER BY e.normalized_name")
-                .bind("activeStatus", Event.Status.ACTIVE.toString())
-                .registerRowMapper(BeanMapper.factory(Event.class, "e"))
-                .registerRowMapper(BeanMapper.factory(String.class, "k"))
-                .reduceRows(new LinkedHashMap<String, Event>(),
-                        (map, rowView) -> {
-                            Event event = map.computeIfAbsent(
-                                    rowView.getColumn("e_normalized_name", String.class),
-                                    id -> rowView.getRow(Event.class)
-                            );
-                            event.appendKeywords(rowView.getColumn("k_key", String.class));
-                            return map;
-                        })
-                .values()
+            "SELECT e.name e_name, e.author e_author, e.normalized_name e_normalized_name, e.description e_description, e.status e_status, e.created_at e_created_at, k.keyword k_key " +
+                    "FROM events e INNER JOIN keywords k ON k.event_name = e.normalized_name " +
+                    "WHERE e.status = :activeStatus " +
+                    "ORDER BY e.normalized_name")
+            .bind("activeStatus", Event.Status.ACTIVE.toString())
+            .registerRowMapper(BeanMapper.factory(Event.class, "e"))
+            .registerRowMapper(BeanMapper.factory(String.class, "k"))
+            .reduceRows(new LinkedHashMap<String, Event>(),
+                    (map, rowView) -> {
+                        Event event = map.computeIfAbsent(
+                                rowView.getColumn("e_normalized_name", String.class),
+                                id -> rowView.getRow(Event.class)
+                        );
+                        event.appendKeywords(rowView.getColumn("k_key", String.class));
+                        event.setMatchKey("keywords");
+                        return map;
+                    })
+            .values()
         ));
     }
 
-    public ExtendedEvent getEvent(String normalizedName) {
+    public List<Event> getActiveFollowEvents() {
+        return postgres.withHandle(handle -> new ArrayList<>(handle.createQuery(
+            "SELECT e.name e_name, e.author e_author, e.normalized_name e_normalized_name, e.description e_description, e.status e_status, e.created_at e_created_at, f.follow f_key " +
+                    "FROM events e INNER JOIN follows f ON f.event_name = e.normalized_name " +
+                    "WHERE e.status = :activeStatus " +
+                    "ORDER BY e.normalized_name")
+            .bind("activeStatus", Event.Status.ACTIVE.toString())
+            .registerRowMapper(BeanMapper.factory(Event.class, "e"))
+            .registerRowMapper(BeanMapper.factory(String.class, "f"))
+            .reduceRows(new LinkedHashMap<String, Event>(),
+                    (map, rowView) -> {
+                        Event event = map.computeIfAbsent(
+                                rowView.getColumn("e_normalized_name", String.class),
+                                id -> rowView.getRow(Event.class)
+                        );
+                        event.appendKeywords(rowView.getColumn("f_key", String.class));
+                        event.setMatchKey("follows");
+                        return map;
+                    })
+            .values()
+        ));
+    }
+
+    public ExtendedEvent getEvent(String normalizedName, String eventType) {
+        String keywordQuery;
+
+        switch(eventType.toLowerCase()) {
+            case "follows":
+                keywordQuery = "SELECT follow FROM follows WHERE event_name=:normalizedName ORDER BY follow";
+                break;
+            case "keywords":
+            default:
+                keywordQuery = "SELECT keyword FROM keywords WHERE event_name=:normalizedName ORDER BY keyword";
+                break;
+
+        }
         ExtendedEvent retEvent = postgres.withHandle(handle -> {
             ExtendedEvent event = handle.createQuery("SELECT * FROM events WHERE normalized_name=:normalizedName ORDER BY normalized_name")
                     .bind("normalizedName", normalizedName)
                     .mapToBean(ExtendedEvent.class)
                     .findOnly();
-            event.setKeywords(handle.createQuery("SELECT keyword FROM keywords WHERE event_name=:normalizedName ORDER BY keyword")
+            event.setKeywords(handle.createQuery(keywordQuery)
                     .bind("normalizedName", event.getNormalizedName())
                     .mapTo(String.class)
                     .list());
@@ -110,6 +169,7 @@ public class DatabaseController {
                     .bind("normalizedName", event.getNormalizedName())
                     .mapToBean(EventActivity.class)
                     .list());
+            event.setMatchKey(eventType);
             return event;
 
         });
@@ -143,11 +203,17 @@ public class DatabaseController {
     }
 
     public List<String> getActiveKeywords() {
-
         return postgres.withHandle(handle -> handle.createQuery("select DISTINCT keyword from keywords,events where event_name=normalized_name and status=:activeStatus")
                 .bind("activeStatus", Event.Status.ACTIVE.toString())
                 .mapTo(String.class)
                 .list());
+    }
+
+    public List<String> getActiveFollows() {
+        return postgres.withHandle(handle -> handle.createQuery("select DISTINCT follow from follows,events where event_name=normalized_name and status=:activeStatus")
+                .bind("activeStatus", Event.Status.ACTIVE.toString())
+                .mapTo(String.class)
+                .list());     
     }
 
     public void deleteAnnotation(String eventName, String tweetId, String tag) {

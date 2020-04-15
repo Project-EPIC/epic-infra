@@ -10,18 +10,38 @@ import java.net.URI;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+
+import javax.validation.constraints.NotNull;
 
 @JsonSnakeCase
 public class Event {
-
 
     public enum Status {
         ACTIVE, NOT_ACTIVE, FAILED
     }
 
+    private enum MatchKey {
+        KEYWORDS("tweets", "epic-collect"), FOLLOWS("tweets-follow", "epic-collect-follow");
+        private final String kafkaTopic;
+        private final String bucketName;
+        private MatchKey(String kafkaTopic, String bucketName) {
+            this.kafkaTopic = kafkaTopic;
+            this.bucketName = bucketName;
+        }
+        public String getKafkaTopic() {
+            return this.kafkaTopic;
+        }
+        public String getBucketName() {
+            return this.bucketName;
+        }
+    }
+
     @NotEmpty
     private String name;
+    @NotNull
+    private MatchKey matchKey; // Default to KEYWORDS to be backwards compatible
     @NotEmpty
     private List<String> keywords = new ArrayList<String>();
     @NotEmpty
@@ -59,6 +79,8 @@ public class Event {
                 normalizedName = env.getValue();
             if (env.getName().equals("KEYWORDS"))
                 keywords = Arrays.asList(env.getValue().split(","));
+            if (env.getName().equals("MATCH_KEY"))
+                setMatchKey(env.getValue());
         }
         if (normalizedName == null || keywords == null) {
             throw new IllegalStateException();
@@ -74,6 +96,17 @@ public class Event {
         this.normalizedName = normalizeName(name);
         this.status = Status.ACTIVE;
         this.createdAt = new Timestamp(System.currentTimeMillis());
+    }
+    
+    
+    public Event(String name, List<String> keywords, String match_key, String description) {
+        this.name = name;
+        this.keywords = keywords;
+        this.description = description;
+        this.normalizedName = normalizeName(name);
+        this.status = Status.ACTIVE;
+        this.createdAt = new Timestamp(System.currentTimeMillis());
+        this.setMatchKey(match_key);
     }
 
     public String getAuthor() {
@@ -105,6 +138,29 @@ public class Event {
         this.name = name;
         this.normalizedName = normalizeName(name);
     }
+
+    @JsonProperty("match_key")
+    public String getMatchKey() {
+        return matchKey.name();
+    }
+
+    @JsonProperty("match_key")
+    public void setMatchKey(String match_key) {
+        switch (match_key.toUpperCase()) {
+            case "FOLLOWS":
+                this.matchKey = MatchKey.FOLLOWS;
+                break;
+            case "KEYWORDS":
+            default:
+                this.matchKey = MatchKey.KEYWORDS;
+                break;
+        }
+    }
+
+    public void setMatchKey(MatchKey matchKey) {
+        this.matchKey = matchKey;
+    }
+
 
     @JsonProperty
     public List<String> getKeywords() {
@@ -222,7 +278,19 @@ public class Event {
                 .withValue(normalizedName)
                 .endEnv()
                 .addNewEnv()
-                .withName("KEYWORDS")
+                .withName("KAFKA_TOPIC")
+                .withValue(this.matchKey.getKafkaTopic())
+                .endEnv()
+                .addNewEnv()
+                .withName("BUCKET_NAME")
+                .withValue(this.matchKey.getBucketName())
+                .endEnv()
+                .addNewEnv()
+                .withName("MATCH_KEY") // MATCH_KEY determines what tweet bucketing algorithm will be used in tweet-store
+                .withValue(this.matchKey.name())
+                .endEnv()
+                .addNewEnv()
+                .withName(this.matchKey.name()) // Environment variable that depends on MATCH_KEY value
                 .withValue(String.join(",", keywords))
                 .endEnv()
                 .addNewEnv()
