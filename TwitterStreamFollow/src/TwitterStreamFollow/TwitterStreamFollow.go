@@ -48,13 +48,12 @@ func getEnv(key, fallback string) string {
 
 // Get user ids from file
 func getUserIds() string {
-	var fileUserIds = getEnv("FILE_USERIDS", "userids.txt")
-	var userIds, err = ioutil.ReadFile(fileUserIds)
+	var fileFollows = getEnv("FILE_FOLLOWS", "follows.txt")
+	var userIds, err = ioutil.ReadFile(fileFollows)
 	if err != nil {
 		log.Fatalf("File reading error: %s", err)
 		panic(err)
 	}
-	log.Printf(string(userIds))
 	return string(userIds)
 }
 
@@ -65,7 +64,7 @@ func main() {
 	var accessToken = os.Getenv("TWITTER_ACCESS_TOKEN_KEY")
 	var accessSecret = os.Getenv("TWITTER_ACCESS_TOKEN_SECRET")
 
-	Get config for Kafka
+	// Get config for Kafka
 	var kafkaServers = strings.Split(getEnv("KAFKA_SERVERS", "localhost:9092"), ",")
 	var kafkaTopic = getEnv("KAFKA_TOPIC", "tweets-follow")
 
@@ -85,7 +84,7 @@ func main() {
 	v.Set("follow", userIds)
 	log.Printf("Tracking user ids: %s", userIds)
 	var streamUrl = "https://stream.twitter.com/1.1/statuses/filter.json?" + v.Encode()
-	log.Printf(string(streamUrl))
+
 	// Connect to Streaming API
 	resp, err := client.Post(streamUrl, "application/json", nil)
 
@@ -208,8 +207,6 @@ func main() {
 			log.Printf("Staying alive... %d", i)
 			continue
 		}
-
-		log.Println(string(tweet))
 
 		producer.Input() <- &sarama.ProducerMessage{Topic: kafkaTopic, Key: nil, Value: sarama.StringEncoder(tweet)}
 		log.Printf("Tweet received")

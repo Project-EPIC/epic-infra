@@ -94,8 +94,6 @@ public class App {
                 tweetMatch = new TweetFollowStrategy();
                 break;
             case "KEYWORDS":
-                tweetMatch = new TweetKeywordStrategy();
-                break;
             default:
                 tweetMatch = new TweetKeywordStrategy();
                 break;

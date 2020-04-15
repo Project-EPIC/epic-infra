@@ -16,9 +16,16 @@ public class TweetFollowStrategy extends TweetMatchStrategy {
             JSONParser parser = new JSONParser();
             JSONObject tweetObj = (JSONObject)parser.parse(tweet);
             
-            String userId = (String)((JSONObject)tweetObj.get("user")).get("id_str");
+            String tweetCreatorUserId = (String)((JSONObject)tweetObj.get("user")).get("id_str");
+            String inReplyToUserId = (String)tweetObj.get("in_reply_to_user_id_str");
+
+            String retweetByUserId = null;
+            if (tweetObj.containsKey("retweeted_status") && tweetObj.get("retweeted_status") != null) {
+                JSONObject retweetObj = (JSONObject)tweetObj.get("retweeted_status");
+                retweetByUserId = (String)((JSONObject)retweetObj.get("user")).get("id_str");
+            }
             
-            return userId.equals(match);
+            return match.equals(tweetCreatorUserId) || match.equals(inReplyToUserId) || match.equals(retweetByUserId);
         }
         catch (ParseException e) {
             log.info("Unable to parse tweet");
