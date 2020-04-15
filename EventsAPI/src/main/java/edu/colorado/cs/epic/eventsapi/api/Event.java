@@ -23,18 +23,13 @@ public class Event {
     }
 
     private enum MatchKey {
-        KEYWORDS("tweets", "epic-collect"), FOLLOWS("tweets-follow", "epic-collect-follow");
+        KEYWORDS("tweets"), FOLLOWS("tweets-follow");
         private final String kafkaTopic;
-        private final String bucketName;
-        private MatchKey(String kafkaTopic, String bucketName) {
+        private MatchKey(String kafkaTopic) {
             this.kafkaTopic = kafkaTopic;
-            this.bucketName = bucketName;
         }
         public String getKafkaTopic() {
             return this.kafkaTopic;
-        }
-        public String getBucketName() {
-            return this.bucketName;
         }
     }
 
@@ -280,10 +275,6 @@ public class Event {
                 .addNewEnv()
                 .withName("KAFKA_TOPIC")
                 .withValue(this.matchKey.getKafkaTopic())
-                .endEnv()
-                .addNewEnv()
-                .withName("BUCKET_NAME")
-                .withValue(this.matchKey.getBucketName())
                 .endEnv()
                 .addNewEnv()
                 .withName("MATCH_KEY") // MATCH_KEY determines what tweet bucketing algorithm will be used in tweet-store
