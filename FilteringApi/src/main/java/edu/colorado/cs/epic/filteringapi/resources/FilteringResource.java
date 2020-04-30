@@ -61,7 +61,7 @@ public class FilteringResource {
 
 		int pageNumber = page.get();
 		int pageSize = pageCount.get();
-		String eventTableName = "tweets." + eventName;
+		String eventTableName = "tweets." + eventName.replace("-", "_");
 		String bqTempFile = "";
 		String query = "";
 
@@ -100,18 +100,8 @@ public class FilteringResource {
 			JobId jobId = JobId.of(UUID.randomUUID().toString());
 			Job queryJob = bigquery.create(JobInfo.newBuilder(queryConfig).setJobId(jobId).build());
 
-			// Wait for the query to complete
-			queryJob = queryJob.waitFor();
-
 			// Get the results
 			QueryJobConfiguration queryJobConfig = queryJob.getConfiguration();
-
-			if (createCache) {
-				// Cache query's temp file if first time requested query, or query not found in
-				String destDataset = queryJobConfig.getDestinationTable().getDataset();
-				String destTable = queryJobConfig.getDestinationTable().getTable();
-				queryTempFilesCache.put(eventName + paramString, destDataset + '.' + destTable);
-			}
 
 			// Build the final result object with meta data and the requested page of tweets
 			StringBuilder tweets = new StringBuilder();
@@ -120,9 +110,8 @@ public class FilteringResource {
 			JSONArray tweetArray = new JSONArray();
 			TableResult pageToReturn = queryJob.getQueryResults(BigQuery.QueryResultsOption.pageSize(pageSize),
 					BigQuery.QueryResultsOption.startIndex((pageNumber - 1) * pageSize));
-
+			
 			// Iterate through the requested page and append the tweets to the return object
-			int numTweets = 0;
 			for (FieldValueList row : pageToReturn.getValues()) {
 				JSONObject userObject = new JSONObject();
 				userObject.put("name", row.get("name").getStringValue());
@@ -148,7 +137,6 @@ public class FilteringResource {
 				tweetObject.put("source", row.get("source").getStringValue());
 				tweetObject.put("user", userObject);
 				tweetArray.add(tweetObject);
-				numTweets++;
 			}
 			tweets.append("{\"tweets\":");
 			tweets.append(tweetArray.toJSONString());
@@ -160,12 +148,19 @@ public class FilteringResource {
 			metaObject.put("job_status", queryJob.getStatus().getState().toString());
 			metaObject.put("page", pageNumber);
 			metaObject.put("count", pageSize);
-			metaObject.put("total_count", queryJob.getQueryResults().getTotalRows());
-			metaObject.put("num_pages", (int) Math.ceil((double) queryJob.getQueryResults().getTotalRows() / pageSize));
-			metaObject.put("tweet_count", numTweets);
+			metaObject.put("total_count", pageToReturn.getTotalRows());
+			metaObject.put("num_pages", (int) Math.ceil((double) pageToReturn.getTotalRows() / pageSize));
+			metaObject.put("tweet_count", tweetArray.size());
 			tweets.append(",\"meta\":");
 			tweets.append(metaObject.toJSONString());
 			tweets.append("}");
+
+			if (createCache) {
+				// Cache query's temp file if first time requested query, or query not found in
+				String destDataset = queryJobConfig.getDestinationTable().getDataset();
+				String destTable = queryJobConfig.getDestinationTable().getTable();
+				queryTempFilesCache.put(eventName + paramString, destDataset + '.' + destTable);
+			}
 
 			return tweets.toString();
 		} catch (Exception e) {
