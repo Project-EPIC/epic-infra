@@ -1,5 +1,9 @@
 package edu.colorado.cs.epic;
 
+import edu.colorado.cs.epic.TweetMatchStrategy;
+import edu.colorado.cs.epic.TweetKeywordStrategy;
+import edu.colorado.cs.epic.TweetFollowStrategy;
+
 import com.google.cloud.storage.*;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.kafka.clients.CommonClientConfigs;
@@ -35,9 +39,8 @@ public class App {
     private static final String kafkaServers = System.getenv().getOrDefault("KAFKA_SERVER", "127.0.0.1:9092");
     private static final String eventName = System.getenv().getOrDefault("EVENT_NAME", "test");
     private static final String bucketName = System.getenv().getOrDefault("BUCKET_NAME", "epic-collect");
-    private static final String[] keywords = System.getenv().getOrDefault("KEYWORDS", "hey,me,gerard").split(",");
-    private static final ArrayList<String[]> phrases = Arrays.stream(keywords).map(phrase -> phrase.trim().split(" "))
-        .collect(ArrayList<String[]>::new, ArrayList::add, ArrayList::addAll);
+    private static final String matchEnvKey = System.getenv().getOrDefault("MATCH_KEY", "KEYWORDS");
+    private static final String[] matchConditions = System.getenv().getOrDefault(matchEnvKey, "hey,me,gerard").split(",");
   
     // Static configuration
     private static final int pollDurationMs = 100;
@@ -68,7 +71,7 @@ public class App {
         List<ConsumerRecord<String, String>> buffer = new ArrayList<>();
         String folder = new SimpleDateFormat(pattern).format(new Date());
 
-        log.info(String.format("Listening for keywords: %s", String.join(", ", keywords)));
+        log.info(String.format("Listening for %s: %s", matchEnvKey, String.join(", ", matchConditions)));
 
         // Create shutdown hook to save tweets read by current worker and commit results to Kafka
         String finalFolder = folder;
@@ -83,6 +86,18 @@ public class App {
         };
         Signal.handle(new Signal("INT"), handler);
         Signal.handle(new Signal("TERM"), handler);
+
+        // Tweet matching algorithm selection
+        TweetMatchStrategy tweetMatch;
+        switch (matchEnvKey) {
+            case "FOLLOWS":
+                tweetMatch = new TweetFollowStrategy();
+                break;
+            case "KEYWORDS":
+            default:
+                tweetMatch = new TweetKeywordStrategy();
+                break;
+        }
 
         while (true) {
 
@@ -105,12 +120,9 @@ public class App {
 
             // Process all messages
             for (ConsumerRecord<String, String> record : records) {
-                for (String[] phrase : phrases) {
-                    String recordStr = record.value().toLowerCase();
-
-                    // Check that the record contains all terms within the phrase
-                    boolean allTermsInTweet = Arrays.stream(phrase).allMatch(term -> recordStr.contains(term.toLowerCase()));
-                    if (allTermsInTweet) {
+                for (String match : matchConditions) {
+                    boolean isMatch = tweetMatch.isTweetMatch(record.value(), match);
+                    if (isMatch) {
                         buffer.add(record);
 
                         // Check if we need to save tweets (if batchsize has been reached or if we need to dump it because we are changing folder

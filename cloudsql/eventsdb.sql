@@ -19,3 +19,8 @@ CREATE TABLE keywords (
     event_name TEXT REFERENCES events(normalized_name),
     keyword TEXT
 );
+
+CREATE TABLE follows (
+    event_name TEXT REFERENCES events(normalized_name),
+    follow TEXT
+);

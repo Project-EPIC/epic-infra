@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: twitter-stream-follow
+  labels:
+    app: twitter-stream-follow
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: twitter-stream-follow
+  strategy:
+    rollingUpdate:
+      maxSurge: 2
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: twitter-stream-follow
+    spec:
+      terminationGracePeriodSeconds: 10
+      volumes:
+       - name: key-volume
+         configMap:
+           name: keywordsconfig
+           items:
+           - key: follows
+             path: follows.txt
+      containers:
+      - name: twitter-stream-follow
+        image: projectepic/twitter-stream-follow:1.0.0
+        resources:
+          limits:
+           memory: 50Mi
+           cpu: "50m"
+          requests:
+           memory: 50Mi
+           cpu: "50m"
+        volumeMounts:
+           - name: key-volume
+             mountPath: /keys
+        env:
+          - name: TWITTER_ACCESS_TOKEN_KEY
+            valueFrom:
+              secretKeyRef:
+                name: twsecret-follow
+                key: access_token
+          - name: TWITTER_ACCESS_TOKEN_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: twsecret-follow
+                key: access_token_secret
+          - name: TWITTER_CONSUMER_API_KEY
+            valueFrom:
+              secretKeyRef:
+                name: twsecret-follow
+                key: consumer_key
+          - name: TWITTER_CONSUMER_API_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: twsecret-follow
+                key: consumer_secret
+          - name: KAFKA_SERVERS
+            value: kafka-0.broker.default:9092,kafka-1.broker.default:9092
+            
+          - name: FILE_FOLLOWS
+            value: "/keys/follows.txt"
+

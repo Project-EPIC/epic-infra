@@ -115,6 +115,15 @@ public class KubernetesController {
 
     }
 
+    public List<String> getActiveStreamFollows() throws ApiException {
+        Configuration.setDefaultApiClient(client);
+        CoreV1Api api = new CoreV1Api();
+
+
+        V1ConfigMap config = api.readNamespacedConfigMap(configMapName, namespace, null, true, false);
+        String follows = config.getData().getOrDefault("follows", "");
+        return Arrays.asList(follows.split(","));
+    }
 
     public List<String> getActiveStreamKeywords() throws ApiException {
         Configuration.setDefaultApiClient(client);
@@ -124,12 +133,12 @@ public class KubernetesController {
         V1ConfigMap config = api.readNamespacedConfigMap(configMapName, namespace, null, true, false);
         String keywords = config.getData().getOrDefault("keywords", "");
         return Arrays.asList(keywords.split(","));
-
     }
 
-    public void setActiveStreamKeywords(List<String> keywords) throws ApiException {
+    public void setActiveStreamValues(List<String> keywords, List<String> follows) throws ApiException {
         V1ConfigMap config = new V1ConfigMapBuilder()
                 .addToData("keywords", String.join(",", keywords))
+                .addToData("follows", String.join(",", follows))
                 .editOrNewMetadata()
                 .withName(configMapName)
                 .withNamespace(namespace)
@@ -146,7 +155,6 @@ public class KubernetesController {
             logger.info("ConfigMap already existis. Replacing...");
             api.replaceNamespacedConfigMap(configMapName, namespace, config, null, null);
         }
-
     }
 
     public V1PodList getAllPods() throws ApiException {
