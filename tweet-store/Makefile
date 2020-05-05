@@ -1,6 +1,6 @@
 all: jar
 
-TAG_CLIENT = 1.0.19
+TAG_CLIENT = 1.0.20
 PROJECT_NAME = tweet-store
 
 

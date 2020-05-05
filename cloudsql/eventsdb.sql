@@ -24,3 +24,7 @@ CREATE TABLE follows (
     event_name TEXT REFERENCES events(normalized_name),
     follow TEXT
 );
+
+CREATE TABLE covid19 (
+    event_name TEXT REFERENCES events(normalized_name)
+);

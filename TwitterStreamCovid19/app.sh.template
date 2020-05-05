@@ -1,0 +1,7 @@
+#!/bin/bash
+
+export TWITTER_CONSUMER_API_KEY="REPLACE"
+export TWITTER_CONSUMER_API_SECRET="REPLACE"
+
+GOPATH="$(pwd)" go run src/TwitterStreamCovid19/TwitterStreamCovid19.go
+

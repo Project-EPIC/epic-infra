@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: twitter-stream-covid19
+  labels:
+    app: twitter-stream-covid19
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: twitter-stream-covid19
+  strategy:
+    rollingUpdate:
+      maxSurge: 2
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: twitter-stream-covid19
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: twitter-stream-covid19
+        image: projectepic/twitter-stream-covid19:1.0.1
+        resources:
+          limits:
+           memory: 200Mi
+           cpu: "500m"
+          requests:
+           memory: 50Mi
+           cpu: "50m"
+        imagePullPolicy: Always
+          
+
+        env:
+          - name: TWITTER_CONSUMER_API_KEY
+            valueFrom:
+              secretKeyRef:
+                name: twsecret-covid19
+                key: consumer_key
+          - name: TWITTER_CONSUMER_API_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: twsecret-covid19
+                key: consumer_secret
+          - name: KAFKA_SERVERS
+            value: kafka-0.broker.default:9092,kafka-1.broker.default:9092
+        
