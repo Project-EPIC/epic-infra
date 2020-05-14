@@ -151,7 +151,7 @@ public class DatabaseController {
 
     public List<Event> getActiveCovid19Event() {
         return postgres.withHandle(handle -> new ArrayList<>(handle.createQuery(
-            "SELECT e.name e_name, e.author e_author, e.normalized_name e_normalized_name, e.description e_description, e.status e_status, e.created_at e_created_at" +
+            "SELECT e.name e_name, e.author e_author, e.normalized_name e_normalized_name, e.description e_description, e.status e_status, e.created_at e_created_at " +
                     "FROM events e INNER JOIN covid19 c ON c.event_name = e.normalized_name " +
                     "WHERE e.status = :activeStatus " +
                     "ORDER BY e.normalized_name")
@@ -180,7 +180,7 @@ public class DatabaseController {
                 keywordQuery = "SELECT follow FROM follows WHERE event_name=:normalizedName ORDER BY follow";
                 break;
             case "covid19":
-                keywordQuery = "SELECT '' as term FROM covid19 WHERE event_name=:normalizedName ORDER BY covid19";
+                keywordQuery = "SELECT '' as term FROM covid19 WHERE event_name=:normalizedName ORDER BY term";
                 break;
             case "keywords":
             default:
