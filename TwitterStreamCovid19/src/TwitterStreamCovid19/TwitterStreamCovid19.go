@@ -13,7 +13,6 @@ import (
 	"strings"
 	"bytes"
 	"encoding/json"
-	"sync"
 )
 
 // Break tweets arriving from stream
@@ -76,7 +75,7 @@ func get_bearer_token(key string, secret string) string {
 	return bodyJson["access_token"].(string)
 }
 
-func stream_connect(wg *sync.WaitGroup, token string, partition int) {
+func stream_connect(ch chan int, token string, partition int) {
 	// Set up for connection to twitter stream partition
 	client := &http.Client{}
 
@@ -121,13 +120,16 @@ func stream_connect(wg *sync.WaitGroup, token string, partition int) {
 	}()
 
 	defer func() {
-		if err := producer.Close(); err != nil {
-			log.Fatalln(err)
-		}
-
 		log.Printf("Partition %d is off", partition)
 		respbody.Close()
-		wg.Done()
+
+		if err := recover(); err != nil {
+			ch <- partition
+		} else {
+			if err := producer.Close(); err != nil {
+				log.Fatalln(err)
+			}
+		}
 	}()
 	
 	var retries = 0
@@ -167,6 +169,8 @@ func stream_connect(wg *sync.WaitGroup, token string, partition int) {
 }
 
 func main() {
+	var numPartitions = 4
+
 	// Get config for Twitter Client
 	var apiKey = os.Getenv("TWITTER_CONSUMER_API_KEY")
 	var apiSecret = os.Getenv("TWITTER_CONSUMER_API_SECRET")
@@ -174,14 +178,27 @@ func main() {
 	// Get bearer token
 	var token = get_bearer_token(apiKey, apiSecret)
 
+	// Use a channel for restarting any droppped stream connections
+	ch := make(chan int, numPartitions)
+
 	// Connect to all stream partitions
-	var wg sync.WaitGroup
-	for partition:=1; partition <= 4; partition++ {
+	for partition:=1; partition <= numPartitions; partition++ {
 		log.Printf("Starting covid connection to partition %d", partition)
-		wg.Add(1)
-		go stream_connect(&wg, token, partition)
+		go stream_connect(ch, token, partition)
 	}
 
-	wg.Wait()
-	log.Printf("Closing")
+	errCount := 0
+	for {
+		partition := <-ch
+		errCount++
+		if errCount >= 10 {
+			// Received too many errors will restart to reconnect all partitions
+			log.Printf("Too many panics occurred.") 
+			log.Printf("Closing")
+			break
+		}
+
+		log.Printf("Detected stream partition %d panic, will restart covid connection to partition %d\n", partition, partition)
+        stream_connect(ch, token, partition)
+	}
 }
