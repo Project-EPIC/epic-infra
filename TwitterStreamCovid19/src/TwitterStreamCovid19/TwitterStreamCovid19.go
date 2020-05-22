@@ -13,6 +13,7 @@ import (
 	"strings"
 	"bytes"
 	"encoding/json"
+	"time"
 )
 
 // Break tweets arriving from stream
@@ -132,39 +133,22 @@ func stream_connect(ch chan int, token string, partition int) {
 		}
 	}()
 	
-	var retries = 0
+	i := 0
 	for {
 		if !scanner.Scan() {
 			// Retry connecting to the stream up to 3 times
-			retries+=1
-			if retries == 3 {
-				return
-			}
-
 			log.Printf("Error scanning partition %d: %s", partition, scanner.Err())
-
-			respbody.Close()
-
-			// Retrying connecting to the endpoint
-			resp, err := client.Do(req)
-
-			if err != nil {
-				log.Fatalf("Error while connecting to twitter stream: %s", err)
-				panic(err)
-			}
-		
-			// Start reading the streaming response
-			respbody := resp.Body
-			scanner := bufio.NewScanner(respbody)
-			scanner.Split(scanLines)
-
-			continue
+			panic("Partition down")
 		}
-		retries = 0
-		var tweet = scanner.Bytes()
 
+		var tweet = scanner.Bytes()
+		i++
 		producer.Input() <- &sarama.ProducerMessage{Topic: kafkaTopic, Key: nil, Value: sarama.StringEncoder(tweet)}
-		log.Printf("Tweet received")
+
+		if i % 1000 == 0 {
+			log.Printf("Partition %d: 1000 tweets received", partition)
+			i = 0
+		}
 	}
 }
 
@@ -191,11 +175,10 @@ func main() {
 	for {
 		partition := <-ch
 		errCount++
-		if errCount >= 10 {
-			// Received too many errors will restart to reconnect all partitions
-			log.Printf("Too many panics occurred.") 
-			log.Printf("Closing")
-			break
+		if errCount % 10 == 0 {
+			// Cool down before trying to reconnect to the stream partition
+			log.Printf("%d panics occurred. Cooling down.", errCount) 
+			time.Sleep(15 * time.Second)
 		}
 
 		log.Printf("Detected stream partition %d panic, will restart covid connection to partition %d\n", partition, partition)
