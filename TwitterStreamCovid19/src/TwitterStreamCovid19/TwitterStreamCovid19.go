@@ -99,6 +99,8 @@ func stream_connect(ch chan int, token string, partition int) {
 	// Start reading the streaming response
 	respbody := resp.Body
 	scanner := bufio.NewScanner(respbody)
+	buf := make([]byte, 8196) // Double default buffer size because some tweets were very large
+	scanner.Buffer(buf, bufio.MaxScanTokenSize)
 	scanner.Split(scanLines)
 
 	// Get config for Kafka
@@ -124,12 +126,9 @@ func stream_connect(ch chan int, token string, partition int) {
 		log.Printf("Partition %d is off", partition)
 		respbody.Close()
 
-		if err := recover(); err != nil {
-			ch <- partition
-		} else {
-			if err := producer.Close(); err != nil {
-				log.Fatalln(err)
-			}
+		ch <- partition
+		if err := producer.Close(); err != nil {
+			log.Fatalln(err)
 		}
 	}()
 	
