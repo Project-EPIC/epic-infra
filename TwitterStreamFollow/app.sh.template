@@ -5,5 +5,5 @@ export TWITTER_ACCESS_TOKEN_SECRET="REPLACE"
 export TWITTER_CONSUMER_API_KEY="REPLACE"
 export TWITTER_CONSUMER_API_SECRET="REPLACE"
 
-GOPATH="$(pwd)" go run src/TwitterStream/TwitterStream.go
+GOPATH="$(pwd)" go run src/TwitterStreamFollow/TwitterStreamFollow.go
 

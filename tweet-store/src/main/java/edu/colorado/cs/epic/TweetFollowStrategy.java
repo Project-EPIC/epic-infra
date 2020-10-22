@@ -30,6 +30,9 @@ public class TweetFollowStrategy extends TweetMatchStrategy {
         catch (ParseException e) {
             log.info("Unable to parse tweet");
         }
+        catch (NullPointerException e) {
+            log.info(e.toString());
+        }
 
         return false;
     }

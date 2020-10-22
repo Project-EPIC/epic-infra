@@ -23,7 +23,7 @@ public class Event {
     }
 
     private enum MatchKey {
-        KEYWORDS("tweets"), FOLLOWS("tweets-follow");
+        KEYWORDS("tweets"), FOLLOWS("tweets-follow"), COVID19("tweets-covid19");
         private final String kafkaTopic;
         private MatchKey(String kafkaTopic) {
             this.kafkaTopic = kafkaTopic;
@@ -144,6 +144,9 @@ public class Event {
         switch (match_key.toUpperCase()) {
             case "FOLLOWS":
                 this.matchKey = MatchKey.FOLLOWS;
+                break;
+            case "COVID19":
+                this.matchKey = MatchKey.COVID19;
                 break;
             case "KEYWORDS":
             default:

@@ -64,6 +64,11 @@ public class DatabaseController {
                     "FROM events e INNER JOIN follows j ON j.event_name = e.normalized_name " +
                     "ORDER BY e.normalized_name";
                 break;
+            case "covid19":
+                query = "SELECT e.name e_name, e.author e_author, e.normalized_name e_normalized_name, e.description e_description, e.status e_status, e.created_at e_created_at, '' AS j_key " +
+                    "FROM events e INNER JOIN covid19 j ON j.event_name = e.normalized_name " +
+                    "ORDER BY e.normalized_name";
+                break;
             case "keywords":
             default:
                 query = "SELECT e.name e_name, e.author e_author, e.normalized_name e_normalized_name, e.description e_description, e.status e_status, e.created_at e_created_at, j.keyword j_key " +
@@ -94,6 +99,7 @@ public class DatabaseController {
         List<Event> ret = new ArrayList<>();
         ret.addAll(getActiveKeywordEvents());
         ret.addAll(getActiveFollowEvents());
+        ret.addAll(getActiveCovid19Event());
         return ret;
     }
 
@@ -143,12 +149,38 @@ public class DatabaseController {
         ));
     }
 
+    public List<Event> getActiveCovid19Event() {
+        return postgres.withHandle(handle -> new ArrayList<>(handle.createQuery(
+            "SELECT e.name e_name, e.author e_author, e.normalized_name e_normalized_name, e.description e_description, e.status e_status, e.created_at e_created_at " +
+                    "FROM events e INNER JOIN covid19 c ON c.event_name = e.normalized_name " +
+                    "WHERE e.status = :activeStatus " +
+                    "ORDER BY e.normalized_name")
+            .bind("activeStatus", Event.Status.ACTIVE.toString())
+            .registerRowMapper(BeanMapper.factory(Event.class, "e"))
+            .registerRowMapper(BeanMapper.factory(String.class, "c"))
+            .reduceRows(new LinkedHashMap<String, Event>(),
+                    (map, rowView) -> {
+                        Event event = map.computeIfAbsent(
+                                rowView.getColumn("e_normalized_name", String.class),
+                                id -> rowView.getRow(Event.class)
+                        );
+                        event.appendKeywords("");
+                        event.setMatchKey("covid19");
+                        return map;
+                    })
+            .values()
+        ));        
+    }
+
     public ExtendedEvent getEvent(String normalizedName, String eventType) {
         String keywordQuery;
 
         switch(eventType.toLowerCase()) {
             case "follows":
                 keywordQuery = "SELECT follow FROM follows WHERE event_name=:normalizedName ORDER BY follow";
+                break;
+            case "covid19":
+                keywordQuery = "SELECT '' as term FROM covid19 WHERE event_name=:normalizedName ORDER BY term";
                 break;
             case "keywords":
             default:

@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: tweet-filter
+    event: covid-19-stream
+  name: covid-19-stream-tweet-filter
+
+spec:
+  replicas: 3
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      event: covid-19-stream
+  template:
+    metadata:
+      labels:
+        app: tweet-filter
+        event: covid-19-stream
+    spec:
+      containers:
+      - env:
+        - name: KAFKA_SERVER
+          value: kafka-0.broker.default:9092,kafka-1.broker.default:9092
+        - name: BATCH_SIZE
+          value: "1000"
+        - name: EVENT_NAME
+          value: covid-19-stream
+        - name: KAFKA_TOPIC
+          value: tweets-covid19
+        - name: MATCH_KEY
+          value: COVID19
+        - name: COVID19
+          value: ''
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /private/keyfile.json
+        image: projectepic/tweet-store:latest
+        imagePullPolicy: Always
+        name: tweet-filter
+        resources:
+          limits:
+            memory: 500Mi
+          requests:
+            memory: 100Mi
+        volumeMounts:
+        - mountPath: /private
+          name: keyfiles
+      terminationGracePeriodSeconds: 120
+      volumes:
+      - name: keyfiles
+        secret:
+          defaultMode: 420
+          secretName: keyfile

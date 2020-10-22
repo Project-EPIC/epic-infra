@@ -3,6 +3,7 @@ package edu.colorado.cs.epic;
 import edu.colorado.cs.epic.TweetMatchStrategy;
 import edu.colorado.cs.epic.TweetKeywordStrategy;
 import edu.colorado.cs.epic.TweetFollowStrategy;
+import edu.colorado.cs.epic.TweetCovid19Strategy;
 
 import com.google.cloud.storage.*;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -92,6 +93,9 @@ public class App {
         switch (matchEnvKey) {
             case "FOLLOWS":
                 tweetMatch = new TweetFollowStrategy();
+                break;
+            case "COVID19":
+                tweetMatch = new TweetCovid19Strategy();
                 break;
             case "KEYWORDS":
             default:
