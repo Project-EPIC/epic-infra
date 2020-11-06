@@ -21,12 +21,12 @@ spec:
             secretName: keyfile
       containers:
       - name: tweets-api
-        image: projectepic/tweetsapi:1.0.23
+        image: projectepic/tweetsapi:1.0.24
         imagePullPolicy: Always
         resources:
           limits:
            memory: 900Mi
-           cpu: "80m"
+           cpu: "500m"
           requests:
            memory: 900Mi
            cpu: "80m"
@@ -53,6 +53,17 @@ spec:
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /private/keyfile.json
+          
+        - name: DB_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: credentials
+              key: username
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: credentials
+              key: password
 ---
 apiVersion: v1
 kind: Service

@@ -9,6 +9,9 @@ import javax.validation.constraints.NotNull;
 
 
 public class TweetsConfiguration extends Configuration {
+    @Valid
+    @NotNull
+    private DataSourceFactory database = new DataSourceFactory();
 
     @NotNull
     private Boolean production;
@@ -35,4 +38,15 @@ public class TweetsConfiguration extends Configuration {
     public void setProjectId(String projectId) {
         this.projectId = projectId;
     }
+
+    @JsonProperty("database")
+    public void setDataSourceFactory(DataSourceFactory factory) {
+        this.database = factory;
+    }
+
+    @JsonProperty("database")
+    public DataSourceFactory getDataSourceFactory() {
+        return database;
+    }
+
 }
