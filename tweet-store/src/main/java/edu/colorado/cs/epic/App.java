@@ -116,12 +116,6 @@ public class App {
             // Poll for records from queue
             ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(pollDurationMs));
 
-            // Check if we got any messages
-            int count = records.count();
-            if (count > 0) {
-                log.info(String.format("%d messages received.", count));
-            }
-
             // Process all messages
             for (ConsumerRecord<String, String> record : records) {
                 for (String match : matchConditions) {
