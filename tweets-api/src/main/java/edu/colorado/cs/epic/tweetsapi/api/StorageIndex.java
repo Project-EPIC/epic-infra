@@ -34,20 +34,20 @@ public class StorageIndex {
         this.tweetStorage = tweetStorage;
 
         jdbi.registerRowMapper(EventRow.class, (rs, ctx) -> 
-            new EventRow(rs.getString("filename"), rs.getLong("timestamp"), rs.getInt("start_index"), rs.getInt("end_index")));
+            new EventRow(rs.getString("filename"), rs.getLong("timestamp"), rs.getLong("start_index"), rs.getLong("end_index")));
         jdbi.registerRowMapper(EventDateCount.class, (rs, ctx) -> 
-            new EventDateCount(rs.getString("time_grouping"), rs.getInt("count")));
+            new EventDateCount(rs.getString("time_grouping"), rs.getLong("count")));
         this.jdbi = jdbi;
     }
 
-    public int getEventTweetTotal(String event) {
-        return jdbi.withHandle(handle -> {
+    public long getEventTweetTotal(String event) {
+        return (long) jdbi.withHandle(handle -> {
             EventDAO eventDAO = handle.attach(EventDAO.class);
             EventIndexDAO eventIndexDAO = handle.attach(EventIndexDAO.class);
-    
+
             int eventId = eventDAO.getEventId(event);
-            Integer totalCount = eventIndexDAO.getEventTweetTotal(eventId);
-            
+            Long totalCount = eventIndexDAO.getEventTweetTotal(eventId);
+
             if (totalCount == null) {
                 return -1;
             } else {
@@ -99,7 +99,7 @@ public class StorageIndex {
                                             Storage.BlobListOption.fields(Storage.BlobField.NAME),
                                             Storage.BlobListOption.startOffset(lastIndex.getFilename() + " "));
             
-            int current = lastIndex.getEndIndex();
+            long current = lastIndex.getEndIndex();
             List<EventRow> newFiles = new ArrayList<>();
             boolean newInserts = false;
             int uploadCount = 0;
@@ -109,7 +109,7 @@ public class StorageIndex {
                     String nameCleaned = blobName.replace(".json.gz", "");
                     String[] fileDetails = nameCleaned.split("-");
     
-                    int size = Integer.parseInt(fileDetails[fileDetails.length - 1]);
+                    long size = Long.parseLong(fileDetails[fileDetails.length - 1]);
                     long timestamp = Long.parseLong(fileDetails[fileDetails.length - 2]);
     
                     newFiles.add(new EventRow(blobName, timestamp, current, current + size));
@@ -131,7 +131,7 @@ public class StorageIndex {
         });
     }
 
-    public String getPaginatedTweets(String event, int startIndex, int endIndex) throws IOException, ParseException {
+    public String getPaginatedTweets(String event, long startIndex, long endIndex) throws IOException, ParseException {
         List<EventRow> eventRows = jdbi.withHandle(handle -> {
             EventDAO eventDAO = handle.attach(EventDAO.class);
             EventIndexDAO eventIndexDAO = handle.attach(EventIndexDAO.class);
@@ -141,14 +141,17 @@ public class StorageIndex {
         });
 
         StringBuilder tweets = new StringBuilder();
+        String separator = "";
         for (EventRow eventRow: eventRows) {
+            tweets.append(separator);
             tweets.append(getData(eventRow.getFilename(), startIndex, endIndex, eventRow.getStartIndex(), eventRow.getEndIndex()));
+            separator = ",";
         }
 
         return tweets.toString();
     }
 
-    public String getData(String blobName, int startIndex, int endIndex, int fileStartIndex, int fileEndIndex) 
+    public String getData(String blobName, long startIndex, long endIndex, long fileStartIndex, long fileEndIndex) 
         throws IOException, ParseException {
         Blob blob = tweetStorage.get(blobName);
 
@@ -157,8 +160,8 @@ public class StorageIndex {
         InputStreamReader reader = new InputStreamReader(gzis);
         LineNumberReader in = new LineNumberReader(reader);
 
-        int start = Math.max(startIndex - fileStartIndex, 0);
-        int end = Math.min(endIndex - fileStartIndex, fileEndIndex - fileStartIndex);
+        long start = Math.max(startIndex - fileStartIndex, 0);
+        long end = Math.min(endIndex - fileStartIndex, fileEndIndex - fileStartIndex);
 
         StringBuilder data = new StringBuilder();
         in.lines().skip(start).limit(end-start).forEach(tweet -> {

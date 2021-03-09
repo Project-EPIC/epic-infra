@@ -23,6 +23,8 @@ spec:
         command:
         - ./bin/kafka-manager
         - -Dhttp.port=80
+      nodeSelector:
+        cloud.google.com/gke-nodepool: production-pool
 
 ---
 kind: Service

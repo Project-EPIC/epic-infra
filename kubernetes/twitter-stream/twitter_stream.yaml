@@ -60,4 +60,5 @@ spec:
             
           - name: FILE_KEYWORDS
             value: "/keys/keywords.txt"
-
+      nodeSelector:
+        cloud.google.com/gke-nodepool: production-pool

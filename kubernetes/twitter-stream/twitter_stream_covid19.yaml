@@ -45,4 +45,5 @@ spec:
                 key: consumer_secret
           - name: KAFKA_SERVERS
             value: kafka-0.broker.default:9092,kafka-1.broker.default:9092
-        
+      nodeSelector:
+        cloud.google.com/gke-nodepool: production-pool

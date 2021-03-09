@@ -30,6 +30,9 @@ spec:
           volumeMounts:
             - name: datadir
               mountPath: /data
+      nodeSelector:
+        cloud.google.com/gke-nodepool: production-pool
+
             # There's defaults in this folder, such as logging config
             #- name: conf
             #  mountPath: /conf

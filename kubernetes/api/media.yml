@@ -53,6 +53,8 @@ spec:
         env:
          - name: GOOGLE_APPLICATION_CREDENTIALS
            value: /private/keyfile.json
+      nodeSelector:
+        cloud.google.com/gke-nodepool: production-pool
 ---
 apiVersion: v1
 kind: Service

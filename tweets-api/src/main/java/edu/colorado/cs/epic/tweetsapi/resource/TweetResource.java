@@ -2,7 +2,7 @@ package edu.colorado.cs.epic.tweetsapi.resource;
 
 import edu.colorado.cs.epic.tweetsapi.api.StorageIndex;
 import edu.colorado.cs.epic.tweetsapi.core.EventDateCount;
-import io.dropwizard.jersey.params.IntParam;
+import io.dropwizard.jersey.params.LongParam;
 import org.apache.log4j.Logger;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
@@ -34,19 +34,19 @@ public class TweetResource {
     @GET
     @Path("/{eventName}/")
     public String getTweets(@PathParam("eventName") String eventName,
-                            @QueryParam("page") @DefaultValue("1") @Min(1) IntParam page,
-                            @QueryParam("count") @DefaultValue("100") @Min(1) @Max(1000) IntParam pageCount) {
-        int pageNumber = page.get();
-        int pageSize = pageCount.get();
+                            @QueryParam("page") @DefaultValue("1") @Min(1) LongParam page,
+                            @QueryParam("count") @DefaultValue("100") @Min(1) @Max(1000) LongParam pageCount) {
+        long pageNumber = page.get();
+        long pageSize = pageCount.get();
 
-        int startIndex = (pageNumber - 1) * pageSize;
-        int endIndex = startIndex + pageSize;
+        long startIndex = (pageNumber - 1) * pageSize;
+        long endIndex = startIndex + pageSize;
 
         // Load in 'new' tweets for this event into the event's index
         storageIndex.updateEventIndex(eventName);
 
         // Check if we have tweets on event
-        int totalCount = storageIndex.getEventTweetTotal(eventName);
+        long totalCount = storageIndex.getEventTweetTotal(eventName);
 
         if (totalCount == -1) {
             throw new WebApplicationException(Response.Status.NOT_FOUND);
@@ -56,7 +56,7 @@ public class TweetResource {
 
         StringBuilder tweets = new StringBuilder();
         tweets.append("{\"tweets\":[");
-        int numTweets = pageSize;
+        long numTweets = pageSize;
         try {
             tweets.append(storageIndex.getPaginatedTweets(eventName, startIndex, endIndex));
         } catch (ParseException | IOException e) {
@@ -68,7 +68,7 @@ public class TweetResource {
         JSONObject metaObject = new JSONObject();
         metaObject.put("count", pageSize);
         metaObject.put("total_count", totalCount);
-        metaObject.put("num_pages", (int) Math.ceil((double) totalCount / pageSize));
+        metaObject.put("num_pages", (long) Math.ceil((double) totalCount / pageSize));
         metaObject.put("page", pageNumber);
         metaObject.put("event_name", eventName);
         metaObject.put("tweet_count", numTweets);
@@ -94,7 +94,7 @@ public class TweetResource {
         storageIndex.updateEventIndex(eventName);
 
         // Check if we have tweets on event
-        int totalCount = storageIndex.getEventTweetTotal(eventName);
+        long totalCount = storageIndex.getEventTweetTotal(eventName);
 
         if (totalCount == -1) {
             throw new WebApplicationException(Response.Status.NOT_FOUND);

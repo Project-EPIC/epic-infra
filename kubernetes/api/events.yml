@@ -21,7 +21,7 @@ spec:
             secretName: keyfile
       containers:
       - name: events-api
-        image: projectepic/eventsapi:1.0.33
+        image: projectepic/eventsapi:1.0.34
         imagePullPolicy: Always
         resources:
           limits:
@@ -70,6 +70,8 @@ spec:
             secretKeyRef:
               name: credentials
               key: password
+      nodeSelector:
+        cloud.google.com/gke-nodepool: production-pool
 ---
 apiVersion: v1
 kind: Service

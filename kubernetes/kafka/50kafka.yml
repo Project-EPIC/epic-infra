@@ -39,6 +39,8 @@ spec:
         volumeMounts:
         - name: datadir
           mountPath: /opt/kafka/data
+      nodeSelector:
+        cloud.google.com/gke-nodepool: production-pool
 
       volumes:
       #- name: conf

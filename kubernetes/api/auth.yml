@@ -53,6 +53,8 @@ spec:
       - name: keyfiles
         secret:
           secretName: keyfile
+      nodeSelector:
+        cloud.google.com/gke-nodepool: production-pool
 ---
 apiVersion: v1
 kind: Service

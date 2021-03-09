@@ -65,4 +65,6 @@ spec:
             
           - name: FILE_FOLLOWS
             value: "/keys/follows.txt"
+      nodeSelector:
+        cloud.google.com/gke-nodepool: production-pool
 

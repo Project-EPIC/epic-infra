@@ -254,6 +254,7 @@ public class Event {
                 .endMetadata()
                 .withNewSpec()
                 .withNewTerminationGracePeriodSeconds(120)
+                .addToNodeSelector("cloud.google.com/gke-nodepool", "production-preemptible-pool")
                 .addNewContainer()
                 .withName("tweet-filter")
                 .withImage("projectepic/tweet-store:" + tweetStoreVersion)

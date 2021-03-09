@@ -20,7 +20,7 @@ public interface EventIndexDAO {
     public void deleteLatestRows(@Bind("eventId") int eventId, @Bind("limit") int uncertainty);
 
     @SqlQuery("SELECT end_index FROM event_index WHERE event_id=:eventId ORDER BY end_index DESC LIMIT 1")
-    public Integer getEventTweetTotal(@Bind("eventId") int eventId);
+    public Long getEventTweetTotal(@Bind("eventId") int eventId);
 
     @SqlQuery("SELECT filename FROM event_index WHERE event_id=:eventId ORDER BY id LIMIT :uncertainty")
     public List<String> getLatestFilenames(@Bind("eventId") int eventId, @Bind("uncertainty") int uncertainty);
@@ -29,9 +29,9 @@ public interface EventIndexDAO {
     public EventRow getLastRow(@Bind("eventId") int eventId);
 
     @SqlQuery("SELECT * FROM event_index WHERE event_id=:eventId and ((start_index <= :start AND end_index > :start) OR (start_index <= :end AND end_index > :end))")
-    public List<EventRow> getPaginatedTweets(@Bind("eventId") int eventId, @Bind("start") int start, @Bind("end") int end);
+    public List<EventRow> getPaginatedTweets(@Bind("eventId") int eventId, @Bind("start") long start, @Bind("end") long end);
 
-    @SqlQuery("SELECT to_char(to_timestamp(timestamp/1000) AT TIME ZONE 'GMT', :dateFormat) as time_grouping, sum(end_index-start_index) as count FROM event_index WHERE event_id=:eventId GROUP BY time_grouping ORDER BY time_grouping ASC")
+    @SqlQuery("SELECT to_char(to_timestamp(timestamp/1000) AT TIME ZONE 'GMT', :dateFormat) as time_grouping, sum(end_index::bigint-start_index::bigint) as count FROM event_index WHERE event_id=:eventId GROUP BY time_grouping ORDER BY time_grouping ASC")
     public List<EventDateCount> getEventCounts(@Bind("dateFormat") String dateFormat, @Bind("eventId") int eventId);
 
 }

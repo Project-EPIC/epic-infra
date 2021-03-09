@@ -21,7 +21,7 @@ spec:
             secretName: keyfile
       containers:
       - name: tweets-api
-        image: projectepic/tweetsapi:1.0.24
+        image: projectepic/tweetsapi:1.0.25
         imagePullPolicy: Always
         resources:
           limits:
@@ -64,6 +64,9 @@ spec:
             secretKeyRef:
               name: credentials
               key: password
+      nodeSelector:
+        cloud.google.com/gke-nodepool: production-pool
+      toleration:
 ---
 apiVersion: v1
 kind: Service

@@ -2,9 +2,9 @@ package edu.colorado.cs.epic.tweetsapi.core;
 
 public class EventDateCount {
     String dateStr;
-    int count;
+    long count;
 
-    public EventDateCount(String dateStr, int count) {
+    public EventDateCount(String dateStr, long count) {
         this.dateStr = dateStr.replace(" ", "T");
         this.count = count;
     }
@@ -17,11 +17,11 @@ public class EventDateCount {
         return dateStr;
     }
 
-    public void setCount(int count) {
+    public void setCount(long count) {
         this.count = count;
     }
 
-    public int getCount() {
+    public long getCount() {
         return count;
     }
 }
