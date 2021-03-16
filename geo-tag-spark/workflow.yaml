@@ -1,0 +1,17 @@
+jobs:
+- sparkJob:
+    args:
+    - 2019-eagle-rock-fire
+    mainJarFileUri: gs://epic-spark-jars/GeoTagSpark.jar
+  stepId: geotag
+placement:
+  managedCluster:
+    clusterName: epic-spark-geo
+    config:
+      gceClusterConfig:
+        zoneUri: us-central1-c
+      masterConfig:
+        machineTypeUri: e2-standard-2
+      workerConfig:
+        machineTypeUri: e2-standard-2
+        numInstances: 2
