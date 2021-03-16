@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.NoSuchElementException;
+import java.util.Set;
 import java.util.zip.GZIPInputStream;
 
 import javax.annotation.security.RolesAllowed;
@@ -32,7 +33,6 @@ import org.json.simple.parser.ParseException;
 import edu.colorado.cs.epic.geotagapi.core.GeoTagIndexRow;
 import edu.colorado.cs.epic.geotagapi.jdbi3.EventDAO;
 import edu.colorado.cs.epic.geotagapi.jdbi3.GeoTagIndexDAO;
-import io.dropwizard.jersey.params.LongParam;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
@@ -40,6 +40,8 @@ import javax.ws.rs.*;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+
+import static com.github.davidmoten.geo.GeoHash.coverBoundingBox;
 
 @Path("/geotag/")
 @Produces(MediaType.APPLICATION_JSON)
@@ -56,18 +58,35 @@ public class GeoTagResource {
         bucket = storage;
 
         jdbi.registerRowMapper(GeoTagIndexRow.class, (rs, ctx) -> 
-            new GeoTagIndexRow(rs.getString("quad_key"), rs.getString("created_at"), rs.getString("username"), rs.getString("user_id_str"),
+            new GeoTagIndexRow(rs.getString("geo_hash"), rs.getString("created_at"), rs.getString("username"), rs.getString("user_id_str"),
                             rs.getString("tweet_id_str"), rs.getString("lang"), rs.getString("source"), rs.getString("in_reply_to_user_id_str"),
                             rs.getString("text"), rs.getString("image_link"), rs.getBoolean("is_retweet")));
         this.jdbi = jdbi;
     }
 
     @GET
-    @Path("/{eventName}/")
+    @Path("/{eventName}/{NWLat}/{NWLon}/{SELat}/{SELon}")
     @RolesAllowed("ADMIN")
     public void getTweets(@PathParam("eventName") String eventName,
-                            @QueryParam("resolution") @DefaultValue("1") @Min(4) @Max(8) LongParam resolution) {
-        logger.info("HELLO WORLD");
+                          @PathParam("NWLat") double NWLat,
+                          @PathParam("NWLon") double NWLon,
+                          @PathParam("SELat") double SELat,
+                          @PathParam("SELon") double SELon,
+                          @QueryParam("resolution") @DefaultValue("4") @Min(4) @Max(8) int hashResolution) {
+        logger.info(NWLon + "," + NWLat);
+
+        final Set<String> boundingBoxHashes = coverBoundingBox(NWLat, NWLon, SELat, SELon).getHashes();
+        jdbi.useHandle(handle -> {
+            EventDAO eventDAO = handle.attach(EventDAO.class);
+            GeoTagIndexDAO eventIndexDAO = handle.attach(GeoTagIndexDAO.class);
+
+            // eventDAO.insertEvent(eventName);
+            // int eventId = eventDAO.getEventId(eventName);
+
+            // eventIndexDAO.getTweets(eventId, newRows);
+            // TODO: Query db and get all the data for this bounding box
+        });
+        
         return;
     }
 
@@ -103,7 +122,7 @@ public class GeoTagResource {
                 String line = reader.readLine();
                 JSONObject json = (JSONObject) parser.parse(line);
 
-                newRows.add(new GeoTagIndexRow((String)json.get("quad_key"), (String)json.get("created_at"), 
+                newRows.add(new GeoTagIndexRow((String)json.get("geo_hash"), (String)json.get("created_at"), 
                 (String)json.get("user"),  (String)json.get("user_id_str"),(String) json.get("tweet_id_str"), 
                 (String)json.get("lang"), (String)json.get("source"), (String)json.get("in_reply_to_user_id_str"), 
                 (String)json.get("text"), (String)json.get("image_link"), json.containsKey("retweeted_status")));

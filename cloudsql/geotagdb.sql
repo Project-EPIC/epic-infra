@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS events (
 
 CREATE TABLE IF NOT EXISTS geo_tag_index (
     id SERIAL PRIMARY KEY,
-    quad_key TEXT,
+    geo_hash TEXT,
     created_at TEXT,
     username TEXT,
     user_id_str TEXT,

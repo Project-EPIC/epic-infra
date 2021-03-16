@@ -8,7 +8,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class GeoTagIndexRow {
-    String quadKey;
+    String geoHash;
     String createdAt;
     String username;
     String userIdStr;

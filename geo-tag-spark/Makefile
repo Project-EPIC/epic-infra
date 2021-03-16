@@ -12,6 +12,7 @@ clean:
 
 jar: 
 	mvn package
+	mv target/$(PROJECT_NAME)-*.jar target/$(PROJECT_NAME).jar
 
 run:
 	gcloud dataproc workflow-templates instantiate-from-file --file=workflow.yaml --region=global

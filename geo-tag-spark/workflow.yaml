@@ -1,7 +1,7 @@
 jobs:
 - sparkJob:
     args:
-    - 2019-eagle-rock-fire
+    - winter
     mainJarFileUri: gs://epic-spark-jars/GeoTagSpark.jar
   stepId: geotag
 placement:
