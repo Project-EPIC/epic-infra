@@ -38,3 +38,7 @@ spec:
         backend:
            serviceName: filtering-api
            servicePort: 8080
+      - path: /geotag/*
+        backend:
+           serviceName: geotag-api
+           servicePort: 8080

@@ -1,12 +1,16 @@
 package edu.colorado.cs.epic;
 
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SaveMode;
 import org.apache.spark.sql.SparkSession;
 import org.apache.spark.sql.expressions.UserDefinedFunction;
 import org.apache.spark.sql.types.DataTypes;
-import org.apache.spark.sql.SaveMode;
 
 import scala.collection.mutable.WrappedArray;
 
@@ -36,7 +40,9 @@ public class GeoTagSpark
 
         Dataset<Row> geoDF = spark.sql("SELECT coordinates.coordinates, place.bounding_box.coordinates AS bounding_box, user.screen_name AS user," + 
                                     " user.id_str AS user_id_str, created_at, id_str AS tweet_id_str, lang, source, in_reply_to_user_id_str, text, " + 
-                                    " extended_tweet.entities.media AS media, retweeted_status FROM timeline WHERE coordinates IS NOT NULL OR place IS NOT NULL"); 
+                                    " extended_tweet.entities.media AS media, retweeted_status FROM timeline WHERE " +
+                                    " (coordinates IS NOT NULL AND coordinates.coordinates IS NOT NULL) OR " +
+                                    " (place IS NOT NULL AND place.bounding_box IS NOT NULL AND place.bounding_box.coordinates IS NOT NULL)"); 
 
         UserDefinedFunction coordsToGeoHash = udf((WrappedArray<Double> exactCoords, WrappedArray<WrappedArray<WrappedArray<Double>>> boundingBox) -> {
             if (exactCoords != null) {
@@ -51,9 +57,19 @@ public class GeoTagSpark
             }
         }, DataTypes.StringType);
 
-        geoDF.select(coordsToGeoHash.apply(geoDF.col("coordinates"), geoDF.col("bounding_box")).alias("geo_hash"), geoDF.col("user"), geoDF.col("user_id_str"), 
-                    geoDF.col("created_at"), geoDF.col("tweet_id_str"), geoDF.col("lang"), geoDF.col("source"), geoDF.col("in_reply_to_user_id_str"), 
-                    geoDF.col("text"),  geoDF.col("retweeted_status"), explode(geoDF.col("media"))).createOrReplaceTempView("expTimeline");
+        geoDF.select(
+            coordsToGeoHash.apply(geoDF.col("coordinates"), geoDF.col("bounding_box")).alias("geo_hash"), 
+            geoDF.col("user"), 
+            geoDF.col("user_id_str"), 
+            geoDF.col("created_at"), 
+            geoDF.col("tweet_id_str"), 
+            geoDF.col("lang"), 
+            geoDF.col("source"), 
+            geoDF.col("in_reply_to_user_id_str"), 
+            geoDF.col("text"),  
+            geoDF.col("retweeted_status"),
+            explode(geoDF.col("media"))
+        ).createOrReplaceTempView("expTimeline");
 
         Dataset<Row> geoDF2 = spark.sql("SELECT user, user_id_str, geo_hash, created_at, tweet_id_str, lang, source, " + 
                         "in_reply_to_user_id_str, text, retweeted_status, col.media_url_https AS image_link FROM expTimeline");
@@ -66,6 +82,15 @@ public class GeoTagSpark
             .mode(SaveMode.Overwrite)
             .json(String.format("gs://epic-analysis-results/spark/geotag/%s/%d/", eventName, (new Date()).getTime()));
 
+        try {
+            CloseableHttpClient httpClient = HttpClients.createDefault();
+            HttpPost postReq = new HttpPost("https://epicapi.gerard.space/geotag/" + eventName);
+            CloseableHttpResponse response = httpClient.execute(postReq);
+
+            System.out.println(EntityUtils.toString(response.getEntity()));
+        } catch (Exception e) {
+            System.out.println(e);
+        }
         spark.stop();
     }
 }

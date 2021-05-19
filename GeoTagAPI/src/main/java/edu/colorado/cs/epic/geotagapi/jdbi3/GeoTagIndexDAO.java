@@ -16,5 +16,8 @@ public interface GeoTagIndexDAO {
             ":geoTagIndexRow.source, :geoTagIndexRow.inReplyToUserIdStr, :geoTagIndexRow.text, :geoTagIndexRow.imageLink, :geoTagIndexRow.isRetweet, :eventId) " + 
             "ON CONFLICT(event_id, tweet_id_str) DO NOTHING")
     public void bulkInsertGeoTagIndexEntries(@Bind("eventId") int eventId, @BindBean("geoTagIndexRow") List<GeoTagIndexRow> geoTagIndexRow);
+
+    @SqlQuery("SELECT * FROM geo_tag_index WHERE event_id=:eventId AND geo_hash SIMILAR TO :geoHashPrefixQuery")
+    public List<GeoTagIndexRow> getTweetsByGeoHashPrefix(@Bind("eventId") int eventId, @Bind("geoHashPrefixQuery") String geoHashPrefixQuery);
 }
     

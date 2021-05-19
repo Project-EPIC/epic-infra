@@ -108,7 +108,7 @@
   <properties>
     <dropwizard.version>1.3.9</dropwizard.version>
     <mainClass>edu.colorado.cs.epic.geotagapi.GeoTagAPIApplication</mainClass>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 </project>

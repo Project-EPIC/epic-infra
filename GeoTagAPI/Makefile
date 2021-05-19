@@ -7,7 +7,6 @@ PROJECT_NAME = geotagapi
 run: jar
 	java -jar target/$(PROJECT_NAME).jar server config.yml
 
-
 build: jar
 	docker build -t projectepic/$(PROJECT_NAME) .
 	docker tag projectepic/$(PROJECT_NAME) projectepic/$(PROJECT_NAME):$(TAG_CLIENT)

@@ -1,4 +1,4 @@
-production: ${PRODUCTION:-false}
+production: ${PRODUCTION:-true}
 projectId: ${PROJECT_ID:-crypto-eon-164220}
 
 database:
@@ -12,8 +12,8 @@ database:
   password: ${DB_PASSWORD:-epicINFRA2019}
 
   # the JDBC URL
-  # url: ${DB_URL:-jdbc:postgresql://google/indexdb?socketFactory=com.google.cloud.sql.postgres.SocketFactory&cloudSqlInstance=crypto-eon-164220:us-central1:epic-event}
-  url: ${DB_URL:-jdbc:postgresql://localhost:5432/geotagdb}
+  url: ${DB_URL:-jdbc:postgresql://google/geotagdb?socketFactory=com.google.cloud.sql.postgres.SocketFactory&cloudSqlInstance=crypto-eon-164220:us-central1:epic-event}
+  # url: ${DB_URL:-jdbc:postgresql://localhost:5432/geotagdb}
 
   # any properties specific to your JDBC driver:
   properties:

@@ -9,11 +9,17 @@ jobs:
     - gs://epic-historic-tweets/2017 Hurricane Harvey/*
     mainJarFileUri: gs://epic-spark-jars/MediaSpark-1.0.jar
   stepId: media
+- sparkJob:
+    args:
+    - gs://epic-historic-tweets/2017 Hurricane Harvey/*
+    mainJarFileUri: gs://epic-spark-jars/GeoTagSpark.jar
+  stepId: geotag
 parameters:
 - name: EVENT_NAME
   fields:
   - jobs['mentions'].sparkJob.args[0]
   - jobs['media'].sparkJob.args[0]
+  - jobs['geotag'].sparkJob.args[0]
 placement:
   managedCluster:
     clusterName: epic-spark

@@ -18,6 +18,9 @@ import javax.ws.rs.GET;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.davidmoten.geo.LatLong;
 import com.google.api.gax.paging.Page;
 import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.Bucket;
@@ -42,6 +45,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 
 import static com.github.davidmoten.geo.GeoHash.coverBoundingBox;
+import static com.github.davidmoten.geo.GeoHash.decodeHash;
 
 @Path("/geotag/")
 @Produces(MediaType.APPLICATION_JSON)
@@ -67,27 +71,53 @@ public class GeoTagResource {
     @GET
     @Path("/{eventName}/{NWLat}/{NWLon}/{SELat}/{SELon}")
     @RolesAllowed("ADMIN")
-    public void getTweets(@PathParam("eventName") String eventName,
+    public String getTweets(@PathParam("eventName") String eventName,
                           @PathParam("NWLat") double NWLat,
                           @PathParam("NWLon") double NWLon,
                           @PathParam("SELat") double SELat,
                           @PathParam("SELon") double SELon,
-                          @QueryParam("resolution") @DefaultValue("4") @Min(4) @Max(8) int hashResolution) {
-        logger.info(NWLon + "," + NWLat);
-
-        final Set<String> boundingBoxHashes = coverBoundingBox(NWLat, NWLon, SELat, SELon).getHashes();
-        jdbi.useHandle(handle -> {
+                          @QueryParam("resolution") @DefaultValue("4") @Min(1) @Max(6) int hashResolution) {
+        final Set<String> boundingBoxHashes = coverBoundingBox(NWLat, NWLon, SELat, SELon, hashResolution).getHashes();
+        return jdbi.withHandle(handle -> {
             EventDAO eventDAO = handle.attach(EventDAO.class);
-            GeoTagIndexDAO eventIndexDAO = handle.attach(GeoTagIndexDAO.class);
+            GeoTagIndexDAO geoTagIndexDAO= handle.attach(GeoTagIndexDAO.class);
 
-            // eventDAO.insertEvent(eventName);
-            // int eventId = eventDAO.getEventId(eventName);
+            eventDAO.insertEvent(eventName);
+            int eventId = eventDAO.getEventId(eventName);
 
-            // eventIndexDAO.getTweets(eventId, newRows);
-            // TODO: Query db and get all the data for this bounding box
-        });
-        
-        return;
+            StringBuilder geoHashPrefixQuery = new StringBuilder("(");
+            for (String hash : boundingBoxHashes) {
+                geoHashPrefixQuery.append(hash);
+                geoHashPrefixQuery.append("|");
+            }
+            geoHashPrefixQuery.append(")%");
+
+            List<GeoTagIndexRow> results = geoTagIndexDAO.getTweetsByGeoHashPrefix(eventId, geoHashPrefixQuery.toString());
+            StringBuilder tweets = new StringBuilder();
+            tweets.append("{\"tweets\":[");
+            String prefix = "";
+            ObjectMapper mapper = new ObjectMapper();
+            try {
+                for (GeoTagIndexRow row: results) {
+                    LatLong center = decodeHash(row.getGeoHash());
+                    tweets.append(prefix);
+                    prefix = ",";
+                    tweets.append("{");
+                    tweets.append("\"coordinates\":[");
+                    tweets.append(center.getLon());
+                    tweets.append(",");
+                    tweets.append(center.getLat());
+                    tweets.append("],");
+                    tweets.append("\"tweet\":");
+                    tweets.append(mapper.writeValueAsString(row));
+                    tweets.append("}");
+                }
+            } catch (JsonProcessingException e) {
+                logger.error(e);
+            }
+            tweets.append("]}");
+            return tweets.toString();
+        });   
     }
 
     @POST
@@ -139,7 +169,6 @@ public class GeoTagResource {
                     });
                     newRows.clear();
                 }
-
             } catch (ParseException e) {
                 logger.error(e);
             }
