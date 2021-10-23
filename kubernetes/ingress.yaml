@@ -1,4 +1,4 @@
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: epic-infra-ingress
@@ -10,35 +10,59 @@ spec:
   rules:
   - http:
       paths:
-      - path: /tweets/*
+      - path: /tweets/
+        pathType: Prefix
         backend:
-          serviceName: tweets-api
-          servicePort: 8080
-      - path: /annotations/*
+          service:
+            name: tweets-api
+            port:
+              number: 8080
+      - path: /annotations/
+        pathType: Prefix
         backend:
-          serviceName: events-api
-          servicePort: 8080
-      - path: /media/*
+          service:
+            name: events-api
+            port:
+              number: 8080
+      - path: /media/
+        pathType: Prefix
         backend:
-          serviceName: media-api
-          servicePort: 8080
-      - path: /mentions/*
+          service:
+            name: media-api
+            port:
+              number: 8080
+      - path: /mentions/
+        pathType: Prefix
         backend:
-          serviceName: mentions-api
-          servicePort: 8080
-      - path: /events/*
+          service:
+            name: mentions-api
+            port:
+              number: 8080
+      - path: /events/
+        pathType: Prefix
         backend:
-          serviceName: events-api
-          servicePort: 8080
-      - path: /users/*
+          service:
+            name: events-api
+            port:
+              number: 8080
+      - path: /users/
+        pathType: Prefix
         backend:
-           serviceName: auth-api
-           servicePort: 8080
-      - path: /filtering/*
+          service:
+            name: auth-api
+            port:
+              number: 8080
+      - path: /filtering/
+        pathType: Prefix
         backend:
-           serviceName: filtering-api
-           servicePort: 8080
-      - path: /geotag/*
+          service:
+            name: filtering-api
+            port:
+              number: 8080
+      - path: /geotag/
+        pathType: Prefix
         backend:
-           serviceName: geotag-api
-           servicePort: 8080
+          service:
+            name: geotag-api
+            port:
+              number: 8080
